@@ -1,1 +1,22 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
 .vscode/
+.idea/
+*.iml
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Gradle and build output
+.gradle/
+.gradle-user-home/
+build/
+out/
