@@ -16,6 +16,7 @@ import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanUpdateForm;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanService;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
+import com.hsg.coffee.domain.purchasePlace.service.PurchasePlaceService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 public class CoffeeBeanController {
 
     private final CoffeeBeanService coffeeBeanService;
+    private final PurchasePlaceService purchasePlaceService;
 
     @GetMapping
     public String list(@RequestParam(required = false) String keyword, Model model) {
@@ -101,5 +103,6 @@ public class CoffeeBeanController {
         model.addAttribute("actionUrl", actionUrl);
         model.addAttribute("processTypes", ProcessType.values());
         model.addAttribute("purchasePlaceTypes", PurchasePlaceType.values());
+        model.addAttribute("purchasePlaces", purchasePlaceService.getAll());
     }
 }

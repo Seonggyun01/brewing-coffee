@@ -97,15 +97,26 @@
 
             <section class="form-section">
                 <h2>구매처 추가 정보</h2>
-                <p class="section-help">나중에 지도 표시를 위해 주소를 남겨둘 수 있습니다. 구매처 정보는 선택 입력입니다.</p>
+                <p class="section-help">구매처 정보는 선택 입력입니다. 기존 구매처를 고르거나, 새 구매처 이름을 입력하면 함께 저장됩니다.</p>
+
+                <label>
+                    <span>기존 구매처 선택</span>
+                    <select th:field="*{purchasePlaceId}">
+                        <option value="">선택 안 함</option>
+                        <option th:each="purchasePlace : ${purchasePlaces}"
+                                th:value="${purchasePlace.id}"
+                                th:text="${purchasePlace.name + ' (' + purchasePlace.type + ')'}">프릳츠 원서점</option>
+                    </select>
+                </label>
+
                 <div class="form__grid">
                     <label>
-                        <span>구매처 이름</span>
+                        <span>새 구매처 이름</span>
                         <input type="text" th:field="*{purchasePlaceName}" placeholder="예: 프릳츠 원서점, 네이버 스마트스토어">
                     </label>
 
                     <label>
-                        <span>구매처 유형</span>
+                        <span>새 구매처 유형</span>
                         <select th:field="*{purchasePlaceType}">
                             <option value="">선택 안 함</option>
                             <option th:each="type : ${purchasePlaceTypes}" th:value="${type}" th:text="${type}">ROASTERY</option>

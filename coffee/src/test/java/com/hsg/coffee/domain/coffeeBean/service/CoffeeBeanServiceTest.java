@@ -20,7 +20,9 @@ import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanResponse;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanUpdateForm;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
+import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
+import com.hsg.coffee.domain.purchasePlace.repository.PurchasePlaceRepository;
 
 @Transactional
 @SpringBootTest
@@ -32,9 +34,13 @@ class CoffeeBeanServiceTest {
     @Autowired
     private CoffeeBeanRepository coffeeBeanRepository;
 
+    @Autowired
+    private PurchasePlaceRepository purchasePlaceRepository;
+
     @BeforeEach
     void setUp() {
         coffeeBeanRepository.deleteAll();
+        purchasePlaceRepository.deleteAll();
     }
 
     @Test
@@ -72,6 +78,46 @@ class CoffeeBeanServiceTest {
         assertEquals("서울 종로구 율곡로 83", response.getPurchasePlaceAddress());
         assertNull(response.getPurchasePlaceLatitude());
         assertNull(response.getPurchasePlaceLongitude());
+    }
+
+    @Test
+    void createWithoutPurchasePlace() {
+        CoffeeBeanCreateForm form = createForm("에티오피아 구지", "브루잉 로스터스");
+
+        Long id = coffeeBeanService.create(form);
+
+        CoffeeBeanResponse response = coffeeBeanService.get(id);
+
+        System.out.println("=== CoffeeBeanService 구매처 미입력 테스트 결과 ===");
+        System.out.println("원두 이름: " + response.getName());
+        System.out.println("구매처 이름: " + response.getPurchasePlaceName());
+
+        assertNull(response.getPurchasePlaceName());
+    }
+
+    @Test
+    void createWithExistingPurchasePlace() {
+        PurchasePlace purchasePlace = purchasePlaceRepository.save(PurchasePlace.create(
+                "프릳츠 원서점",
+                PurchasePlaceType.ROASTERY,
+                "서울 종로구 율곡로 83",
+                null,
+                null,
+                "기존 구매처"
+        ));
+        CoffeeBeanCreateForm form = createForm("에티오피아 구지", "브루잉 로스터스");
+        form.setPurchasePlaceId(purchasePlace.getId());
+
+        Long id = coffeeBeanService.create(form);
+
+        CoffeeBeanResponse response = coffeeBeanService.get(id);
+
+        System.out.println("=== CoffeeBeanService 기존 구매처 선택 테스트 결과 ===");
+        System.out.println("선택한 구매처 ID: " + response.getPurchasePlaceId());
+        System.out.println("선택한 구매처 이름: " + response.getPurchasePlaceName());
+
+        assertEquals(purchasePlace.getId(), response.getPurchasePlaceId());
+        assertEquals("프릳츠 원서점", response.getPurchasePlaceName());
     }
 
     @Test

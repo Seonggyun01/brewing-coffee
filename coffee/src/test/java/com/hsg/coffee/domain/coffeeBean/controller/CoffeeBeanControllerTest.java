@@ -22,7 +22,9 @@ import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCreateForm;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
 import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanService;
+import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
+import com.hsg.coffee.domain.purchasePlace.repository.PurchasePlaceRepository;
 
 @Transactional
 @SpringBootTest
@@ -38,9 +40,13 @@ class CoffeeBeanControllerTest {
     @Autowired
     private CoffeeBeanRepository coffeeBeanRepository;
 
+    @Autowired
+    private PurchasePlaceRepository purchasePlaceRepository;
+
     @BeforeEach
     void setUp() {
         coffeeBeanRepository.deleteAll();
+        purchasePlaceRepository.deleteAll();
     }
 
     @Test
@@ -49,6 +55,23 @@ class CoffeeBeanControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("coffee-beans/list"))
                 .andExpect(model().attributeExists("coffeeBeans"));
+    }
+
+    @Test
+    void createFormContainsPurchasePlaces() throws Exception {
+        purchasePlaceRepository.save(PurchasePlace.create(
+                "프릳츠 원서점",
+                PurchasePlaceType.ROASTERY,
+                "서울 종로구 율곡로 83",
+                null,
+                null,
+                "기존 구매처"
+        ));
+
+        mockMvc.perform(get("/coffee-beans/new"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("coffee-beans/form"))
+                .andExpect(model().attributeExists("purchasePlaces"));
     }
 
     @Test
@@ -86,6 +109,33 @@ class CoffeeBeanControllerTest {
                 .andExpect(model().attributeExists("coffeeBean"));
 
         Long id = Long.valueOf(detailUrl.substring(detailUrl.lastIndexOf("/") + 1));
+        assertTrue("프릳츠 원서점".equals(coffeeBeanService.get(id).getPurchasePlaceName()));
+    }
+
+    @Test
+    void createWithExistingPurchasePlace() throws Exception {
+        PurchasePlace purchasePlace = purchasePlaceRepository.save(PurchasePlace.create(
+                "프릳츠 원서점",
+                PurchasePlaceType.ROASTERY,
+                "서울 종로구 율곡로 83",
+                null,
+                null,
+                "기존 구매처"
+        ));
+
+        MvcResult result = mockMvc.perform(post("/coffee-beans")
+                        .param("name", "에티오피아 구지")
+                        .param("roastery", "브루잉 로스터스")
+                        .param("processType", ProcessType.WASHED.name())
+                        .param("price", "18000")
+                        .param("weight", "200")
+                        .param("purchasePlaceId", String.valueOf(purchasePlace.getId())))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+
+        String detailUrl = result.getResponse().getRedirectedUrl();
+        Long id = Long.valueOf(detailUrl.substring(detailUrl.lastIndexOf("/") + 1));
+
         assertTrue("프릳츠 원서점".equals(coffeeBeanService.get(id).getPurchasePlaceName()));
     }
 

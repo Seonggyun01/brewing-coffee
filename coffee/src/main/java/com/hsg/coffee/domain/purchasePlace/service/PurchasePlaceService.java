@@ -1,5 +1,7 @@
 package com.hsg.coffee.domain.purchasePlace.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -16,6 +18,30 @@ import lombok.RequiredArgsConstructor;
 public class PurchasePlaceService {
 
     private final PurchasePlaceRepository purchasePlaceRepository;
+
+    public List<PurchasePlace> getAll() {
+        return purchasePlaceRepository.findAllByOrderByNameAsc();
+    }
+
+    public PurchasePlace getEntity(Long id) {
+        return purchasePlaceRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("구매처를 찾을 수 없습니다. id=" + id));
+    }
+
+    @Transactional
+    public PurchasePlace selectOrCreateIfPresent(
+            Long selectedId,
+            String name,
+            PurchasePlaceType type,
+            String address,
+            String memo
+    ) {
+        if (selectedId != null) {
+            return getEntity(selectedId);
+        }
+
+        return createIfPresent(name, type, address, memo);
+    }
 
     @Transactional
     public PurchasePlace createIfPresent(
@@ -39,36 +65,8 @@ public class PurchasePlaceService {
     }
 
     @Transactional
-    public PurchasePlace updateIfPresent(
-            PurchasePlace purchasePlace,
-            String name,
-            PurchasePlaceType type,
-            String address,
-            String memo
-    ) {
-        if (!StringUtils.hasText(name)) {
-            return null;
-        }
-
-        if (purchasePlace == null) {
-            return createIfPresent(name, type, address, memo);
-        }
-
-        purchasePlace.update(
-                name,
-                typeOrDefault(type),
-                address,
-                purchasePlace.getLatitude(),
-                purchasePlace.getLongitude(),
-                memo
-        );
-        return purchasePlace;
-    }
-
-    @Transactional
     public void updateCoordinates(Long id, Double latitude, Double longitude) {
-        PurchasePlace purchasePlace = purchasePlaceRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("구매처를 찾을 수 없습니다. id=" + id));
+        PurchasePlace purchasePlace = getEntity(id);
         purchasePlace.update(
                 purchasePlace.getName(),
                 purchasePlace.getType(),

@@ -26,7 +26,8 @@ public class CoffeeBeanService {
 
     @Transactional
     public Long create(CoffeeBeanCreateForm form) {
-        PurchasePlace purchasePlace = purchasePlaceService.createIfPresent(
+        PurchasePlace purchasePlace = purchasePlaceService.selectOrCreateIfPresent(
+                form.getPurchasePlaceId(),
                 form.getPurchasePlaceName(),
                 form.getPurchasePlaceType(),
                 form.getPurchasePlaceAddress(),
@@ -93,8 +94,8 @@ public class CoffeeBeanService {
     @Transactional
     public void update(Long id, CoffeeBeanUpdateForm form) {
         CoffeeBean coffeeBean = findEntity(id);
-        PurchasePlace purchasePlace = purchasePlaceService.updateIfPresent(
-                coffeeBean.getPurchasePlace(),
+        PurchasePlace purchasePlace = purchasePlaceService.selectOrCreateIfPresent(
+                form.getPurchasePlaceId(),
                 form.getPurchasePlaceName(),
                 form.getPurchasePlaceType(),
                 form.getPurchasePlaceAddress(),

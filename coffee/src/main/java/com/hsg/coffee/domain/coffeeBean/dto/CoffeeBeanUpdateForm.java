@@ -59,6 +59,8 @@ public class CoffeeBeanUpdateForm {
     @Min(value = 0, message = "용량은 0g 이상이어야 합니다.")
     private Integer weight;
 
+    private Long purchasePlaceId;
+
     @Size(max = 100, message = "구매처 이름은 100자 이하로 입력해주세요.")
     private String purchasePlaceName;
 
@@ -89,6 +91,7 @@ public class CoffeeBeanUpdateForm {
 
         PurchasePlace purchasePlace = coffeeBean.getPurchasePlace();
         if (purchasePlace != null) {
+            form.purchasePlaceId = purchasePlace.getId();
             form.purchasePlaceName = purchasePlace.getName();
             form.purchasePlaceType = purchasePlace.getType();
             form.purchasePlaceAddress = purchasePlace.getAddress();
