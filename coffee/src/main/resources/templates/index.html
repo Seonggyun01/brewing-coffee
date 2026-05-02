@@ -12,13 +12,17 @@
             <p class="home__eyebrow">Brewing Coffee Journal</p>
             <h1>BrewLog</h1>
             <p class="home__summary">원두, 브루잉, 카페 방문 기록을 차곡차곡 쌓아가는 커피 기록 서비스</p>
+            <div class="home__actions">
+                <a class="button button--primary" th:href="@{/coffee-beans}">원두 관리</a>
+                <a class="button button--ghost" th:href="@{/h2-console}">H2 콘솔</a>
+            </div>
         </section>
 
         <section class="home__grid" aria-label="BrewLog 주요 기록">
             <article class="home__card">
                 <span>01</span>
                 <h2>원두</h2>
-                <p>이름, 로스터리, 산지, 가공 방식, 로스팅 포인트를 기록합니다.</p>
+                <p>이름, 로스터리, 산지, 가공 방식, 로스팅 날짜와 구매 정보를 기록합니다.</p>
             </article>
             <article class="home__card">
                 <span>02</span>

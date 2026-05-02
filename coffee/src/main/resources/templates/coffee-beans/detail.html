@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${coffeeBean.name + ' - BrewLog'}">원두 상세 - BrewLog</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <main class="page page--narrow">
+        <header class="page__header">
+            <div>
+                <a class="text-link" th:href="@{/coffee-beans}">원두 목록</a>
+                <h1 th:text="${coffeeBean.name}">원두 이름</h1>
+            </div>
+            <div class="button-group">
+                <a class="button button--secondary" th:href="@{/coffee-beans/{id}/edit(id=${coffeeBean.id})}">수정</a>
+                <form th:action="@{/coffee-beans/{id}/delete(id=${coffeeBean.id})}" method="post">
+                    <button class="button button--danger" type="submit">삭제</button>
+                </form>
+            </div>
+        </header>
+
+        <p class="flash" th:if="${message}" th:text="${message}"></p>
+
+        <section class="detail">
+            <dl>
+                <div>
+                    <dt>로스터리</dt>
+                    <dd th:text="${coffeeBean.roastery ?: '-'}">브루잉 로스터스</dd>
+                </div>
+                <div>
+                    <dt>국가</dt>
+                    <dd th:text="${coffeeBean.country ?: '-'}">Ethiopia</dd>
+                </div>
+                <div>
+                    <dt>지역</dt>
+                    <dd th:text="${coffeeBean.region ?: '-'}">Guji</dd>
+                </div>
+                <div>
+                    <dt>농장</dt>
+                    <dd th:text="${coffeeBean.farm ?: '-'}">Hambela</dd>
+                </div>
+                <div>
+                    <dt>품종</dt>
+                    <dd th:text="${coffeeBean.variety ?: '-'}">Heirloom</dd>
+                </div>
+                <div>
+                    <dt>고도</dt>
+                    <dd th:text="${coffeeBean.altitude ?: '-'}">1900-2100m</dd>
+                </div>
+                <div>
+                    <dt>가공 방식</dt>
+                    <dd th:text="${coffeeBean.processType ?: '-'}">WASHED</dd>
+                </div>
+                <div>
+                    <dt>로스팅일</dt>
+                    <dd th:text="${coffeeBean.roastedDate ?: '-'}">2026-05-01</dd>
+                </div>
+                <div>
+                    <dt>구매일</dt>
+                    <dd th:text="${coffeeBean.purchasedDate ?: '-'}">2026-05-02</dd>
+                </div>
+                <div>
+                    <dt>가격</dt>
+                    <dd th:text="${coffeeBean.price != null ? #numbers.formatInteger(coffeeBean.price, 0, 'COMMA') + '원' : '-'}">18,000원</dd>
+                </div>
+                <div>
+                    <dt>용량</dt>
+                    <dd th:text="${coffeeBean.weight != null ? coffeeBean.weight + 'g' : '-'}">200g</dd>
+                </div>
+            </dl>
+
+            <div class="detail__memo">
+                <h2>향미 노트</h2>
+                <p th:text="${coffeeBean.flavorNotes ?: '-'}">floral, citrus, tea-like</p>
+                <h2>메모</h2>
+                <p th:text="${coffeeBean.memo ?: '-'}">메모</p>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

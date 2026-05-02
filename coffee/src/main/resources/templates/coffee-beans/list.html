@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>원두 관리 - BrewLog</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <main class="page">
+        <header class="page__header">
+            <div>
+                <a class="text-link" th:href="@{/}">BrewLog</a>
+                <h1>원두 관리</h1>
+            </div>
+            <a class="button button--primary" th:href="@{/coffee-beans/new}">새 원두 등록</a>
+        </header>
+
+        <p class="flash" th:if="${message}" th:text="${message}"></p>
+
+        <form class="search" th:action="@{/coffee-beans}" method="get">
+            <input type="search" name="keyword" th:value="${keyword}" placeholder="원두 이름으로 검색">
+            <button class="button button--secondary" type="submit">검색</button>
+            <a class="button button--ghost" th:href="@{/coffee-beans}">초기화</a>
+        </form>
+
+        <section class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>원두</th>
+                        <th>로스터리</th>
+                        <th>산지</th>
+                        <th>가공</th>
+                        <th>용량</th>
+                        <th>가격</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(coffeeBeans)}">
+                        <td colspan="6" class="empty">등록된 원두가 없습니다.</td>
+                    </tr>
+                    <tr th:each="coffeeBean : ${coffeeBeans}">
+                        <td>
+                            <a class="table-link" th:href="@{/coffee-beans/{id}(id=${coffeeBean.id})}" th:text="${coffeeBean.name}">원두 이름</a>
+                        </td>
+                        <td th:text="${coffeeBean.roastery}">로스터리</td>
+                        <td th:text="${coffeeBean.country + ' / ' + coffeeBean.region}">산지</td>
+                        <td th:text="${coffeeBean.processType}">WASHED</td>
+                        <td th:text="${coffeeBean.weight != null ? coffeeBean.weight + 'g' : '-'}">200g</td>
+                        <td th:text="${coffeeBean.price != null ? #numbers.formatInteger(coffeeBean.price, 0, 'COMMA') + '원' : '-'}">18,000원</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</body>
+</html>

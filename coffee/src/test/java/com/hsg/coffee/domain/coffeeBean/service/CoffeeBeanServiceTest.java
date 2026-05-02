@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,6 +18,7 @@ import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCreateForm;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanResponse;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanUpdateForm;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
+import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
 
 @Transactional
 @SpringBootTest
@@ -24,6 +26,14 @@ class CoffeeBeanServiceTest {
 
     @Autowired
     private CoffeeBeanService coffeeBeanService;
+
+    @Autowired
+    private CoffeeBeanRepository coffeeBeanRepository;
+
+    @BeforeEach
+    void setUp() {
+        coffeeBeanRepository.deleteAll();
+    }
 
     @Test
     void createAndGet() {

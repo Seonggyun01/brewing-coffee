@@ -1,0 +1,143 @@
+package com.hsg.coffee.domain.coffeeBean.controller;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCreateForm;
+import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
+import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
+import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanService;
+
+@Transactional
+@SpringBootTest
+@AutoConfigureMockMvc
+class CoffeeBeanControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private CoffeeBeanService coffeeBeanService;
+
+    @Autowired
+    private CoffeeBeanRepository coffeeBeanRepository;
+
+    @BeforeEach
+    void setUp() {
+        coffeeBeanRepository.deleteAll();
+    }
+
+    @Test
+    void listPage() throws Exception {
+        mockMvc.perform(get("/coffee-beans"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("coffee-beans/list"))
+                .andExpect(model().attributeExists("coffeeBeans"));
+    }
+
+    @Test
+    void createAndDetailPage() throws Exception {
+        MvcResult result = mockMvc.perform(post("/coffee-beans")
+                        .param("name", "에티오피아 구지")
+                        .param("roastery", "브루잉 로스터스")
+                        .param("country", "Ethiopia")
+                        .param("region", "Guji")
+                        .param("farm", "Hambela")
+                        .param("variety", "Heirloom")
+                        .param("altitude", "1900-2100m")
+                        .param("processType", ProcessType.WASHED.name())
+                        .param("flavorNotes", "floral, citrus, tea-like")
+                        .param("memo", "컨트롤러 등록 테스트")
+                        .param("roastedDate", "2026-05-01")
+                        .param("purchasedDate", "2026-05-02")
+                        .param("price", "18000")
+                        .param("weight", "200"))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+
+        String detailUrl = result.getResponse().getRedirectedUrl();
+
+        System.out.println("=== CoffeeBeanController 등록 테스트 결과 ===");
+        System.out.println("상세 redirect URL: " + detailUrl);
+
+        mockMvc.perform(get(detailUrl))
+                .andExpect(status().isOk())
+                .andExpect(view().name("coffee-beans/detail"))
+                .andExpect(model().attributeExists("coffeeBean"));
+    }
+
+    @Test
+    void update() throws Exception {
+        Long id = coffeeBeanService.create(createForm());
+
+        mockMvc.perform(post("/coffee-beans/{id}/edit", id)
+                        .param("name", "에티오피아 구지 내추럴")
+                        .param("roastery", "브루잉 로스터스")
+                        .param("country", "Ethiopia")
+                        .param("region", "Guji")
+                        .param("farm", "Hambela")
+                        .param("variety", "Heirloom")
+                        .param("altitude", "1900-2100m")
+                        .param("processType", ProcessType.NATURAL.name())
+                        .param("flavorNotes", "berry, floral")
+                        .param("memo", "컨트롤러 수정 테스트")
+                        .param("roastedDate", "2026-05-01")
+                        .param("purchasedDate", "2026-05-02")
+                        .param("price", "21000")
+                        .param("weight", "200"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/coffee-beans/" + id));
+
+        System.out.println("=== CoffeeBeanController 수정 테스트 결과 ===");
+        System.out.println("수정된 원두 이름: " + coffeeBeanService.get(id).getName());
+
+        assertTrue(coffeeBeanService.get(id).getName().contains("내추럴"));
+    }
+
+    @Test
+    void delete() throws Exception {
+        Long id = coffeeBeanService.create(createForm());
+
+        mockMvc.perform(post("/coffee-beans/{id}/delete", id))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/coffee-beans"));
+
+        System.out.println("=== CoffeeBeanController 삭제 테스트 결과 ===");
+        System.out.println("삭제 ID: " + id);
+        System.out.println("존재 여부: " + coffeeBeanService.exists(id));
+
+        assertFalse(coffeeBeanService.exists(id));
+    }
+
+    private CoffeeBeanCreateForm createForm() {
+        CoffeeBeanCreateForm form = new CoffeeBeanCreateForm();
+        form.setName("에티오피아 구지");
+        form.setRoastery("브루잉 로스터스");
+        form.setCountry("Ethiopia");
+        form.setRegion("Guji");
+        form.setFarm("Hambela");
+        form.setVariety("Heirloom");
+        form.setAltitude("1900-2100m");
+        form.setProcessType(ProcessType.WASHED);
+        form.setFlavorNotes("floral, citrus, tea-like");
+        form.setMemo("컨트롤러 테스트 기록");
+        form.setPrice(18000);
+        form.setWeight(200);
+        return form;
+    }
+}
