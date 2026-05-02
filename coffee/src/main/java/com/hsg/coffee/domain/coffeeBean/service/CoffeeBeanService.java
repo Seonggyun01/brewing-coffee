@@ -11,6 +11,8 @@ import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanResponse;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanUpdateForm;
 import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBean;
 import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
+import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
+import com.hsg.coffee.domain.purchasePlace.service.PurchasePlaceService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,10 +22,34 @@ import lombok.RequiredArgsConstructor;
 public class CoffeeBeanService {
 
     private final CoffeeBeanRepository coffeeBeanRepository;
+    private final PurchasePlaceService purchasePlaceService;
 
     @Transactional
     public Long create(CoffeeBeanCreateForm form) {
-        CoffeeBean coffeeBean = coffeeBeanRepository.save(form.toEntity());
+        PurchasePlace purchasePlace = purchasePlaceService.createIfPresent(
+                form.getPurchasePlaceName(),
+                form.getPurchasePlaceType(),
+                form.getPurchasePlaceAddress(),
+                form.getPurchasePlaceMemo()
+        );
+
+        CoffeeBean coffeeBean = coffeeBeanRepository.save(CoffeeBean.create(
+                form.getName(),
+                form.getRoastery(),
+                form.getCountry(),
+                form.getRegion(),
+                form.getFarm(),
+                form.getVariety(),
+                form.getAltitude(),
+                form.getProcessType(),
+                form.getFlavorNotes(),
+                form.getMemo(),
+                form.getRoastedDate(),
+                form.getPurchasedDate(),
+                form.getPrice(),
+                form.getWeight(),
+                purchasePlace
+        ));
         return coffeeBean.getId();
     }
 
@@ -67,6 +93,14 @@ public class CoffeeBeanService {
     @Transactional
     public void update(Long id, CoffeeBeanUpdateForm form) {
         CoffeeBean coffeeBean = findEntity(id);
+        PurchasePlace purchasePlace = purchasePlaceService.updateIfPresent(
+                coffeeBean.getPurchasePlace(),
+                form.getPurchasePlaceName(),
+                form.getPurchasePlaceType(),
+                form.getPurchasePlaceAddress(),
+                form.getPurchasePlaceMemo()
+        );
+
         coffeeBean.update(
                 form.getName(),
                 form.getRoastery(),
@@ -81,7 +115,8 @@ public class CoffeeBeanService {
                 form.getRoastedDate(),
                 form.getPurchasedDate(),
                 form.getPrice(),
-                form.getWeight()
+                form.getWeight(),
+                purchasePlace
         );
     }
 

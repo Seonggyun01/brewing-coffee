@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 
 import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBean;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
+import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
+import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
 
 import lombok.Getter;
 
@@ -26,10 +28,19 @@ public class CoffeeBeanResponse {
     private final LocalDate purchasedDate;
     private final Integer price;
     private final Integer weight;
+    private final Long purchasePlaceId;
+    private final String purchasePlaceName;
+    private final PurchasePlaceType purchasePlaceType;
+    private final String purchasePlaceAddress;
+    private final Double purchasePlaceLatitude;
+    private final Double purchasePlaceLongitude;
+    private final String purchasePlaceMemo;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
     private CoffeeBeanResponse(CoffeeBean coffeeBean) {
+        PurchasePlace purchasePlace = coffeeBean.getPurchasePlace();
+
         this.id = coffeeBean.getId();
         this.name = coffeeBean.getName();
         this.roastery = coffeeBean.getRoastery();
@@ -45,6 +56,13 @@ public class CoffeeBeanResponse {
         this.purchasedDate = coffeeBean.getPurchasedDate();
         this.price = coffeeBean.getPrice();
         this.weight = coffeeBean.getWeight();
+        this.purchasePlaceId = purchasePlace != null ? purchasePlace.getId() : null;
+        this.purchasePlaceName = purchasePlace != null ? purchasePlace.getName() : null;
+        this.purchasePlaceType = purchasePlace != null ? purchasePlace.getType() : null;
+        this.purchasePlaceAddress = purchasePlace != null ? purchasePlace.getAddress() : null;
+        this.purchasePlaceLatitude = purchasePlace != null ? purchasePlace.getLatitude() : null;
+        this.purchasePlaceLongitude = purchasePlace != null ? purchasePlace.getLongitude() : null;
+        this.purchasePlaceMemo = purchasePlace != null ? purchasePlace.getMemo() : null;
         this.createdAt = coffeeBean.getCreatedAt();
         this.updatedAt = coffeeBean.getUpdatedAt();
     }

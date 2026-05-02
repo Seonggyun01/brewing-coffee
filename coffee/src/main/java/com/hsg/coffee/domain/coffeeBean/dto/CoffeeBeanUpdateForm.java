@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBean;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
+import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
+import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -51,11 +53,22 @@ public class CoffeeBeanUpdateForm {
 
     private LocalDate purchasedDate;
 
-    @Min(value = 0, message = "가격은 0원 이상이어야 합니다.")
+    @Min(value = 0, message = "가격은 0 이상이어야 합니다.")
     private Integer price;
 
     @Min(value = 0, message = "용량은 0g 이상이어야 합니다.")
     private Integer weight;
+
+    @Size(max = 100, message = "구매처 이름은 100자 이하로 입력해주세요.")
+    private String purchasePlaceName;
+
+    private PurchasePlaceType purchasePlaceType;
+
+    @Size(max = 300, message = "구매처 주소는 300자 이하로 입력해주세요.")
+    private String purchasePlaceAddress;
+
+    @Size(max = 1000, message = "구매처 메모는 1000자 이하로 입력해주세요.")
+    private String purchasePlaceMemo;
 
     public static CoffeeBeanUpdateForm from(CoffeeBean coffeeBean) {
         CoffeeBeanUpdateForm form = new CoffeeBeanUpdateForm();
@@ -73,6 +86,15 @@ public class CoffeeBeanUpdateForm {
         form.purchasedDate = coffeeBean.getPurchasedDate();
         form.price = coffeeBean.getPrice();
         form.weight = coffeeBean.getWeight();
+
+        PurchasePlace purchasePlace = coffeeBean.getPurchasePlace();
+        if (purchasePlace != null) {
+            form.purchasePlaceName = purchasePlace.getName();
+            form.purchasePlaceType = purchasePlace.getType();
+            form.purchasePlaceAddress = purchasePlace.getAddress();
+            form.purchasePlaceMemo = purchasePlace.getMemo();
+        }
+
         return form;
     }
 }

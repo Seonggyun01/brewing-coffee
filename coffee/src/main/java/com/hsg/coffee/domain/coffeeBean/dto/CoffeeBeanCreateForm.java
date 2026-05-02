@@ -2,8 +2,8 @@ package com.hsg.coffee.domain.coffeeBean.dto;
 
 import java.time.LocalDate;
 
-import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBean;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
+import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -51,28 +51,20 @@ public class CoffeeBeanCreateForm {
 
     private LocalDate purchasedDate;
 
-    @Min(value = 0, message = "가격은 0원 이상이어야 합니다.")
+    @Min(value = 0, message = "가격은 0 이상이어야 합니다.")
     private Integer price;
 
     @Min(value = 0, message = "용량은 0g 이상이어야 합니다.")
     private Integer weight;
 
-    public CoffeeBean toEntity() {
-        return CoffeeBean.create(
-                name,
-                roastery,
-                country,
-                region,
-                farm,
-                variety,
-                altitude,
-                processType,
-                flavorNotes,
-                memo,
-                roastedDate,
-                purchasedDate,
-                price,
-                weight
-        );
-    }
+    @Size(max = 100, message = "구매처 이름은 100자 이하로 입력해주세요.")
+    private String purchasePlaceName;
+
+    private PurchasePlaceType purchasePlaceType;
+
+    @Size(max = 300, message = "구매처 주소는 300자 이하로 입력해주세요.")
+    private String purchasePlaceAddress;
+
+    @Size(max = 1000, message = "구매처 메모는 1000자 이하로 입력해주세요.")
+    private String purchasePlaceMemo;
 }

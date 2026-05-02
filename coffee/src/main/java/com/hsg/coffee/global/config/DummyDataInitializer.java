@@ -12,6 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBean;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
+import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
+import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
+import com.hsg.coffee.domain.purchasePlace.repository.PurchasePlaceRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class DummyDataInitializer implements ApplicationRunner {
 
     private final CoffeeBeanRepository coffeeBeanRepository;
+    private final PurchasePlaceRepository purchasePlaceRepository;
 
     @Override
     @Transactional
@@ -28,6 +32,31 @@ public class DummyDataInitializer implements ApplicationRunner {
         if (coffeeBeanRepository.count() > 0) {
             return;
         }
+
+        PurchasePlace fritz = purchasePlaceRepository.save(PurchasePlace.create(
+                "프릳츠 원서점",
+                PurchasePlaceType.ROASTERY,
+                "서울 종로구 율곡로 83",
+                37.575864,
+                126.989499,
+                "지도 표시 확인용 로스터리 구매처"
+        ));
+        PurchasePlace smartStore = purchasePlaceRepository.save(PurchasePlace.create(
+                "네이버 스마트스토어",
+                PurchasePlaceType.ONLINE,
+                null,
+                null,
+                null,
+                "온라인 구매처 예시"
+        ));
+        PurchasePlace cafe = purchasePlaceRepository.save(PurchasePlace.create(
+                "샘플 카페",
+                PurchasePlaceType.CAFE,
+                "서울 성동구 성수동",
+                37.544579,
+                127.055961,
+                "카페 판매 원두 구매처 예시"
+        ));
 
         coffeeBeanRepository.saveAll(List.of(
                 CoffeeBean.create(
@@ -44,7 +73,8 @@ public class DummyDataInitializer implements ApplicationRunner {
                         LocalDate.of(2026, 5, 1),
                         LocalDate.of(2026, 5, 2),
                         18000,
-                        200
+                        200,
+                        fritz
                 ),
                 CoffeeBean.create(
                         "케냐 키린야가",
@@ -60,7 +90,8 @@ public class DummyDataInitializer implements ApplicationRunner {
                         LocalDate.of(2026, 4, 28),
                         LocalDate.of(2026, 5, 2),
                         22000,
-                        200
+                        200,
+                        smartStore
                 ),
                 CoffeeBean.create(
                         "콜롬비아 엘 파라이소",
@@ -76,7 +107,8 @@ public class DummyDataInitializer implements ApplicationRunner {
                         LocalDate.of(2026, 4, 25),
                         LocalDate.of(2026, 5, 1),
                         25000,
-                        100
+                        100,
+                        cafe
                 )
         ));
     }

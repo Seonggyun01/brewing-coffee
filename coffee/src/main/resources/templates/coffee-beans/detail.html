@@ -71,6 +71,30 @@
                 </div>
             </dl>
 
+            <section class="detail__memo">
+                <h2>구매처</h2>
+                <p th:if="${coffeeBean.purchasePlaceName == null}">등록된 구매처가 없습니다.</p>
+                <dl class="detail__inline" th:if="${coffeeBean.purchasePlaceName != null}">
+                    <div>
+                        <dt>이름</dt>
+                        <dd th:text="${coffeeBean.purchasePlaceName}">프릳츠 원서점</dd>
+                    </div>
+                    <div>
+                        <dt>유형</dt>
+                        <dd th:text="${coffeeBean.purchasePlaceType}">ROASTERY</dd>
+                    </div>
+                    <div>
+                        <dt>주소</dt>
+                        <dd th:text="${coffeeBean.purchasePlaceAddress ?: '-'}">서울 종로구</dd>
+                    </div>
+                    <div>
+                        <dt>좌표</dt>
+                        <dd th:text="${coffeeBean.purchasePlaceLatitude != null && coffeeBean.purchasePlaceLongitude != null ? coffeeBean.purchasePlaceLatitude + ', ' + coffeeBean.purchasePlaceLongitude : '지도 연동 후 자동 저장 예정'}">지도 연동 후 자동 저장 예정</dd>
+                    </div>
+                </dl>
+                <p th:if="${coffeeBean.purchasePlaceMemo}" th:text="${coffeeBean.purchasePlaceMemo}">구매처 메모</p>
+            </section>
+
             <div class="detail__memo">
                 <h2>향미 노트</h2>
                 <p th:text="${coffeeBean.flavorNotes ?: '-'}">floral, citrus, tea-like</p>

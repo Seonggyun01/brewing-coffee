@@ -2,6 +2,7 @@ package com.hsg.coffee.domain.coffeeBean.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -19,6 +20,7 @@ import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanResponse;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanUpdateForm;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
+import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
 
 @Transactional
 @SpringBootTest
@@ -45,6 +47,31 @@ class CoffeeBeanServiceTest {
         assertEquals("에티오피아 구지", response.getName());
         assertEquals("브루잉 로스터스", response.getRoastery());
         assertEquals(ProcessType.WASHED, response.getProcessType());
+    }
+
+    @Test
+    void createWithPurchasePlace() {
+        CoffeeBeanCreateForm form = createForm("에티오피아 구지", "브루잉 로스터스");
+        form.setPurchasePlaceName("프릳츠 원서점");
+        form.setPurchasePlaceType(PurchasePlaceType.ROASTERY);
+        form.setPurchasePlaceAddress("서울 종로구 율곡로 83");
+        form.setPurchasePlaceMemo("지도 표시를 위해 주소만 저장하는 구매처");
+
+        Long id = coffeeBeanService.create(form);
+
+        CoffeeBeanResponse response = coffeeBeanService.get(id);
+
+        System.out.println("=== CoffeeBeanService 구매처 등록 테스트 결과 ===");
+        System.out.println("구매처 이름: " + response.getPurchasePlaceName());
+        System.out.println("구매처 유형: " + response.getPurchasePlaceType());
+        System.out.println("구매처 주소: " + response.getPurchasePlaceAddress());
+        System.out.println("좌표: " + response.getPurchasePlaceLatitude() + ", " + response.getPurchasePlaceLongitude());
+
+        assertEquals("프릳츠 원서점", response.getPurchasePlaceName());
+        assertEquals(PurchasePlaceType.ROASTERY, response.getPurchasePlaceType());
+        assertEquals("서울 종로구 율곡로 83", response.getPurchasePlaceAddress());
+        assertNull(response.getPurchasePlaceLatitude());
+        assertNull(response.getPurchasePlaceLongitude());
     }
 
     @Test

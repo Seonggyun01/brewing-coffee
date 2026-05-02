@@ -16,81 +16,113 @@
         </header>
 
         <form class="form" th:action="@{${actionUrl}}" th:object="${coffeeBeanForm}" method="post">
-            <div class="form__grid">
+            <section class="form-section">
+                <h2>원두 정보</h2>
+                <div class="form__grid">
+                    <label>
+                        <span>원두 이름 *</span>
+                        <input type="text" th:field="*{name}" placeholder="예: 에티오피아 구지">
+                        <small th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></small>
+                    </label>
+
+                    <label>
+                        <span>로스터리</span>
+                        <input type="text" th:field="*{roastery}" placeholder="예: 브루잉 로스터스">
+                    </label>
+
+                    <label>
+                        <span>국가</span>
+                        <input type="text" th:field="*{country}" placeholder="예: Ethiopia">
+                    </label>
+
+                    <label>
+                        <span>지역</span>
+                        <input type="text" th:field="*{region}" placeholder="예: Guji">
+                    </label>
+
+                    <label>
+                        <span>농장/워싱스테이션</span>
+                        <input type="text" th:field="*{farm}" placeholder="예: Hambela">
+                    </label>
+
+                    <label>
+                        <span>품종</span>
+                        <input type="text" th:field="*{variety}" placeholder="예: Heirloom">
+                    </label>
+
+                    <label>
+                        <span>고도</span>
+                        <input type="text" th:field="*{altitude}" placeholder="예: 1900-2100m">
+                    </label>
+
+                    <label>
+                        <span>가공 방식</span>
+                        <select th:field="*{processType}">
+                            <option value="">선택 안 함</option>
+                            <option th:each="processType : ${processTypes}" th:value="${processType}" th:text="${processType}">WASHED</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>로스팅일</span>
+                        <input type="date" th:field="*{roastedDate}">
+                    </label>
+
+                    <label>
+                        <span>구매일</span>
+                        <input type="date" th:field="*{purchasedDate}">
+                    </label>
+
+                    <label>
+                        <span>가격</span>
+                        <input type="number" min="0" th:field="*{price}" placeholder="예: 18000">
+                    </label>
+
+                    <label>
+                        <span>용량(g)</span>
+                        <input type="number" min="0" th:field="*{weight}" placeholder="예: 200">
+                    </label>
+                </div>
+
                 <label>
-                    <span>원두 이름 *</span>
-                    <input type="text" th:field="*{name}" placeholder="예: 에티오피아 구지">
-                    <small th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></small>
+                    <span>향미 노트</span>
+                    <textarea rows="3" th:field="*{flavorNotes}" placeholder="예: floral, citrus, tea-like"></textarea>
                 </label>
 
                 <label>
-                    <span>로스터리</span>
-                    <input type="text" th:field="*{roastery}" placeholder="예: 브루잉 로스터스">
+                    <span>메모</span>
+                    <textarea rows="4" th:field="*{memo}" placeholder="원두에 대한 메모를 남겨보세요."></textarea>
                 </label>
+            </section>
+
+            <section class="form-section">
+                <h2>구매처 추가 정보</h2>
+                <p class="section-help">나중에 지도 표시를 위해 주소를 남겨둘 수 있습니다. 구매처 정보는 선택 입력입니다.</p>
+                <div class="form__grid">
+                    <label>
+                        <span>구매처 이름</span>
+                        <input type="text" th:field="*{purchasePlaceName}" placeholder="예: 프릳츠 원서점, 네이버 스마트스토어">
+                    </label>
+
+                    <label>
+                        <span>구매처 유형</span>
+                        <select th:field="*{purchasePlaceType}">
+                            <option value="">선택 안 함</option>
+                            <option th:each="type : ${purchasePlaceTypes}" th:value="${type}" th:text="${type}">ROASTERY</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>주소</span>
+                        <input type="text" th:field="*{purchasePlaceAddress}" placeholder="예: 서울 종로구 율곡로 83">
+                    </label>
+                </div>
 
                 <label>
-                    <span>국가</span>
-                    <input type="text" th:field="*{country}" placeholder="예: Ethiopia">
+                    <span>구매처 메모</span>
+                    <textarea rows="3" th:field="*{purchasePlaceMemo}" placeholder="온라인 링크, 매장 분위기, 재구매 메모 등을 남겨보세요."></textarea>
                 </label>
-
-                <label>
-                    <span>지역</span>
-                    <input type="text" th:field="*{region}" placeholder="예: Guji">
-                </label>
-
-                <label>
-                    <span>농장/워싱스테이션</span>
-                    <input type="text" th:field="*{farm}" placeholder="예: Hambela">
-                </label>
-
-                <label>
-                    <span>품종</span>
-                    <input type="text" th:field="*{variety}" placeholder="예: Heirloom">
-                </label>
-
-                <label>
-                    <span>고도</span>
-                    <input type="text" th:field="*{altitude}" placeholder="예: 1900-2100m">
-                </label>
-
-                <label>
-                    <span>가공 방식</span>
-                    <select th:field="*{processType}">
-                        <option value="">선택 안 함</option>
-                        <option th:each="processType : ${processTypes}" th:value="${processType}" th:text="${processType}">WASHED</option>
-                    </select>
-                </label>
-
-                <label>
-                    <span>로스팅일</span>
-                    <input type="date" th:field="*{roastedDate}">
-                </label>
-
-                <label>
-                    <span>구매일</span>
-                    <input type="date" th:field="*{purchasedDate}">
-                </label>
-
-                <label>
-                    <span>가격</span>
-                    <input type="number" min="0" th:field="*{price}" placeholder="예: 18000">
-                </label>
-
-                <label>
-                    <span>용량(g)</span>
-                    <input type="number" min="0" th:field="*{weight}" placeholder="예: 200">
-                </label>
-            </div>
-
-            <label>
-                <span>향미 노트</span>
-                <textarea rows="3" th:field="*{flavorNotes}" placeholder="예: floral, citrus, tea-like"></textarea>
-            </label>
-
-            <label>
-                <span>메모</span>
-                <textarea rows="4" th:field="*{memo}" placeholder="원두에 대한 메모를 남겨보세요."></textarea>
-            </label>
+            </section>
 
             <div class="form__actions">
                 <button class="button button--primary" type="submit">저장</button>

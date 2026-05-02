@@ -30,6 +30,7 @@
                     <tr>
                         <th>원두</th>
                         <th>로스터리</th>
+                        <th>구매처</th>
                         <th>산지</th>
                         <th>가공</th>
                         <th>용량</th>
@@ -38,15 +39,16 @@
                 </thead>
                 <tbody>
                     <tr th:if="${#lists.isEmpty(coffeeBeans)}">
-                        <td colspan="6" class="empty">등록된 원두가 없습니다.</td>
+                        <td colspan="7" class="empty">등록된 원두가 없습니다.</td>
                     </tr>
                     <tr th:each="coffeeBean : ${coffeeBeans}">
                         <td>
                             <a class="table-link" th:href="@{/coffee-beans/{id}(id=${coffeeBean.id})}" th:text="${coffeeBean.name}">원두 이름</a>
                         </td>
-                        <td th:text="${coffeeBean.roastery}">로스터리</td>
-                        <td th:text="${coffeeBean.country + ' / ' + coffeeBean.region}">산지</td>
-                        <td th:text="${coffeeBean.processType}">WASHED</td>
+                        <td th:text="${coffeeBean.roastery ?: '-'}">로스터리</td>
+                        <td th:text="${coffeeBean.purchasePlaceName ?: '-'}">구매처</td>
+                        <td th:text="${(coffeeBean.country ?: '-') + ' / ' + (coffeeBean.region ?: '-')}">산지</td>
+                        <td th:text="${coffeeBean.processType ?: '-'}">WASHED</td>
                         <td th:text="${coffeeBean.weight != null ? coffeeBean.weight + 'g' : '-'}">200g</td>
                         <td th:text="${coffeeBean.price != null ? #numbers.formatInteger(coffeeBean.price, 0, 'COMMA') + '원' : '-'}">18,000원</td>
                     </tr>

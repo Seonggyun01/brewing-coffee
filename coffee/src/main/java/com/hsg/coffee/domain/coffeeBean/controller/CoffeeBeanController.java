@@ -15,6 +15,7 @@ import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCreateForm;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanUpdateForm;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanService;
+import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -99,5 +100,6 @@ public class CoffeeBeanController {
         model.addAttribute("title", title);
         model.addAttribute("actionUrl", actionUrl);
         model.addAttribute("processTypes", ProcessType.values());
+        model.addAttribute("purchasePlaceTypes", PurchasePlaceType.values());
     }
 }

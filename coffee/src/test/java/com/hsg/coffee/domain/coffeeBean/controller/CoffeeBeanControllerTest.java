@@ -9,8 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -22,6 +22,7 @@ import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCreateForm;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
 import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanService;
+import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
 
 @Transactional
 @SpringBootTest
@@ -66,7 +67,11 @@ class CoffeeBeanControllerTest {
                         .param("roastedDate", "2026-05-01")
                         .param("purchasedDate", "2026-05-02")
                         .param("price", "18000")
-                        .param("weight", "200"))
+                        .param("weight", "200")
+                        .param("purchasePlaceName", "프릳츠 원서점")
+                        .param("purchasePlaceType", PurchasePlaceType.ROASTERY.name())
+                        .param("purchasePlaceAddress", "서울 종로구 율곡로 83")
+                        .param("purchasePlaceMemo", "컨트롤러 구매처 등록 테스트"))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
 
@@ -79,6 +84,9 @@ class CoffeeBeanControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("coffee-beans/detail"))
                 .andExpect(model().attributeExists("coffeeBean"));
+
+        Long id = Long.valueOf(detailUrl.substring(detailUrl.lastIndexOf("/") + 1));
+        assertTrue("프릳츠 원서점".equals(coffeeBeanService.get(id).getPurchasePlaceName()));
     }
 
     @Test
