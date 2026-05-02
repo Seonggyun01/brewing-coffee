@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrewLog</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <main class="home">
+        <section class="home__hero">
+            <p class="home__eyebrow">Brewing Coffee Journal</p>
+            <h1>BrewLog</h1>
+            <p class="home__summary">원두, 브루잉, 카페 방문 기록을 차곡차곡 쌓아가는 커피 기록 서비스</p>
+        </section>
+
+        <section class="home__grid" aria-label="BrewLog 주요 기록">
+            <article class="home__card">
+                <span>01</span>
+                <h2>원두</h2>
+                <p>이름, 로스터리, 산지, 가공 방식, 로스팅 포인트를 기록합니다.</p>
+            </article>
+            <article class="home__card">
+                <span>02</span>
+                <h2>브루잉</h2>
+                <p>레시피, 추출 조건, 맛 평가를 한 곳에서 관리합니다.</p>
+            </article>
+            <article class="home__card">
+                <span>03</span>
+                <h2>카페 방문</h2>
+                <p>방문한 카페와 마신 커피의 인상을 남깁니다.</p>
+            </article>
+        </section>
+    </main>
+</body>
+</html>
