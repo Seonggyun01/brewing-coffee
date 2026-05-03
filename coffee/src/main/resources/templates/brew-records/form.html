@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title + ' - BrewLog'}">브루잉 기록 등록 - BrewLog</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <main class="page">
+        <header class="page__header">
+            <div>
+                <a class="text-link" th:href="@{/brew-records}">브루잉 기록</a>
+                <h1 th:text="${title}">브루잉 기록 등록</h1>
+            </div>
+        </header>
+
+        <form class="form brew-form" th:action="@{${actionUrl}}" th:object="${brewRecordForm}" method="post">
+            <section class="form-section">
+                <h2>기본 정보</h2>
+                <div class="form__grid">
+                    <label>
+                        <span>원두 *</span>
+                        <select th:field="*{coffeeBeanId}">
+                            <option value="">원두 선택</option>
+                            <option th:each="coffeeBean : ${coffeeBeans}"
+                                    th:value="${coffeeBean.id}"
+                                    th:text="${coffeeBean.name + (coffeeBean.roastery != null ? ' / ' + coffeeBean.roastery : '')}">에티오피아 구지</option>
+                        </select>
+                        <small th:if="${#fields.hasErrors('coffeeBeanId')}" th:errors="*{coffeeBeanId}"></small>
+                    </label>
+
+                    <label>
+                        <span>추출 날짜</span>
+                        <input type="date" th:field="*{brewedDate}">
+                    </label>
+
+                    <label>
+                        <span>추출 도구</span>
+                        <select th:field="*{brewMethod}">
+                            <option value="">선택 안 함</option>
+                            <option th:each="brewMethod : ${brewMethods}"
+                                    th:value="${brewMethod}"
+                                    th:text="${brewMethod.displayName}">V60</option>
+                        </select>
+                    </label>
+                </div>
+            </section>
+
+            <section class="form-section">
+                <h2>레시피 정보</h2>
+                <div class="form__grid">
+                    <label>
+                        <span>원두량(g)</span>
+                        <input type="number" min="0" step="0.1" th:field="*{beanAmount}" placeholder="예: 15">
+                    </label>
+
+                    <label>
+                        <span>물량(g)</span>
+                        <input type="number" min="0" step="0.1" th:field="*{waterAmount}" placeholder="예: 240">
+                    </label>
+
+                    <label>
+                        <span>물 온도(°C)</span>
+                        <input type="number" min="0" step="0.1" th:field="*{waterTemperature}" placeholder="예: 92">
+                    </label>
+
+                    <label>
+                        <span>분쇄도</span>
+                        <input type="text" th:field="*{grindSize}" placeholder="예: 코만단테 24클릭">
+                    </label>
+
+                    <label>
+                        <span>추출 시간(초)</span>
+                        <input type="number" min="0" th:field="*{brewTimeSec}" placeholder="예: 150">
+                    </label>
+                </div>
+
+                <label>
+                    <span>레시피</span>
+                    <textarea rows="4" th:field="*{recipe}" placeholder="뜸, 푸어링 횟수, 물 배분 등을 남겨보세요."></textarea>
+                </label>
+            </section>
+
+            <section class="form-section">
+                <h2>전체 만족도</h2>
+                <div class="score-options">
+                    <label class="score-pill" th:each="score : ${tasteScores}">
+                        <input type="radio" th:field="*{rating}" th:value="${score}">
+                        <span th:text="${score}">1</span>
+                    </label>
+                </div>
+                <small th:if="${#fields.hasErrors('rating')}" th:errors="*{rating}"></small>
+            </section>
+
+            <section class="form-section">
+                <h2>맛 프로파일</h2>
+                <div class="taste-grid">
+                    <div class="taste-row" th:with="field='acidity'">
+                        <span>산미</span>
+                        <label th:each="score : ${tasteScores}">
+                            <input type="radio" th:field="*{acidity}" th:value="${score}">
+                            <span th:text="${score}">1</span>
+                        </label>
+                    </div>
+                    <div class="taste-row">
+                        <span>단맛</span>
+                        <label th:each="score : ${tasteScores}">
+                            <input type="radio" th:field="*{sweetness}" th:value="${score}">
+                            <span th:text="${score}">1</span>
+                        </label>
+                    </div>
+                    <div class="taste-row">
+                        <span>쓴맛</span>
+                        <label th:each="score : ${tasteScores}">
+                            <input type="radio" th:field="*{bitterness}" th:value="${score}">
+                            <span th:text="${score}">1</span>
+                        </label>
+                    </div>
+                    <div class="taste-row">
+                        <span>바디감</span>
+                        <label th:each="score : ${tasteScores}">
+                            <input type="radio" th:field="*{body}" th:value="${score}">
+                            <span th:text="${score}">1</span>
+                        </label>
+                    </div>
+                    <div class="taste-row">
+                        <span>향</span>
+                        <label th:each="score : ${tasteScores}">
+                            <input type="radio" th:field="*{aroma}" th:value="${score}">
+                            <span th:text="${score}">1</span>
+                        </label>
+                    </div>
+                    <div class="taste-row">
+                        <span>밸런스</span>
+                        <label th:each="score : ${tasteScores}">
+                            <input type="radio" th:field="*{balance}" th:value="${score}">
+                            <span th:text="${score}">1</span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <section class="form-section">
+                <h2>향미 노트</h2>
+                <p class="section-help">오늘 느껴진 향미를 선택해주세요. 권장 3~5개, 최대 8개</p>
+                <small th:if="${#fields.hasErrors('flavorNotes')}" th:errors="*{flavorNotes}"></small>
+                <div class="selection-panel" data-selection-panel="flavorNotes">
+                    <div>
+                        <strong>선택한 향미 노트</strong>
+                        <span data-selection-count>0개</span>
+                    </div>
+                    <p data-selection-empty>아직 선택한 향미 노트가 없습니다.</p>
+                    <div class="selected-tags" data-selection-list></div>
+                </div>
+                <div class="flavor-category-list">
+                    <section class="flavor-category" th:each="category : ${flavorCategories}">
+                        <header>
+                            <span class="flavor-swatch" th:style="'background:' + ${category.color}"></span>
+                            <div>
+                                <h3 th:text="${category.displayName}">Citrus</h3>
+                                <p th:text="${category.description}">상큼하고 밝은 산미</p>
+                            </div>
+                        </header>
+                        <div class="tag-options">
+                            <label class="tag-chip" th:each="note : ${flavorNotesByCategory.get(category)}">
+                                <input type="checkbox" th:field="*{flavorNotes}" th:value="${note}">
+                                <span th:style="'border-color:' + ${note.color} + '; background:' + ${note.color} + '22;'" th:text="${note.displayName}">레몬</span>
+                            </label>
+                        </div>
+                    </section>
+                </div>
+                <label>
+                    <span>직접 입력 향미 노트</span>
+                    <input type="text" th:field="*{customFlavorNotesText}" placeholder="예: 라임 껍질, 청포도, 말린 오렌지">
+                    <small th:if="${#fields.hasErrors('customFlavorNotesText')}" th:errors="*{customFlavorNotesText}"></small>
+                </label>
+            </section>
+
+            <section class="form-section">
+                <h2>추출 느낌 태그</h2>
+                <div class="selection-panel" data-selection-panel="feelingTags">
+                    <div>
+                        <strong>선택한 느낌 태그</strong>
+                        <span data-selection-count>0개</span>
+                    </div>
+                    <p data-selection-empty>아직 선택한 느낌 태그가 없습니다.</p>
+                    <div class="selected-tags selected-tags--plain" data-selection-list></div>
+                </div>
+                <div class="tag-options">
+                    <label class="tag-chip tag-chip--plain" th:each="tag : ${feelingTags}">
+                        <input type="checkbox" th:field="*{feelingTags}" th:value="${tag}">
+                        <span th:text="${tag.displayName}">깔끔함</span>
+                    </label>
+                </div>
+                <label>
+                    <span>직접 입력 느낌 태그</span>
+                    <input type="text" th:field="*{customFeelingTagsText}" placeholder="예: 맑은 여운, 둥근 질감, 끝맛이 길다">
+                    <small th:if="${#fields.hasErrors('customFeelingTagsText')}" th:errors="*{customFeelingTagsText}"></small>
+                </label>
+            </section>
+
+            <section class="form-section">
+                <h2>메모</h2>
+                <label>
+                    <span>자유 메모</span>
+                    <textarea rows="5" th:field="*{memo}" placeholder="오늘의 맛, 다음에 바꿔볼 변수, 함께 먹은 디저트 등을 남겨보세요."></textarea>
+                </label>
+            </section>
+
+            <div class="form__actions">
+                <button class="button button--primary" type="submit">저장</button>
+                <a class="button button--ghost" th:href="@{/brew-records}">취소</a>
+            </div>
+        </form>
+    </main>
+    <script>
+        document.querySelectorAll('[data-selection-panel]').forEach((panel) => {
+            const fieldName = panel.dataset.selectionPanel;
+            const form = panel.closest('form');
+            const list = panel.querySelector('[data-selection-list]');
+            const empty = panel.querySelector('[data-selection-empty]');
+            const count = panel.querySelector('[data-selection-count]');
+            const inputs = Array.from(form.querySelectorAll(`input[type="checkbox"][name="${fieldName}"]`));
+
+            function renderSelection() {
+                list.innerHTML = '';
+                let selectedCount = 0;
+
+                inputs.forEach((input) => {
+                    const chip = input.closest('.tag-chip');
+                    chip.hidden = input.checked;
+
+                    if (!input.checked) {
+                        return;
+                    }
+
+                    selectedCount += 1;
+                    const labelText = chip.querySelector('span').textContent.trim();
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'selected-tag-button';
+                    button.textContent = `${labelText} ×`;
+                    button.addEventListener('click', () => {
+                        input.checked = false;
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                    });
+                    list.appendChild(button);
+                });
+
+                empty.hidden = selectedCount > 0;
+                count.textContent = `${selectedCount}개`;
+            }
+
+            inputs.forEach((input) => input.addEventListener('change', renderSelection));
+            renderSelection();
+        });
+    </script>
+</body>
+</html>

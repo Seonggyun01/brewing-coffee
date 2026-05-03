@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>브루잉 기록 - BrewLog</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <main class="page">
+        <header class="page__header">
+            <div>
+                <a class="text-link" th:href="@{/}">BrewLog</a>
+                <h1>브루잉 기록</h1>
+            </div>
+            <a class="button button--primary" th:href="@{/brew-records/new}">새 기록</a>
+        </header>
+
+        <p class="flash" th:if="${message}" th:text="${message}"></p>
+
+        <section class="record-grid" th:if="${!#lists.isEmpty(brewRecords)}">
+            <article class="record-card" th:each="brewRecord : ${brewRecords}">
+                <a class="record-card__link" th:href="@{/brew-records/{id}(id=${brewRecord.id})}">
+                    <span class="flavor-gradient" th:style="${brewRecord.flavorGradientStyle}"></span>
+                    <span class="record-card__date" th:text="${brewRecord.brewedDate ?: '날짜 미기록'}">2026-05-03</span>
+                    <strong th:text="${brewRecord.coffeeBeanName}">에티오피아 구지</strong>
+                    <span th:text="${brewRecord.roastery ?: '로스터리 미기록'}">브루잉 로스터스</span>
+                    <span th:text="${brewRecord.brewMethod != null ? brewRecord.brewMethod.displayName : '도구 미기록'}">V60</span>
+                    <span class="record-card__notes" th:text="${brewRecord.flavorNoteSummary}">자스민, 레몬, 복숭아</span>
+                </a>
+            </article>
+        </section>
+
+        <section class="empty-panel" th:if="${#lists.isEmpty(brewRecords)}">
+            <p>아직 브루잉 기록이 없습니다.</p>
+            <a class="button button--secondary" th:href="@{/brew-records/new}">첫 기록 남기기</a>
+        </section>
+    </main>
+</body>
+</html>

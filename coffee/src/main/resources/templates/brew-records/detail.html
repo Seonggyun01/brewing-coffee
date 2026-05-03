@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${brewRecord.coffeeBeanName + ' 브루잉 - BrewLog'}">브루잉 상세 - BrewLog</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+    <main class="page page--narrow">
+        <header class="page__header">
+            <div>
+                <a class="text-link" th:href="@{/brew-records}">브루잉 기록</a>
+                <h1 th:text="${brewRecord.coffeeBeanName}">에티오피아 구지</h1>
+            </div>
+            <div class="button-group">
+                <a class="button button--secondary" th:href="@{/brew-records/{id}/edit(id=${brewRecord.id})}">수정</a>
+                <form th:action="@{/brew-records/{id}/delete(id=${brewRecord.id})}" method="post">
+                    <button class="button button--danger" type="submit">삭제</button>
+                </form>
+            </div>
+        </header>
+
+        <p class="flash" th:if="${message}" th:text="${message}"></p>
+
+        <section class="detail">
+            <span class="flavor-gradient flavor-gradient--large" th:style="${brewRecord.flavorGradientStyle}"></span>
+
+            <dl>
+                <div>
+                    <dt>원두</dt>
+                    <dd><a class="table-link" th:href="@{/coffee-beans/{id}(id=${brewRecord.coffeeBeanId})}" th:text="${brewRecord.coffeeBeanName}">에티오피아 구지</a></dd>
+                </div>
+                <div>
+                    <dt>로스터리</dt>
+                    <dd th:text="${brewRecord.roastery ?: '-'}">브루잉 로스터스</dd>
+                </div>
+                <div>
+                    <dt>추출 날짜</dt>
+                    <dd th:text="${brewRecord.brewedDate ?: '-'}">2026-05-03</dd>
+                </div>
+                <div>
+                    <dt>추출 도구</dt>
+                    <dd th:text="${brewRecord.brewMethod != null ? brewRecord.brewMethod.displayName : '-'}">V60</dd>
+                </div>
+                <div>
+                    <dt>원두량</dt>
+                    <dd th:text="${brewRecord.beanAmount != null ? brewRecord.beanAmount + 'g' : '-'}">15g</dd>
+                </div>
+                <div>
+                    <dt>물량</dt>
+                    <dd th:text="${brewRecord.waterAmount != null ? brewRecord.waterAmount + 'g' : '-'}">240g</dd>
+                </div>
+                <div>
+                    <dt>물 온도</dt>
+                    <dd th:text="${brewRecord.waterTemperature != null ? brewRecord.waterTemperature + '°C' : '-'}">92°C</dd>
+                </div>
+                <div>
+                    <dt>분쇄도</dt>
+                    <dd th:text="${brewRecord.grindSize ?: '-'}">24클릭</dd>
+                </div>
+                <div>
+                    <dt>추출 시간</dt>
+                    <dd th:text="${brewRecord.brewTimeSec != null ? brewRecord.brewTimeSec + '초' : '-'}">150초</dd>
+                </div>
+                <div>
+                    <dt>만족도</dt>
+                    <dd th:text="${brewRecord.rating != null ? brewRecord.rating + ' / 5' : '-'}">4 / 5</dd>
+                </div>
+            </dl>
+
+            <section class="detail__memo">
+                <h2>맛 프로파일</h2>
+                <div class="taste-summary">
+                    <span>산미 <strong th:text="${brewRecord.acidity ?: '-'}">3</strong></span>
+                    <span>단맛 <strong th:text="${brewRecord.sweetness ?: '-'}">4</strong></span>
+                    <span>쓴맛 <strong th:text="${brewRecord.bitterness ?: '-'}">2</strong></span>
+                    <span>바디감 <strong th:text="${brewRecord.body ?: '-'}">3</strong></span>
+                    <span>향 <strong th:text="${brewRecord.aroma ?: '-'}">5</strong></span>
+                    <span>밸런스 <strong th:text="${brewRecord.balance ?: '-'}">4</strong></span>
+                </div>
+            </section>
+
+            <section class="detail__memo">
+                <h2>향미 노트</h2>
+                <div class="selected-tags" th:if="${!#lists.isEmpty(brewRecord.flavorNotes) || !#lists.isEmpty(brewRecord.customFlavorNotes)}">
+                    <span th:each="note : ${brewRecord.flavorNotes}"
+                          th:style="'border-color:' + ${note.color} + '; background:' + ${note.color} + '22;'"
+                          th:text="${note.displayName}">레몬</span>
+                    <span class="selected-tags__custom" th:each="note : ${brewRecord.customFlavorNotes}" th:text="${note}">청포도</span>
+                </div>
+                <p th:if="${#lists.isEmpty(brewRecord.flavorNotes) && #lists.isEmpty(brewRecord.customFlavorNotes)}">선택한 향미 노트가 없습니다.</p>
+
+                <h2>추출 느낌</h2>
+                <div class="selected-tags selected-tags--plain" th:if="${!#lists.isEmpty(brewRecord.feelingTags) || !#lists.isEmpty(brewRecord.customFeelingTags)}">
+                    <span th:each="tag : ${brewRecord.feelingTags}" th:text="${tag.displayName}">깔끔함</span>
+                    <span th:each="tag : ${brewRecord.customFeelingTags}" th:text="${tag}">맑은 여운</span>
+                </div>
+                <p th:if="${#lists.isEmpty(brewRecord.feelingTags) && #lists.isEmpty(brewRecord.customFeelingTags)}">선택한 느낌 태그가 없습니다.</p>
+            </section>
+
+            <section class="detail__memo">
+                <h2>레시피</h2>
+                <p th:text="${brewRecord.recipe ?: '-'}">레시피</p>
+                <h2>메모</h2>
+                <p th:text="${brewRecord.memo ?: '-'}">메모</p>
+            </section>
+        </section>
+    </main>
+</body>
+</html>
