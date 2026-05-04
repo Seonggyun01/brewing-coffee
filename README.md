@@ -58,27 +58,27 @@ BrewLog는 커피 원두, 브루잉 레시피, 맛 기록을 함께 관리하는
 
 ## 현재 ERD
 
-아래 ERD는 현재 JPA 엔티티 기준입니다. 향미 노트, 느낌 태그, 푸어링 단계는 `@ElementCollection`으로 관리되어 별도 테이블에 저장됩니다.
+아래 ERD는 현재 JPA 매핑 기준입니다. `CoffeeBean`, `BrewRecord`, `PurchasePlace`만 독립 엔티티이고, 향미 노트, 느낌 태그, 푸어링 단계는 `@ElementCollection` 값 컬렉션으로 별도 테이블에 저장됩니다.
 
 ```mermaid
 flowchart LR
-    purchasePlaces["PURCHASE_PLACES<br/>PK id<br/>name<br/>type<br/>address<br/>latitude<br/>longitude<br/>memo"]
-    coffeeBeans["COFFEE_BEANS<br/>PK id<br/>FK purchase_place_id<br/>name<br/>roastery<br/>country / region / farm<br/>variety / altitude<br/>process_type<br/>status<br/>roasted_date<br/>purchased_date<br/>price<br/>weight<br/>memo"]
-    brewRecords["BREW_RECORDS<br/>PK id<br/>FK coffee_bean_id<br/>brewed_date<br/>brew_method<br/>temperature_type<br/>bean_amount<br/>water_amount<br/>water_temperature<br/>grind_size_micron<br/>brew_time_sec<br/>inventory_deducted_weight<br/>rating<br/>acidity / sweetness / bitterness<br/>body / aroma / balance<br/>memo"]
+    purchasePlaces["PURCHASE_PLACES<br/>PK id<br/>name<br/>type<br/>address<br/>latitude<br/>longitude<br/>memo<br/>created_at / updated_at"]
+    coffeeBeans["COFFEE_BEANS<br/>PK id<br/>nullable FK purchase_place_id<br/>name<br/>roastery<br/>country / region / farm<br/>variety / altitude<br/>process_type<br/>status<br/>roasted_date<br/>purchased_date<br/>price<br/>weight<br/>memo<br/>created_at / updated_at"]
+    brewRecords["BREW_RECORDS<br/>PK id<br/>not null FK coffee_bean_id<br/>brewed_date<br/>brew_method<br/>temperature_type<br/>bean_amount<br/>water_amount<br/>water_temperature<br/>grind_size_micron<br/>brew_time_sec<br/>inventory_deducted_weight<br/>rating<br/>acidity / sweetness / bitterness<br/>body / aroma / balance<br/>memo<br/>created_at / updated_at"]
 
-    beanFlavorNotes["COFFEE_BEAN_FLAVOR_NOTES<br/>FK coffee_bean_id<br/>sort_order<br/>flavor_note"]
-    beanCustomFlavorNotes["COFFEE_BEAN_CUSTOM_FLAVOR_NOTES<br/>FK coffee_bean_id<br/>sort_order<br/>custom_flavor_note"]
-    brewPourSteps["BREW_RECORD_POUR_STEPS<br/>FK brew_record_id<br/>sort_order<br/>pour_time_sec<br/>pour_amount_ml"]
-    brewFeelingTags["BREW_RECORD_FEELING_TAGS<br/>FK brew_record_id<br/>sort_order<br/>feeling_tag"]
-    brewCustomFeelingTags["BREW_RECORD_CUSTOM_FEELING_TAGS<br/>FK brew_record_id<br/>sort_order<br/>custom_feeling_tag"]
+    beanFlavorNotes["COFFEE_BEAN_FLAVOR_NOTES<br/>owner FK coffee_bean_id<br/>sort_order<br/>flavor_note"]
+    beanCustomFlavorNotes["COFFEE_BEAN_CUSTOM_FLAVOR_NOTES<br/>owner FK coffee_bean_id<br/>sort_order<br/>custom_flavor_note"]
+    brewPourSteps["BREW_RECORD_POUR_STEPS<br/>owner FK brew_record_id<br/>sort_order<br/>pour_time_sec<br/>pour_amount_ml"]
+    brewFeelingTags["BREW_RECORD_FEELING_TAGS<br/>owner FK brew_record_id<br/>sort_order<br/>feeling_tag"]
+    brewCustomFeelingTags["BREW_RECORD_CUSTOM_FEELING_TAGS<br/>owner FK brew_record_id<br/>sort_order<br/>custom_feeling_tag"]
 
-    purchasePlaces -- "1 : N" --> coffeeBeans
-    coffeeBeans -- "1 : N" --> brewRecords
-    coffeeBeans -- "1 : N" --> beanFlavorNotes
-    coffeeBeans -- "1 : N" --> beanCustomFlavorNotes
-    brewRecords -- "1 : N" --> brewPourSteps
-    brewRecords -- "1 : N" --> brewFeelingTags
-    brewRecords -- "1 : N" --> brewCustomFeelingTags
+    purchasePlaces -- "0..N beans / bean has 0..1 place" --> coffeeBeans
+    coffeeBeans -- "1:N / record requires bean" --> brewRecords
+    coffeeBeans -- "1:N value collection" --> beanFlavorNotes
+    coffeeBeans -- "1:N value collection" --> beanCustomFlavorNotes
+    brewRecords -- "1:N value collection" --> brewPourSteps
+    brewRecords -- "1:N value collection" --> brewFeelingTags
+    brewRecords -- "1:N value collection" --> brewCustomFeelingTags
 ```
 
 ## 프로젝트 구조
