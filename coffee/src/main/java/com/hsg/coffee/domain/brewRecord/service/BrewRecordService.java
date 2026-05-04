@@ -1,5 +1,7 @@
 package com.hsg.coffee.domain.brewRecord.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -7,7 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hsg.coffee.domain.brewRecord.dto.BrewRecordForm;
+import com.hsg.coffee.domain.brewRecord.dto.BrewPourStepForm;
 import com.hsg.coffee.domain.brewRecord.dto.BrewRecordResponse;
+import com.hsg.coffee.domain.brewRecord.entity.BrewPourStep;
 import com.hsg.coffee.domain.brewRecord.entity.BrewRecord;
 import com.hsg.coffee.domain.brewRecord.repository.BrewRecordRepository;
 import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBean;
@@ -32,12 +36,13 @@ public class BrewRecordService {
                 coffeeBean,
                 form.getBrewedDate(),
                 form.getBrewMethod(),
+                form.getTemperatureType(),
                 form.getBeanAmount(),
                 form.getWaterAmount(),
                 form.getWaterTemperature(),
-                form.getGrindSize(),
+                form.getGrindSizeMicron(),
                 form.getBrewTimeSec(),
-                form.getRecipe(),
+                normalizePourSteps(form.getPourSteps(), form.getBrewTimeSec()),
                 form.getRating(),
                 form.getAcidity(),
                 form.getSweetness(),
@@ -45,12 +50,11 @@ public class BrewRecordService {
                 form.getBody(),
                 form.getAroma(),
                 form.getBalance(),
-                form.getFlavorNotes(),
                 form.getFeelingTags(),
-                parseTags(form.getCustomFlavorNotesText()),
                 parseTags(form.getCustomFeelingTagsText()),
                 form.getMemo()
         ));
+        brewRecord.updateInventoryDeductedWeight(coffeeBean.useWeight(toWholeGram(form.getBeanAmount())));
         return brewRecord.getId();
     }
 
@@ -79,17 +83,21 @@ public class BrewRecordService {
     @Transactional
     public void update(Long id, BrewRecordForm form) {
         BrewRecord brewRecord = findEntity(id);
+        CoffeeBean previousCoffeeBean = brewRecord.getCoffeeBean();
+        previousCoffeeBean.restoreWeight(brewRecord.getInventoryDeductedWeight());
+
         CoffeeBean coffeeBean = findCoffeeBean(form.getCoffeeBeanId());
         brewRecord.updateCoffeeBean(coffeeBean);
         brewRecord.update(
                 form.getBrewedDate(),
                 form.getBrewMethod(),
+                form.getTemperatureType(),
                 form.getBeanAmount(),
                 form.getWaterAmount(),
                 form.getWaterTemperature(),
-                form.getGrindSize(),
+                form.getGrindSizeMicron(),
                 form.getBrewTimeSec(),
-                form.getRecipe(),
+                normalizePourSteps(form.getPourSteps(), form.getBrewTimeSec()),
                 form.getRating(),
                 form.getAcidity(),
                 form.getSweetness(),
@@ -97,17 +105,18 @@ public class BrewRecordService {
                 form.getBody(),
                 form.getAroma(),
                 form.getBalance(),
-                form.getFlavorNotes(),
                 form.getFeelingTags(),
-                parseTags(form.getCustomFlavorNotesText()),
                 parseTags(form.getCustomFeelingTagsText()),
                 form.getMemo()
         );
+        brewRecord.updateInventoryDeductedWeight(coffeeBean.useWeight(toWholeGram(form.getBeanAmount())));
     }
 
     @Transactional
     public void delete(Long id) {
-        brewRecordRepository.delete(findEntity(id));
+        BrewRecord brewRecord = findEntity(id);
+        brewRecord.getCoffeeBean().restoreWeight(brewRecord.getInventoryDeductedWeight());
+        brewRecordRepository.delete(brewRecord);
     }
 
     private BrewRecord findEntity(Long id) {
@@ -131,5 +140,41 @@ public class BrewRecordService {
                 .distinct()
                 .limit(12)
                 .toList();
+    }
+
+    private List<BrewPourStep> normalizePourSteps(List<BrewPourStepForm> pourStepForms, Integer brewTimeSec) {
+        if (pourStepForms == null) {
+            return List.of();
+        }
+
+        int timelineEndSec = brewTimeSec != null && brewTimeSec > 0 ? brewTimeSec : 180;
+        return pourStepForms.stream()
+                .filter(BrewPourStepForm::isFilled)
+                .filter(step -> step.getTimeSec() != null && step.getAmountMl() != null)
+                .map(step -> BrewPourStep.of(clampToTimelineEnd(snapToFiveSeconds(step.getTimeSec()), timelineEndSec), step.getAmountMl()))
+                .sorted((left, right) -> left.getTimeSec().compareTo(right.getTimeSec()))
+                .limit(20)
+                .toList();
+    }
+
+    private Integer snapToFiveSeconds(Integer timeSec) {
+        if (timeSec == null) {
+            return null;
+        }
+        return Math.max(0, Math.round(timeSec / 5.0f) * 5);
+    }
+
+    private Integer clampToTimelineEnd(Integer timeSec, int timelineEndSec) {
+        if (timeSec == null) {
+            return null;
+        }
+        return Math.min(timeSec, timelineEndSec);
+    }
+
+    private Integer toWholeGram(BigDecimal beanAmount) {
+        if (beanAmount == null || beanAmount.signum() <= 0) {
+            return null;
+        }
+        return beanAmount.setScale(0, RoundingMode.HALF_UP).intValue();
     }
 }

@@ -26,6 +26,7 @@
                     <strong th:text="${brewRecord.coffeeBeanName}">에티오피아 구지</strong>
                     <span th:text="${brewRecord.roastery ?: '로스터리 미기록'}">브루잉 로스터스</span>
                     <span th:text="${brewRecord.brewMethod != null ? brewRecord.brewMethod.displayName : '도구 미기록'}">V60</span>
+                    <span th:text="${brewRecord.temperatureType != null ? brewRecord.temperatureType.displayName : '타입 미기록'}">핫</span>
                     <span class="record-card__notes" th:text="${brewRecord.flavorNoteSummary}">자스민, 레몬, 복숭아</span>
                 </a>
             </article>

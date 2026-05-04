@@ -64,6 +64,15 @@
                     </label>
 
                     <label>
+                        <span>원두 상태</span>
+                        <select th:field="*{status}">
+                            <option th:each="status : ${coffeeBeanStatuses}"
+                                    th:value="${status}"
+                                    th:text="${status.displayName}">보유 중</option>
+                        </select>
+                    </label>
+
+                    <label>
                         <span>로스팅일</span>
                         <input type="date" th:field="*{roastedDate}">
                     </label>
@@ -79,15 +88,48 @@
                     </label>
 
                     <label>
-                        <span>용량(g)</span>
+                        <span>남은 무게(g)</span>
                         <input type="number" min="0" th:field="*{weight}" placeholder="예: 200">
                     </label>
                 </div>
 
-                <label>
-                    <span>향미 노트</span>
-                    <textarea rows="3" th:field="*{flavorNotes}" placeholder="예: floral, citrus, tea-like"></textarea>
-                </label>
+                <div class="flavor-editor">
+                    <div>
+                        <span>향미 노트</span>
+                        <p class="section-help">원두에서 기대되거나 느껴지는 향미를 선택해주세요. 권장 3~5개, 최대 8개</p>
+                        <small th:if="${#fields.hasErrors('flavorNotes')}" th:errors="*{flavorNotes}"></small>
+                    </div>
+                    <div class="selection-panel" data-selection-panel="flavorNotes">
+                        <div>
+                            <strong>선택한 향미 노트</strong>
+                            <span data-selection-count>0개</span>
+                        </div>
+                        <p data-selection-empty>아직 선택한 향미 노트가 없습니다.</p>
+                        <div class="selected-tags" data-selection-list></div>
+                    </div>
+                    <div class="flavor-category-list">
+                        <section class="flavor-category" th:each="category : ${flavorCategories}">
+                            <header>
+                                <span class="flavor-swatch" th:style="'background:' + ${category.color}"></span>
+                                <div>
+                                    <h3 th:text="${category.displayName}">Citrus</h3>
+                                    <p th:text="${category.description}">상큼하고 밝은 산미</p>
+                                </div>
+                            </header>
+                            <div class="tag-options">
+                                <label class="tag-chip" th:each="note : ${flavorNotesByCategory.get(category)}">
+                                    <input type="checkbox" th:field="*{flavorNotes}" th:value="${note}">
+                                    <span th:style="'border-color:' + ${note.color} + '; background:' + ${note.color} + '22;'" th:text="${note.displayName}">레몬</span>
+                                </label>
+                            </div>
+                        </section>
+                    </div>
+                    <label>
+                        <span>직접 입력 향미 노트</span>
+                        <input type="text" th:field="*{customFlavorNotesText}" placeholder="예: 라임 껍질, 청포도, 말린 오렌지">
+                        <small th:if="${#fields.hasErrors('customFlavorNotesText')}" th:errors="*{customFlavorNotesText}"></small>
+                    </label>
+                </div>
 
                 <label>
                     <span>메모</span>
@@ -141,5 +183,47 @@
             </div>
         </form>
     </main>
+    <script>
+        document.querySelectorAll('[data-selection-panel]').forEach((panel) => {
+            const fieldName = panel.dataset.selectionPanel;
+            const form = panel.closest('form');
+            const list = panel.querySelector('[data-selection-list]');
+            const empty = panel.querySelector('[data-selection-empty]');
+            const count = panel.querySelector('[data-selection-count]');
+            const inputs = Array.from(form.querySelectorAll(`input[type="checkbox"][name="${fieldName}"]`));
+
+            function renderSelection() {
+                list.innerHTML = '';
+                let selectedCount = 0;
+
+                inputs.forEach((input) => {
+                    const chip = input.closest('.tag-chip');
+                    chip.hidden = input.checked;
+
+                    if (!input.checked) {
+                        return;
+                    }
+
+                    selectedCount += 1;
+                    const labelText = chip.querySelector('span').textContent.trim();
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'selected-tag-button';
+                    button.textContent = `${labelText} ×`;
+                    button.addEventListener('click', () => {
+                        input.checked = false;
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                    });
+                    list.appendChild(button);
+                });
+
+                empty.hidden = selectedCount > 0;
+                count.textContent = `${selectedCount}개`;
+            }
+
+            inputs.forEach((input) => input.addEventListener('change', renderSelection));
+            renderSelection();
+        });
+    </script>
 </body>
 </html>

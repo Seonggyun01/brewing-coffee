@@ -1,6 +1,7 @@
 package com.hsg.coffee.domain.coffeeBean.service;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CoffeeBeanService {
+
+    private static final Pattern TAG_DELIMITER = Pattern.compile("[,\\n]");
 
     private final CoffeeBeanRepository coffeeBeanRepository;
     private final PurchasePlaceService purchasePlaceService;
@@ -44,11 +47,13 @@ public class CoffeeBeanService {
                 form.getAltitude(),
                 form.getProcessType(),
                 form.getFlavorNotes(),
+                parseTags(form.getCustomFlavorNotesText()),
                 form.getMemo(),
                 form.getRoastedDate(),
                 form.getPurchasedDate(),
                 form.getPrice(),
                 form.getWeight(),
+                form.getStatus(),
                 purchasePlace
         ));
         return coffeeBean.getId();
@@ -112,11 +117,13 @@ public class CoffeeBeanService {
                 form.getAltitude(),
                 form.getProcessType(),
                 form.getFlavorNotes(),
+                parseTags(form.getCustomFlavorNotesText()),
                 form.getMemo(),
                 form.getRoastedDate(),
                 form.getPurchasedDate(),
                 form.getPrice(),
                 form.getWeight(),
+                form.getStatus(),
                 purchasePlace
         );
     }
@@ -134,5 +141,18 @@ public class CoffeeBeanService {
     private CoffeeBean findEntity(Long id) {
         return coffeeBeanRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("원두를 찾을 수 없습니다. id=" + id));
+    }
+
+    private List<String> parseTags(String tagsText) {
+        if (tagsText == null || tagsText.isBlank()) {
+            return List.of();
+        }
+
+        return TAG_DELIMITER.splitAsStream(tagsText)
+                .map(String::trim)
+                .filter(tag -> !tag.isBlank())
+                .distinct()
+                .limit(12)
+                .toList();
     }
 }

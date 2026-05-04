@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCreateForm;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanResponse;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanUpdateForm;
+import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
+import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBeanStatus;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
@@ -53,6 +55,9 @@ class CoffeeBeanServiceTest {
         assertEquals("에티오피아 구지", response.getName());
         assertEquals("브루잉 로스터스", response.getRoastery());
         assertEquals(ProcessType.WASHED, response.getProcessType());
+        assertEquals(CoffeeBeanStatus.CURRENT, response.getStatus());
+        assertEquals(List.of(FlavorNote.JASMINE, FlavorNote.LEMON, FlavorNote.PEACH), response.getFlavorNotes());
+        assertEquals(List.of("오렌지 껍질"), response.getCustomFlavorNotes());
     }
 
     @Test
@@ -146,6 +151,7 @@ class CoffeeBeanServiceTest {
         CoffeeBeanUpdateForm updateForm = coffeeBeanService.getUpdateForm(id);
         updateForm.setName("에티오피아 구지 내추럴");
         updateForm.setProcessType(ProcessType.NATURAL);
+        updateForm.setStatus(CoffeeBeanStatus.FINISHED);
         updateForm.setPrice(21000);
         coffeeBeanService.update(id, updateForm);
 
@@ -154,6 +160,7 @@ class CoffeeBeanServiceTest {
         printCoffeeBean("수정", response);
         assertEquals("에티오피아 구지 내추럴", response.getName());
         assertEquals(ProcessType.NATURAL, response.getProcessType());
+        assertEquals(CoffeeBeanStatus.FINISHED, response.getStatus());
         assertEquals(21000, response.getPrice());
     }
 
@@ -194,7 +201,8 @@ class CoffeeBeanServiceTest {
         form.setVariety("Heirloom");
         form.setAltitude("1900-2100m");
         form.setProcessType(ProcessType.WASHED);
-        form.setFlavorNotes("floral, citrus, tea-like");
+        form.setFlavorNotes(List.of(FlavorNote.JASMINE, FlavorNote.LEMON, FlavorNote.PEACH));
+        form.setCustomFlavorNotesText("오렌지 껍질");
         form.setMemo("서비스 테스트 기록");
         form.setRoastedDate(LocalDate.of(2026, 5, 1));
         form.setPurchasedDate(LocalDate.of(2026, 5, 2));

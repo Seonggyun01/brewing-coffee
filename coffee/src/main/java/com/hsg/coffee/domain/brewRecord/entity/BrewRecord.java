@@ -46,19 +46,26 @@ public class BrewRecord extends BaseTimeEntity {
     @Column(length = 30)
     private BrewMethod brewMethod;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private BrewTemperatureType temperatureType;
+
     private BigDecimal beanAmount;
+
+    private Integer inventoryDeductedWeight;
 
     private BigDecimal waterAmount;
 
     private BigDecimal waterTemperature;
 
-    @Column(length = 50)
-    private String grindSize;
+    private Integer grindSizeMicron;
 
     private Integer brewTimeSec;
 
-    @Column(length = 1000)
-    private String recipe;
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "brew_record_pour_steps", joinColumns = @JoinColumn(name = "brew_record_id"))
+    @OrderColumn(name = "sort_order")
+    private List<BrewPourStep> pourSteps = new ArrayList<>();
 
     private Integer rating;
 
@@ -75,24 +82,11 @@ public class BrewRecord extends BaseTimeEntity {
     private Integer balance;
 
     @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "brew_record_flavor_notes", joinColumns = @JoinColumn(name = "brew_record_id"))
-    @OrderColumn(name = "sort_order")
-    @Enumerated(EnumType.STRING)
-    @Column(name = "flavor_note", length = 60)
-    private List<FlavorNote> flavorNotes = new ArrayList<>();
-
-    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "brew_record_feeling_tags", joinColumns = @JoinColumn(name = "brew_record_id"))
     @OrderColumn(name = "sort_order")
     @Enumerated(EnumType.STRING)
     @Column(name = "feeling_tag", length = 60)
     private List<BrewFeelingTag> feelingTags = new ArrayList<>();
-
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "brew_record_custom_flavor_notes", joinColumns = @JoinColumn(name = "brew_record_id"))
-    @OrderColumn(name = "sort_order")
-    @Column(name = "custom_flavor_note", length = 60)
-    private List<String> customFlavorNotes = new ArrayList<>();
 
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "brew_record_custom_feeling_tags", joinColumns = @JoinColumn(name = "brew_record_id"))
@@ -107,12 +101,13 @@ public class BrewRecord extends BaseTimeEntity {
             CoffeeBean coffeeBean,
             LocalDate brewedDate,
             BrewMethod brewMethod,
+            BrewTemperatureType temperatureType,
             BigDecimal beanAmount,
             BigDecimal waterAmount,
             BigDecimal waterTemperature,
-            String grindSize,
+            Integer grindSizeMicron,
             Integer brewTimeSec,
-            String recipe,
+            List<BrewPourStep> pourSteps,
             Integer rating,
             Integer acidity,
             Integer sweetness,
@@ -120,9 +115,7 @@ public class BrewRecord extends BaseTimeEntity {
             Integer body,
             Integer aroma,
             Integer balance,
-            List<FlavorNote> flavorNotes,
             List<BrewFeelingTag> feelingTags,
-            List<String> customFlavorNotes,
             List<String> customFeelingTags,
             String memo
     ) {
@@ -131,12 +124,13 @@ public class BrewRecord extends BaseTimeEntity {
         brewRecord.update(
                 brewedDate,
                 brewMethod,
+                temperatureType,
                 beanAmount,
                 waterAmount,
                 waterTemperature,
-                grindSize,
+                grindSizeMicron,
                 brewTimeSec,
-                recipe,
+                pourSteps,
                 rating,
                 acidity,
                 sweetness,
@@ -144,9 +138,7 @@ public class BrewRecord extends BaseTimeEntity {
                 body,
                 aroma,
                 balance,
-                flavorNotes,
                 feelingTags,
-                customFlavorNotes,
                 customFeelingTags,
                 memo
         );
@@ -157,15 +149,20 @@ public class BrewRecord extends BaseTimeEntity {
         this.coffeeBean = coffeeBean;
     }
 
+    public void updateInventoryDeductedWeight(Integer inventoryDeductedWeight) {
+        this.inventoryDeductedWeight = inventoryDeductedWeight;
+    }
+
     public void update(
             LocalDate brewedDate,
             BrewMethod brewMethod,
+            BrewTemperatureType temperatureType,
             BigDecimal beanAmount,
             BigDecimal waterAmount,
             BigDecimal waterTemperature,
-            String grindSize,
+            Integer grindSizeMicron,
             Integer brewTimeSec,
-            String recipe,
+            List<BrewPourStep> pourSteps,
             Integer rating,
             Integer acidity,
             Integer sweetness,
@@ -173,20 +170,22 @@ public class BrewRecord extends BaseTimeEntity {
             Integer body,
             Integer aroma,
             Integer balance,
-            List<FlavorNote> flavorNotes,
             List<BrewFeelingTag> feelingTags,
-            List<String> customFlavorNotes,
             List<String> customFeelingTags,
             String memo
     ) {
         this.brewedDate = brewedDate;
         this.brewMethod = brewMethod;
+        this.temperatureType = temperatureType;
         this.beanAmount = beanAmount;
         this.waterAmount = waterAmount;
         this.waterTemperature = waterTemperature;
-        this.grindSize = grindSize;
+        this.grindSizeMicron = grindSizeMicron;
         this.brewTimeSec = brewTimeSec;
-        this.recipe = recipe;
+        this.pourSteps.clear();
+        if (pourSteps != null) {
+            this.pourSteps.addAll(pourSteps);
+        }
         this.rating = rating;
         this.acidity = acidity;
         this.sweetness = sweetness;
@@ -194,17 +193,9 @@ public class BrewRecord extends BaseTimeEntity {
         this.body = body;
         this.aroma = aroma;
         this.balance = balance;
-        this.flavorNotes.clear();
-        if (flavorNotes != null) {
-            this.flavorNotes.addAll(flavorNotes);
-        }
         this.feelingTags.clear();
         if (feelingTags != null) {
             this.feelingTags.addAll(feelingTags);
-        }
-        this.customFlavorNotes.clear();
-        if (customFlavorNotes != null) {
-            this.customFlavorNotes.addAll(customFlavorNotes);
         }
         this.customFeelingTags.clear();
         if (customFeelingTags != null) {

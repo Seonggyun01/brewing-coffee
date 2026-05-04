@@ -1,5 +1,11 @@
 package com.hsg.coffee.domain.coffeeBean.controller;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.hsg.coffee.domain.brewRecord.entity.FlavorCategory;
+import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -13,6 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCreateForm;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanUpdateForm;
+import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBeanStatus;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanService;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
@@ -99,10 +106,16 @@ public class CoffeeBeanController {
     }
 
     private void addFormAttributes(Model model, String title, String actionUrl) {
+        Map<FlavorCategory, java.util.List<FlavorNote>> flavorNotesByCategory = Arrays.stream(FlavorNote.values())
+                .collect(Collectors.groupingBy(FlavorNote::getCategory));
+
         model.addAttribute("title", title);
         model.addAttribute("actionUrl", actionUrl);
         model.addAttribute("processTypes", ProcessType.values());
+        model.addAttribute("coffeeBeanStatuses", CoffeeBeanStatus.values());
         model.addAttribute("purchasePlaceTypes", PurchasePlaceType.values());
         model.addAttribute("purchasePlaces", purchasePlaceService.getAll());
+        model.addAttribute("flavorCategories", FlavorCategory.values());
+        model.addAttribute("flavorNotesByCategory", flavorNotesByCategory);
     }
 }

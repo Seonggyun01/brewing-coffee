@@ -44,6 +44,15 @@
                                     th:text="${brewMethod.displayName}">V60</option>
                         </select>
                     </label>
+
+                    <label>
+                        <span>추출 타입</span>
+                        <select th:field="*{temperatureType}">
+                            <option th:each="temperatureType : ${temperatureTypes}"
+                                    th:value="${temperatureType}"
+                                    th:text="${temperatureType.displayName}">핫</option>
+                        </select>
+                    </label>
                 </div>
             </section>
 
@@ -66,20 +75,57 @@
                     </label>
 
                     <label>
-                        <span>분쇄도</span>
-                        <input type="text" th:field="*{grindSize}" placeholder="예: 코만단테 24클릭">
+                        <span>분쇄도(μm)</span>
+                        <input type="number" min="1" max="5000" step="1" th:field="*{grindSizeMicron}" placeholder="예: 720">
+                        <small th:if="${#fields.hasErrors('grindSizeMicron')}" th:errors="*{grindSizeMicron}"></small>
                     </label>
 
                     <label>
-                        <span>추출 시간(초)</span>
-                        <input type="number" min="0" th:field="*{brewTimeSec}" placeholder="예: 150">
+                        <span>종료 시간(초)</span>
+                        <input type="number" min="5" step="5" th:field="*{brewTimeSec}" placeholder="예: 180">
                     </label>
                 </div>
 
-                <label>
-                    <span>레시피</span>
-                    <textarea rows="4" th:field="*{recipe}" placeholder="뜸, 푸어링 횟수, 물 배분 등을 남겨보세요."></textarea>
-                </label>
+                <div class="pour-editor" data-pour-editor>
+                    <div class="pour-editor__header">
+                        <div>
+                            <strong>푸어링 타임라인</strong>
+                            <span>드래그하면 5초 단위로 시간이 조정됩니다.</span>
+                        </div>
+                        <button class="button button--ghost" type="button" data-pour-add>단계 추가</button>
+                    </div>
+                    <div class="pour-track" data-pour-track aria-label="푸어링 타임라인"></div>
+                    <div class="pour-step-list" data-pour-list>
+                        <div class="pour-step-row" th:each="step, status : *{pourSteps}" data-pour-step draggable="true">
+                            <button class="pour-step-row__handle" type="button" data-pour-drag-handle aria-label="푸어링 단계 이동">↕</button>
+                            <input type="hidden" th:field="*{pourSteps[__${status.index}__].timeSec}" data-pour-time>
+                            <label>
+                                <span>시간(초)</span>
+                                <input type="number" min="0" max="3600" step="5" th:value="${step.timeSec}" data-pour-time-display>
+                            </label>
+                            <label>
+                                <span>푸어링량(ml)</span>
+                                <input type="number" min="1" max="3000" step="1" th:field="*{pourSteps[__${status.index}__].amountMl}" data-pour-amount placeholder="예: 80">
+                            </label>
+                            <button class="button button--ghost" type="button" data-pour-remove>삭제</button>
+                        </div>
+                    </div>
+                    <template data-pour-template>
+                        <div class="pour-step-row" data-pour-step draggable="true">
+                            <button class="pour-step-row__handle" type="button" data-pour-drag-handle aria-label="푸어링 단계 이동">↕</button>
+                            <input type="hidden" data-pour-time>
+                            <label>
+                                <span>시간(초)</span>
+                                <input type="number" min="0" max="3600" step="5" data-pour-time-display>
+                            </label>
+                            <label>
+                                <span>푸어링량(ml)</span>
+                                <input type="number" min="1" max="3000" step="1" data-pour-amount placeholder="예: 80">
+                            </label>
+                            <button class="button button--ghost" type="button" data-pour-remove>삭제</button>
+                        </div>
+                    </template>
+                </div>
             </section>
 
             <section class="form-section">
@@ -95,6 +141,15 @@
 
             <section class="form-section">
                 <h2>맛 프로파일</h2>
+                <div class="taste-profile-layout">
+                    <div class="taste-chart" data-taste-chart data-input-mode="true">
+                        <svg viewBox="0 0 220 220" role="img" aria-label="맛 프로파일 차트">
+                            <g data-chart-grid></g>
+                            <g data-chart-axis></g>
+                            <polygon data-chart-polygon points="" />
+                            <g data-chart-labels></g>
+                        </svg>
+                    </div>
                 <div class="taste-grid">
                     <div class="taste-row" th:with="field='acidity'">
                         <span>산미</span>
@@ -139,42 +194,7 @@
                         </label>
                     </div>
                 </div>
-            </section>
-
-            <section class="form-section">
-                <h2>향미 노트</h2>
-                <p class="section-help">오늘 느껴진 향미를 선택해주세요. 권장 3~5개, 최대 8개</p>
-                <small th:if="${#fields.hasErrors('flavorNotes')}" th:errors="*{flavorNotes}"></small>
-                <div class="selection-panel" data-selection-panel="flavorNotes">
-                    <div>
-                        <strong>선택한 향미 노트</strong>
-                        <span data-selection-count>0개</span>
-                    </div>
-                    <p data-selection-empty>아직 선택한 향미 노트가 없습니다.</p>
-                    <div class="selected-tags" data-selection-list></div>
                 </div>
-                <div class="flavor-category-list">
-                    <section class="flavor-category" th:each="category : ${flavorCategories}">
-                        <header>
-                            <span class="flavor-swatch" th:style="'background:' + ${category.color}"></span>
-                            <div>
-                                <h3 th:text="${category.displayName}">Citrus</h3>
-                                <p th:text="${category.description}">상큼하고 밝은 산미</p>
-                            </div>
-                        </header>
-                        <div class="tag-options">
-                            <label class="tag-chip" th:each="note : ${flavorNotesByCategory.get(category)}">
-                                <input type="checkbox" th:field="*{flavorNotes}" th:value="${note}">
-                                <span th:style="'border-color:' + ${note.color} + '; background:' + ${note.color} + '22;'" th:text="${note.displayName}">레몬</span>
-                            </label>
-                        </div>
-                    </section>
-                </div>
-                <label>
-                    <span>직접 입력 향미 노트</span>
-                    <input type="text" th:field="*{customFlavorNotesText}" placeholder="예: 라임 껍질, 청포도, 말린 오렌지">
-                    <small th:if="${#fields.hasErrors('customFlavorNotesText')}" th:errors="*{customFlavorNotesText}"></small>
-                </label>
             </section>
 
             <section class="form-section">
@@ -215,6 +235,237 @@
         </form>
     </main>
     <script>
+        function renderTasteChart(chart, values) {
+            const labels = ['산미', '단맛', '쓴맛', '바디감', '향', '밸런스'];
+            const center = 110;
+            const radius = 78;
+            const labelRadius = 99;
+            const point = (value, index, baseRadius = radius) => {
+                const angle = (-90 + index * 60) * Math.PI / 180;
+                const scaledRadius = baseRadius * value / 5;
+                return [
+                    center + Math.cos(angle) * scaledRadius,
+                    center + Math.sin(angle) * scaledRadius
+                ];
+            };
+
+            const grid = chart.querySelector('[data-chart-grid]');
+            const axis = chart.querySelector('[data-chart-axis]');
+            const labelsGroup = chart.querySelector('[data-chart-labels]');
+            const polygon = chart.querySelector('[data-chart-polygon]');
+
+            grid.innerHTML = '';
+            axis.innerHTML = '';
+            labelsGroup.innerHTML = '';
+            polygon.setAttribute('fill', 'rgba(181, 137, 90, 0.26)');
+            polygon.setAttribute('stroke', '#b5895a');
+            polygon.setAttribute('stroke-width', '2');
+
+            for (let level = 1; level <= 5; level += 1) {
+                const gridPoints = labels.map((_, index) => point(level, index)).map(([x, y]) => `${x},${y}`).join(' ');
+                const gridPolygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                gridPolygon.setAttribute('points', gridPoints);
+                gridPolygon.setAttribute('class', 'taste-chart__grid');
+                gridPolygon.setAttribute('fill', 'none');
+                gridPolygon.setAttribute('stroke', 'rgba(184, 156, 122, 0.38)');
+                gridPolygon.setAttribute('stroke-width', '1');
+                grid.appendChild(gridPolygon);
+            }
+
+            labels.forEach((label, index) => {
+                const [x, y] = point(5, index);
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', center);
+                line.setAttribute('y1', center);
+                line.setAttribute('x2', x);
+                line.setAttribute('y2', y);
+                line.setAttribute('class', 'taste-chart__axis');
+                line.setAttribute('stroke', 'rgba(154, 119, 82, 0.24)');
+                line.setAttribute('stroke-width', '1');
+                axis.appendChild(line);
+
+                const [labelX, labelY] = point(5, index, labelRadius);
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', labelX);
+                text.setAttribute('y', labelY);
+                text.setAttribute('class', 'taste-chart__label');
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('dominant-baseline', 'middle');
+                text.setAttribute('fill', '#7a6048');
+                text.setAttribute('font-size', '10');
+                text.setAttribute('font-weight', '700');
+                text.textContent = label;
+                labelsGroup.appendChild(text);
+            });
+
+            const polygonPoints = values.map((value, index) => point(value, index)).map(([x, y]) => `${x},${y}`).join(' ');
+            polygon.setAttribute('points', polygonPoints);
+        }
+
+        document.querySelectorAll('[data-taste-chart]').forEach((chart) => {
+            const form = chart.closest('form');
+            const fields = ['acidity', 'sweetness', 'bitterness', 'body', 'aroma', 'balance'];
+            const readValues = () => fields.map((field) => {
+                const checked = form.querySelector(`input[name="${field}"]:checked`);
+                return checked ? Number(checked.value) : 0;
+            });
+
+            fields.forEach((field) => {
+                form.querySelectorAll(`input[name="${field}"]`).forEach((input) => {
+                    input.addEventListener('change', () => renderTasteChart(chart, readValues()));
+                });
+            });
+
+            renderTasteChart(chart, readValues());
+        });
+
+        document.querySelectorAll('[data-pour-editor]').forEach((editor) => {
+            const list = editor.querySelector('[data-pour-list]');
+            const track = editor.querySelector('[data-pour-track]');
+            const template = editor.querySelector('[data-pour-template]');
+            const addButton = editor.querySelector('[data-pour-add]');
+            const form = editor.closest('form');
+            const brewTimeInput = form.querySelector('[name="brewTimeSec"]');
+
+            const snapTime = (timeSec) => Math.max(0, Math.round(timeSec / 5) * 5);
+            const getRows = () => Array.from(list.querySelectorAll('[data-pour-step]'));
+            const readDuration = () => {
+                const brewTimeSec = Number(brewTimeInput?.value || 180);
+                return Math.max(5, brewTimeSec);
+            };
+
+            function syncNames() {
+                getRows().forEach((row, index) => {
+                    row.querySelector('[data-pour-time]').name = `pourSteps[${index}].timeSec`;
+                    row.querySelector('[data-pour-amount]').name = `pourSteps[${index}].amountMl`;
+                });
+            }
+
+            function setRowTime(row, timeSec) {
+                const snappedTime = Math.min(snapTime(timeSec), readDuration());
+                row.querySelector('[data-pour-time]').value = snappedTime;
+                row.querySelector('[data-pour-time-display]').value = snappedTime;
+                renderTimeline();
+            }
+
+            function bindRow(row) {
+                const timeInput = row.querySelector('[data-pour-time]');
+                const timeDisplay = row.querySelector('[data-pour-time-display]');
+                const amountInput = row.querySelector('[data-pour-amount]');
+                const removeButton = row.querySelector('[data-pour-remove]');
+
+                if (!timeInput.value) {
+                    timeInput.value = snapTime(Number(timeDisplay.value || 0));
+                }
+                timeDisplay.value = timeInput.value;
+
+                timeDisplay.addEventListener('change', () => setRowTime(row, Number(timeDisplay.value || 0)));
+                amountInput.addEventListener('input', renderTimeline);
+                removeButton.addEventListener('click', () => {
+                    row.remove();
+                    syncNames();
+                    renderTimeline();
+                });
+                row.addEventListener('dragstart', (event) => {
+                    event.dataTransfer.effectAllowed = 'move';
+                    row.classList.add('is-dragging');
+                });
+                row.addEventListener('dragend', () => {
+                    row.classList.remove('is-dragging');
+                    syncNames();
+                    renderTimeline();
+                });
+            }
+
+            function createMarker(row, index, duration) {
+                const timeInput = row.querySelector('[data-pour-time]');
+                const amountInput = row.querySelector('[data-pour-amount]');
+                const timeSec = Math.min(Number(timeInput.value || 0), duration);
+                const amountMl = amountInput.value || '-';
+                const marker = document.createElement('button');
+                marker.type = 'button';
+                marker.className = 'pour-marker';
+                marker.style.top = `${Math.min(100, timeSec * 100 / duration)}%`;
+                marker.innerHTML = `<strong>${amountMl}ml</strong><span>${timeSec}초</span>`;
+                marker.setAttribute('aria-label', `${index + 1}번째 푸어링 ${timeSec}초 ${amountMl}ml`);
+
+                let dragging = false;
+                const moveToPointer = (event) => {
+                    if (!dragging) {
+                        return;
+                    }
+                    const rect = track.getBoundingClientRect();
+                    const ratio = Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height));
+                    setRowTime(row, ratio * duration);
+                };
+
+                marker.addEventListener('pointerdown', (event) => {
+                    dragging = true;
+                    marker.setPointerCapture(event.pointerId);
+                    marker.classList.add('is-dragging');
+                });
+                marker.addEventListener('pointermove', moveToPointer);
+                marker.addEventListener('pointerup', (event) => {
+                    dragging = false;
+                    marker.releasePointerCapture(event.pointerId);
+                    marker.classList.remove('is-dragging');
+                });
+                marker.addEventListener('pointercancel', () => {
+                    dragging = false;
+                    marker.classList.remove('is-dragging');
+                });
+
+                return marker;
+            }
+
+            function renderTimeline() {
+                syncNames();
+                const duration = readDuration();
+                track.innerHTML = '';
+
+                const axis = document.createElement('div');
+                axis.className = 'pour-track__axis';
+                track.appendChild(axis);
+
+                getRows().forEach((row, index) => {
+                    track.appendChild(createMarker(row, index, duration));
+                });
+            }
+
+            function addStep(timeSec = null, amountMl = '') {
+                const row = template.content.firstElementChild.cloneNode(true);
+                const existingRows = getRows();
+                const nextTime = Math.min(timeSec ?? snapTime(existingRows.length ? Number(existingRows.at(-1).querySelector('[data-pour-time]').value || 0) + 30 : 0), readDuration());
+                row.querySelector('[data-pour-time]').value = nextTime;
+                row.querySelector('[data-pour-time-display]').value = nextTime;
+                row.querySelector('[data-pour-amount]').value = amountMl;
+                list.appendChild(row);
+                bindRow(row);
+                syncNames();
+                renderTimeline();
+            }
+
+            getRows().forEach(bindRow);
+            list.addEventListener('dragover', (event) => {
+                event.preventDefault();
+                const draggingRow = list.querySelector('.is-dragging');
+                const targetRow = event.target.closest('[data-pour-step]');
+                if (!draggingRow || !targetRow || draggingRow === targetRow) {
+                    return;
+                }
+                const targetRect = targetRow.getBoundingClientRect();
+                const shouldPlaceAfter = event.clientY > targetRect.top + targetRect.height / 2;
+                list.insertBefore(draggingRow, shouldPlaceAfter ? targetRow.nextSibling : targetRow);
+            });
+            if (getRows().length === 0) {
+                addStep(0, 40);
+            }
+            addButton.addEventListener('click', () => addStep());
+            brewTimeInput?.addEventListener('input', renderTimeline);
+            form.addEventListener('submit', syncNames);
+            renderTimeline();
+        });
+
         document.querySelectorAll('[data-selection-panel]').forEach((panel) => {
             const fieldName = panel.dataset.selectionPanel;
             const form = panel.closest('form');

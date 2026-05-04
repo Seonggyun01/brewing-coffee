@@ -3,12 +3,14 @@ package com.hsg.coffee.domain.brewRecord.dto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.hsg.coffee.domain.brewRecord.entity.BrewFeelingTag;
 import com.hsg.coffee.domain.brewRecord.entity.BrewMethod;
 import com.hsg.coffee.domain.brewRecord.entity.BrewRecord;
+import com.hsg.coffee.domain.brewRecord.entity.BrewTemperatureType;
 import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 
 import lombok.Getter;
@@ -22,12 +24,13 @@ public class BrewRecordResponse {
     private final String roastery;
     private final LocalDate brewedDate;
     private final BrewMethod brewMethod;
+    private final BrewTemperatureType temperatureType;
     private final BigDecimal beanAmount;
     private final BigDecimal waterAmount;
     private final BigDecimal waterTemperature;
-    private final String grindSize;
+    private final Integer grindSizeMicron;
     private final Integer brewTimeSec;
-    private final String recipe;
+    private final List<BrewPourStepForm> pourSteps;
     private final Integer rating;
     private final Integer acidity;
     private final Integer sweetness;
@@ -50,12 +53,15 @@ public class BrewRecordResponse {
         this.roastery = brewRecord.getCoffeeBean().getRoastery();
         this.brewedDate = brewRecord.getBrewedDate();
         this.brewMethod = brewRecord.getBrewMethod();
+        this.temperatureType = brewRecord.getTemperatureType();
         this.beanAmount = brewRecord.getBeanAmount();
         this.waterAmount = brewRecord.getWaterAmount();
         this.waterTemperature = brewRecord.getWaterTemperature();
-        this.grindSize = brewRecord.getGrindSize();
+        this.grindSizeMicron = brewRecord.getGrindSizeMicron();
         this.brewTimeSec = brewRecord.getBrewTimeSec();
-        this.recipe = brewRecord.getRecipe();
+        this.pourSteps = brewRecord.getPourSteps().stream()
+                .map(BrewPourStepForm::from)
+                .toList();
         this.rating = brewRecord.getRating();
         this.acidity = brewRecord.getAcidity();
         this.sweetness = brewRecord.getSweetness();
@@ -63,9 +69,9 @@ public class BrewRecordResponse {
         this.body = brewRecord.getBody();
         this.aroma = brewRecord.getAroma();
         this.balance = brewRecord.getBalance();
-        this.flavorNotes = List.copyOf(brewRecord.getFlavorNotes());
+        this.flavorNotes = List.copyOf(brewRecord.getCoffeeBean().getFlavorNotes());
         this.feelingTags = List.copyOf(brewRecord.getFeelingTags());
-        this.customFlavorNotes = List.copyOf(brewRecord.getCustomFlavorNotes());
+        this.customFlavorNotes = List.copyOf(brewRecord.getCoffeeBean().getCustomFlavorNotes());
         this.customFeelingTags = List.copyOf(brewRecord.getCustomFeelingTags());
         this.memo = brewRecord.getMemo();
         this.createdAt = brewRecord.getCreatedAt();
@@ -104,5 +110,22 @@ public class BrewRecordResponse {
             return selectedNotes;
         }
         return selectedNotes + ", " + customNotes;
+    }
+
+    public String getTasteChartValues() {
+        return Arrays.asList(acidity, sweetness, bitterness, body, aroma, balance).stream()
+                .map(score -> score != null ? String.valueOf(score) : "0")
+                .collect(Collectors.joining(","));
+    }
+
+    public String getGrindSizeDisplay() {
+        if (grindSizeMicron == null) {
+            return "-";
+        }
+        return grindSizeMicron + " μm";
+    }
+
+    public Integer getPourTimelineDurationSec() {
+        return brewTimeSec != null && brewTimeSec > 0 ? brewTimeSec : 180;
     }
 }

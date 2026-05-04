@@ -44,6 +44,10 @@
                     <dd th:text="${brewRecord.brewMethod != null ? brewRecord.brewMethod.displayName : '-'}">V60</dd>
                 </div>
                 <div>
+                    <dt>추출 타입</dt>
+                    <dd th:text="${brewRecord.temperatureType != null ? brewRecord.temperatureType.displayName : '-'}">핫</dd>
+                </div>
+                <div>
                     <dt>원두량</dt>
                     <dd th:text="${brewRecord.beanAmount != null ? brewRecord.beanAmount + 'g' : '-'}">15g</dd>
                 </div>
@@ -57,10 +61,10 @@
                 </div>
                 <div>
                     <dt>분쇄도</dt>
-                    <dd th:text="${brewRecord.grindSize ?: '-'}">24클릭</dd>
+                    <dd th:text="${brewRecord.grindSizeDisplay}">720 μm</dd>
                 </div>
                 <div>
-                    <dt>추출 시간</dt>
+                    <dt>종료 시간</dt>
                     <dd th:text="${brewRecord.brewTimeSec != null ? brewRecord.brewTimeSec + '초' : '-'}">150초</dd>
                 </div>
                 <div>
@@ -71,6 +75,15 @@
 
             <section class="detail__memo">
                 <h2>맛 프로파일</h2>
+                <div class="taste-profile-layout taste-profile-layout--detail">
+                    <div class="taste-chart" data-taste-chart th:attr="data-values=${brewRecord.tasteChartValues}">
+                        <svg viewBox="0 0 220 220" role="img" aria-label="맛 프로파일 차트">
+                            <g data-chart-grid></g>
+                            <g data-chart-axis></g>
+                            <polygon data-chart-polygon points="" />
+                            <g data-chart-labels></g>
+                        </svg>
+                    </div>
                 <div class="taste-summary">
                     <span>산미 <strong th:text="${brewRecord.acidity ?: '-'}">3</strong></span>
                     <span>단맛 <strong th:text="${brewRecord.sweetness ?: '-'}">4</strong></span>
@@ -79,10 +92,11 @@
                     <span>향 <strong th:text="${brewRecord.aroma ?: '-'}">5</strong></span>
                     <span>밸런스 <strong th:text="${brewRecord.balance ?: '-'}">4</strong></span>
                 </div>
+                </div>
             </section>
 
             <section class="detail__memo">
-                <h2>향미 노트</h2>
+                <h2>원두 향미 노트</h2>
                 <div class="selected-tags" th:if="${!#lists.isEmpty(brewRecord.flavorNotes) || !#lists.isEmpty(brewRecord.customFlavorNotes)}">
                     <span th:each="note : ${brewRecord.flavorNotes}"
                           th:style="'border-color:' + ${note.color} + '; background:' + ${note.color} + '22;'"
@@ -101,11 +115,256 @@
 
             <section class="detail__memo">
                 <h2>레시피</h2>
-                <p th:text="${brewRecord.recipe ?: '-'}">레시피</p>
+                <div class="pour-detail" th:if="${!#lists.isEmpty(brewRecord.pourSteps)}"
+                     th:attr="data-duration=${brewRecord.pourTimelineDurationSec}">
+                    <div class="pour-detail__chart" data-pour-chart th:attr="data-duration=${brewRecord.pourTimelineDurationSec}">
+                        <svg viewBox="0 0 680 300" role="img" aria-label="푸어링 레시피 그래프">
+                            <g data-pour-grid></g>
+                            <path data-pour-area></path>
+                            <path data-pour-line></path>
+                            <g data-pour-points></g>
+                            <g data-pour-labels></g>
+                        </svg>
+                        <span class="pour-detail__axis-label pour-detail__axis-label--y">누적 물량(ml)</span>
+                        <span class="pour-detail__axis-label pour-detail__axis-label--x">시간(초)</span>
+                        <span class="pour-detail__point-data"
+                              th:each="step : ${brewRecord.pourSteps}"
+                              th:attr="data-time=${step.timeSec},data-amount=${step.amountMl}"></span>
+                    </div>
+                    <div class="pour-detail__list">
+                        <span th:each="step : ${brewRecord.pourSteps}" th:text="${step.timeSec + '초 / ' + step.amountMl + 'ml'}">40초 / 80ml</span>
+                    </div>
+                </div>
+                <p th:if="${#lists.isEmpty(brewRecord.pourSteps)}">등록된 푸어링 타임라인이 없습니다.</p>
                 <h2>메모</h2>
                 <p th:text="${brewRecord.memo ?: '-'}">메모</p>
             </section>
         </section>
     </main>
+    <script>
+        function renderTasteChart(chart, values) {
+            const labels = ['산미', '단맛', '쓴맛', '바디감', '향', '밸런스'];
+            const center = 110;
+            const radius = 78;
+            const labelRadius = 99;
+            const point = (value, index, baseRadius = radius) => {
+                const angle = (-90 + index * 60) * Math.PI / 180;
+                const scaledRadius = baseRadius * value / 5;
+                return [
+                    center + Math.cos(angle) * scaledRadius,
+                    center + Math.sin(angle) * scaledRadius
+                ];
+            };
+
+            const grid = chart.querySelector('[data-chart-grid]');
+            const axis = chart.querySelector('[data-chart-axis]');
+            const labelsGroup = chart.querySelector('[data-chart-labels]');
+            const polygon = chart.querySelector('[data-chart-polygon]');
+
+            grid.innerHTML = '';
+            axis.innerHTML = '';
+            labelsGroup.innerHTML = '';
+            polygon.setAttribute('fill', 'rgba(181, 137, 90, 0.26)');
+            polygon.setAttribute('stroke', '#b5895a');
+            polygon.setAttribute('stroke-width', '2');
+
+            for (let level = 1; level <= 5; level += 1) {
+                const gridPoints = labels.map((_, index) => point(level, index)).map(([x, y]) => `${x},${y}`).join(' ');
+                const gridPolygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                gridPolygon.setAttribute('points', gridPoints);
+                gridPolygon.setAttribute('class', 'taste-chart__grid');
+                gridPolygon.setAttribute('fill', 'none');
+                gridPolygon.setAttribute('stroke', 'rgba(184, 156, 122, 0.38)');
+                gridPolygon.setAttribute('stroke-width', '1');
+                grid.appendChild(gridPolygon);
+            }
+
+            labels.forEach((label, index) => {
+                const [x, y] = point(5, index);
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', center);
+                line.setAttribute('y1', center);
+                line.setAttribute('x2', x);
+                line.setAttribute('y2', y);
+                line.setAttribute('class', 'taste-chart__axis');
+                line.setAttribute('stroke', 'rgba(154, 119, 82, 0.24)');
+                line.setAttribute('stroke-width', '1');
+                axis.appendChild(line);
+
+                const [labelX, labelY] = point(5, index, labelRadius);
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', labelX);
+                text.setAttribute('y', labelY);
+                text.setAttribute('class', 'taste-chart__label');
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('dominant-baseline', 'middle');
+                text.setAttribute('fill', '#7a6048');
+                text.setAttribute('font-size', '10');
+                text.setAttribute('font-weight', '700');
+                text.textContent = label;
+                labelsGroup.appendChild(text);
+            });
+
+            const polygonPoints = values.map((value, index) => point(value, index)).map(([x, y]) => `${x},${y}`).join(' ');
+            polygon.setAttribute('points', polygonPoints);
+        }
+
+        document.querySelectorAll('[data-taste-chart]').forEach((chart) => {
+            const values = (chart.dataset.values || '0,0,0,0,0,0').split(',').map(Number);
+            renderTasteChart(chart, values);
+        });
+
+        function createSvgElement(name, attributes = {}) {
+            const element = document.createElementNS('http://www.w3.org/2000/svg', name);
+            Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value));
+            return element;
+        }
+
+        function createSmoothPath(points) {
+            if (points.length === 0) {
+                return '';
+            }
+            if (points.length === 1) {
+                return `M ${points[0].x} ${points[0].y}`;
+            }
+
+            let path = `M ${points[0].x} ${points[0].y}`;
+            for (let index = 0; index < points.length - 1; index += 1) {
+                const p1 = points[index];
+                const p2 = points[index + 1];
+                const handleLength = (p2.x - p1.x) / 2;
+                const cp1x = p1.x + handleLength;
+                const cp1y = p1.y;
+                const cp2x = p2.x - handleLength;
+                const cp2y = p2.y;
+                path += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+            }
+            return path;
+        }
+
+        function renderPourChart(chart) {
+            const duration = Math.max(5, Number(chart.dataset.duration || 180));
+            const rawSteps = Array.from(chart.querySelectorAll('.pour-detail__point-data'))
+                .map((point) => ({
+                    time: Number(point.dataset.time || 0),
+                    amount: Number(point.dataset.amount || 0)
+                }))
+                .filter((point) => point.amount > 0)
+                .sort((left, right) => left.time - right.time);
+
+            if (rawSteps.length === 0) {
+                return;
+            }
+
+            const amountByTime = rawSteps.reduce((accumulator, step) => {
+                const clampedTime = Math.min(duration, Math.max(0, step.time));
+                accumulator.set(clampedTime, (accumulator.get(clampedTime) || 0) + step.amount);
+                return accumulator;
+            }, new Map());
+
+            let cumulativeAmount = 0;
+            const cumulativePoints = Array.from(amountByTime.entries())
+                .sort(([leftTime], [rightTime]) => leftTime - rightTime)
+                .map(([time, amount]) => {
+                    cumulativeAmount += amount;
+                    return {time, amount, cumulativeAmount};
+                });
+
+            const width = 680;
+            const height = 300;
+            const padding = {top: 26, right: 32, bottom: 46, left: 58};
+            const graphWidth = width - padding.left - padding.right;
+            const graphHeight = height - padding.top - padding.bottom;
+            const maxAmount = Math.max(20, Math.ceil(cumulativeAmount / 20) * 20);
+            const xScale = (time) => padding.left + Math.min(duration, Math.max(0, time)) / duration * graphWidth;
+            const yScale = (amount) => padding.top + (1 - Math.min(maxAmount, Math.max(0, amount)) / maxAmount) * graphHeight;
+            const actualPoints = cumulativePoints.map((point) => ({
+                ...point,
+                x: xScale(point.time),
+                y: yScale(point.cumulativeAmount)
+            }));
+            const points = [...actualPoints];
+            const lastPoint = points.at(-1);
+            if (lastPoint.time < duration) {
+                points.push({
+                    ...lastPoint,
+                    time: duration,
+                    x: xScale(duration),
+                    y: lastPoint.y,
+                    isGuidePoint: true
+                });
+            }
+
+            const grid = chart.querySelector('[data-pour-grid]');
+            const area = chart.querySelector('[data-pour-area]');
+            const line = chart.querySelector('[data-pour-line]');
+            const pointGroup = chart.querySelector('[data-pour-points]');
+            const labelGroup = chart.querySelector('[data-pour-labels]');
+            grid.innerHTML = '';
+            pointGroup.innerHTML = '';
+            labelGroup.innerHTML = '';
+
+            [0, 0.25, 0.5, 0.75, 1].forEach((ratio) => {
+                const y = padding.top + graphHeight * ratio;
+                const amount = Math.round(maxAmount * (1 - ratio));
+                grid.appendChild(createSvgElement('line', {
+                    x1: padding.left,
+                    y1: y,
+                    x2: width - padding.right,
+                    y2: y,
+                    class: 'pour-chart__grid-line'
+                }));
+                labelGroup.appendChild(createSvgElement('text', {
+                    x: padding.left - 12,
+                    y,
+                    class: 'pour-chart__axis-text',
+                    'text-anchor': 'end',
+                    'dominant-baseline': 'middle'
+                }));
+                labelGroup.lastChild.textContent = amount;
+            });
+
+            [0, duration / 2, duration].forEach((time) => {
+                const x = xScale(time);
+                grid.appendChild(createSvgElement('line', {
+                    x1: x,
+                    y1: padding.top,
+                    x2: x,
+                    y2: height - padding.bottom,
+                    class: 'pour-chart__grid-line pour-chart__grid-line--vertical'
+                }));
+                labelGroup.appendChild(createSvgElement('text', {
+                    x,
+                    y: height - padding.bottom + 24,
+                    class: 'pour-chart__axis-text',
+                    'text-anchor': 'middle'
+                }));
+                labelGroup.lastChild.textContent = `${Math.round(time)}초`;
+            });
+
+            const smoothPath = createSmoothPath(points);
+            line.setAttribute('d', smoothPath);
+            area.setAttribute('d', `${smoothPath} L ${points.at(-1).x} ${height - padding.bottom} L ${points[0].x} ${height - padding.bottom} Z`);
+
+            actualPoints.forEach((point) => {
+                pointGroup.appendChild(createSvgElement('circle', {
+                    cx: point.x,
+                    cy: point.y,
+                    r: 5,
+                    class: 'pour-chart__point'
+                }));
+                const label = createSvgElement('text', {
+                    x: point.x,
+                    y: point.y - 12,
+                    class: 'pour-chart__point-label',
+                    'text-anchor': 'middle'
+                });
+                label.textContent = `${point.cumulativeAmount}ml`;
+                pointGroup.appendChild(label);
+            });
+        }
+
+        document.querySelectorAll('[data-pour-chart]').forEach(renderPourChart);
+    </script>
 </body>
 </html>

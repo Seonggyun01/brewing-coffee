@@ -31,15 +31,16 @@
                         <th>원두</th>
                         <th>로스터리</th>
                         <th>구매처</th>
+                        <th>상태</th>
                         <th>산지</th>
                         <th>가공</th>
-                        <th>용량</th>
+                        <th>남은 무게</th>
                         <th>가격</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr th:if="${#lists.isEmpty(coffeeBeans)}">
-                        <td colspan="7" class="empty">등록된 원두가 없습니다.</td>
+                        <td colspan="8" class="empty">등록된 원두가 없습니다.</td>
                     </tr>
                     <tr th:each="coffeeBean : ${coffeeBeans}">
                         <td>
@@ -47,6 +48,7 @@
                         </td>
                         <td th:text="${coffeeBean.roastery ?: '-'}">로스터리</td>
                         <td th:text="${coffeeBean.purchasePlaceName ?: '-'}">구매처</td>
+                        <td th:text="${coffeeBean.status != null ? coffeeBean.status.displayName : '-'}">보유 중</td>
                         <td th:text="${(coffeeBean.country ?: '-') + ' / ' + (coffeeBean.region ?: '-')}">산지</td>
                         <td th:text="${coffeeBean.processType ?: '-'}">WASHED</td>
                         <td th:text="${coffeeBean.weight != null ? coffeeBean.weight + 'g' : '-'}">200g</td>

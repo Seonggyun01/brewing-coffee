@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hsg.coffee.domain.brewRecord.entity.BrewFeelingTag;
 import com.hsg.coffee.domain.brewRecord.entity.BrewMethod;
+import com.hsg.coffee.domain.brewRecord.entity.BrewTemperatureType;
 import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 import com.hsg.coffee.domain.brewRecord.repository.BrewRecordRepository;
 import com.hsg.coffee.domain.brewRecord.service.BrewRecordService;
@@ -61,7 +62,8 @@ class BrewRecordControllerTest {
                 "Heirloom",
                 "1900-2100m",
                 ProcessType.WASHED,
-                "floral, citrus",
+                java.util.List.of(FlavorNote.JASMINE, FlavorNote.LEMON, FlavorNote.PEACH),
+                java.util.List.of("청포도", "오렌지 껍질"),
                 "컨트롤러 테스트용 원두",
                 LocalDate.of(2026, 5, 1),
                 LocalDate.of(2026, 5, 2),
@@ -84,7 +86,7 @@ class BrewRecordControllerTest {
         mockMvc.perform(get("/brew-records/new"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("brew-records/form"))
-                .andExpect(model().attributeExists("coffeeBeans", "flavorCategories", "flavorNotesByCategory"));
+                .andExpect(model().attributeExists("coffeeBeans", "temperatureTypes", "feelingTags"));
     }
 
     @Test
@@ -93,12 +95,18 @@ class BrewRecordControllerTest {
                         .param("coffeeBeanId", String.valueOf(coffeeBeanId))
                         .param("brewedDate", "2026-05-03")
                         .param("brewMethod", BrewMethod.V60.name())
+                        .param("temperatureType", BrewTemperatureType.HOT.name())
                         .param("beanAmount", "15")
                         .param("waterAmount", "240")
                         .param("waterTemperature", "92")
-                        .param("grindSize", "코만단테 24클릭")
+                        .param("grindSizeMicron", "720")
                         .param("brewTimeSec", "150")
-                        .param("recipe", "뜸 40초 후 3회 푸어링")
+                        .param("pourSteps[0].timeSec", "0")
+                        .param("pourSteps[0].amountMl", "40")
+                        .param("pourSteps[1].timeSec", "40")
+                        .param("pourSteps[1].amountMl", "80")
+                        .param("pourSteps[2].timeSec", "85")
+                        .param("pourSteps[2].amountMl", "80")
                         .param("rating", "4")
                         .param("acidity", "4")
                         .param("sweetness", "4")
@@ -106,9 +114,7 @@ class BrewRecordControllerTest {
                         .param("body", "3")
                         .param("aroma", "5")
                         .param("balance", "4")
-                        .param("flavorNotes", FlavorNote.JASMINE.name(), FlavorNote.LEMON.name(), FlavorNote.PEACH.name())
                         .param("feelingTags", BrewFeelingTag.CLEAN.name(), BrewFeelingTag.BRIGHT.name())
-                        .param("customFlavorNotesText", "청포도, 오렌지 껍질")
                         .param("customFeelingTagsText", "맑은 여운")
                         .param("memo", "컨트롤러 등록 테스트"))
                 .andExpect(status().is3xxRedirection())
@@ -131,6 +137,7 @@ class BrewRecordControllerTest {
                         .param("coffeeBeanId", String.valueOf(coffeeBeanId))
                         .param("brewedDate", "2026-05-03")
                         .param("brewMethod", BrewMethod.V60.name())
+                        .param("temperatureType", BrewTemperatureType.HOT.name())
                         .param("rating", "4"))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
@@ -140,13 +147,13 @@ class BrewRecordControllerTest {
                         .param("coffeeBeanId", String.valueOf(coffeeBeanId))
                         .param("brewedDate", "2026-05-04")
                         .param("brewMethod", BrewMethod.ORIGAMI.name())
-                        .param("rating", "5")
-                        .param("flavorNotes", FlavorNote.BLUEBERRY.name(), FlavorNote.DARK_CHOCOLATE.name())
-                        .param("customFlavorNotesText", "카카오닙스"))
+                        .param("temperatureType", BrewTemperatureType.ICE.name())
+                        .param("rating", "5"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/brew-records/" + id));
 
         assertEquals(5, brewRecordService.get(id).getRating());
-        assertEquals(java.util.List.of("카카오닙스"), brewRecordService.get(id).getCustomFlavorNotes());
+        assertEquals(BrewTemperatureType.ICE, brewRecordService.get(id).getTemperatureType());
+        assertEquals(java.util.List.of("청포도", "오렌지 껍질"), brewRecordService.get(id).getCustomFlavorNotes());
     }
 }

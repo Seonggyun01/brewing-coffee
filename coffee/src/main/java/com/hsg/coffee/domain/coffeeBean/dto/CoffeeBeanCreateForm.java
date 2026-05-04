@@ -1,7 +1,11 @@
 package com.hsg.coffee.domain.coffeeBean.dto;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
+import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
+import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBeanStatus;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
 
@@ -41,8 +45,13 @@ public class CoffeeBeanCreateForm {
 
     private ProcessType processType;
 
-    @Size(max = 500, message = "향미 노트는 500자 이하로 입력해주세요.")
-    private String flavorNotes;
+    private CoffeeBeanStatus status = CoffeeBeanStatus.CURRENT;
+
+    @Size(max = 8, message = "향미 노트는 최대 8개까지 선택할 수 있어요.")
+    private List<FlavorNote> flavorNotes = new ArrayList<>();
+
+    @Size(max = 500, message = "직접 입력한 향미 노트는 500자 이하로 입력해주세요.")
+    private String customFlavorNotesText;
 
     @Size(max = 1000, message = "메모는 1000자 이하로 입력해주세요.")
     private String memo;
@@ -54,7 +63,7 @@ public class CoffeeBeanCreateForm {
     @Min(value = 0, message = "가격은 0 이상이어야 합니다.")
     private Integer price;
 
-    @Min(value = 0, message = "용량은 0g 이상이어야 합니다.")
+    @Min(value = 0, message = "남은 무게는 0g 이상이어야 합니다.")
     private Integer weight;
 
     private Long purchasePlaceId;

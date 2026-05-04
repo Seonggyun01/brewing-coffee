@@ -1,11 +1,16 @@
 package com.hsg.coffee.domain.coffeeBean.entity;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
+import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
 import com.hsg.coffee.global.entity.BaseTimeEntity;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -15,6 +20,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -55,8 +61,22 @@ public class CoffeeBean extends BaseTimeEntity {
     @Column(length = 30)
     private ProcessType processType;
 
-    @Column(length = 500)
-    private String flavorNotes;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30)
+    private CoffeeBeanStatus status;
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "coffee_bean_flavor_notes", joinColumns = @JoinColumn(name = "coffee_bean_id"))
+    @OrderColumn(name = "sort_order")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "flavor_note", length = 60)
+    private List<FlavorNote> flavorNotes = new ArrayList<>();
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "coffee_bean_custom_flavor_notes", joinColumns = @JoinColumn(name = "coffee_bean_id"))
+    @OrderColumn(name = "sort_order")
+    @Column(name = "custom_flavor_note", length = 60)
+    private List<String> customFlavorNotes = new ArrayList<>();
 
     @Column(length = 1000)
     private String memo;
@@ -82,7 +102,8 @@ public class CoffeeBean extends BaseTimeEntity {
             String variety,
             String altitude,
             ProcessType processType,
-            String flavorNotes,
+            List<FlavorNote> flavorNotes,
+            List<String> customFlavorNotes,
             String memo,
             LocalDate roastedDate,
             LocalDate purchasedDate,
@@ -99,11 +120,13 @@ public class CoffeeBean extends BaseTimeEntity {
                 altitude,
                 processType,
                 flavorNotes,
+                customFlavorNotes,
                 memo,
                 roastedDate,
                 purchasedDate,
                 price,
                 weight,
+                CoffeeBeanStatus.CURRENT,
                 null
         );
     }
@@ -117,12 +140,14 @@ public class CoffeeBean extends BaseTimeEntity {
             String variety,
             String altitude,
             ProcessType processType,
-            String flavorNotes,
+            List<FlavorNote> flavorNotes,
+            List<String> customFlavorNotes,
             String memo,
             LocalDate roastedDate,
             LocalDate purchasedDate,
             Integer price,
             Integer weight,
+            CoffeeBeanStatus status,
             PurchasePlace purchasePlace
     ) {
         CoffeeBean coffeeBean = new CoffeeBean();
@@ -134,14 +159,59 @@ public class CoffeeBean extends BaseTimeEntity {
         coffeeBean.variety = variety;
         coffeeBean.altitude = altitude;
         coffeeBean.processType = processType;
-        coffeeBean.flavorNotes = flavorNotes;
+        if (flavorNotes != null) {
+            coffeeBean.flavorNotes.addAll(flavorNotes);
+        }
+        if (customFlavorNotes != null) {
+            coffeeBean.customFlavorNotes.addAll(customFlavorNotes);
+        }
         coffeeBean.memo = memo;
         coffeeBean.roastedDate = roastedDate;
         coffeeBean.purchasedDate = purchasedDate;
         coffeeBean.price = price;
         coffeeBean.weight = weight;
+        coffeeBean.status = status != null ? status : CoffeeBeanStatus.CURRENT;
         coffeeBean.purchasePlace = purchasePlace;
         return coffeeBean;
+    }
+
+    public static CoffeeBean create(
+            String name,
+            String roastery,
+            String country,
+            String region,
+            String farm,
+            String variety,
+            String altitude,
+            ProcessType processType,
+            List<FlavorNote> flavorNotes,
+            List<String> customFlavorNotes,
+            String memo,
+            LocalDate roastedDate,
+            LocalDate purchasedDate,
+            Integer price,
+            Integer weight,
+            PurchasePlace purchasePlace
+    ) {
+        return create(
+                name,
+                roastery,
+                country,
+                region,
+                farm,
+                variety,
+                altitude,
+                processType,
+                flavorNotes,
+                customFlavorNotes,
+                memo,
+                roastedDate,
+                purchasedDate,
+                price,
+                weight,
+                CoffeeBeanStatus.CURRENT,
+                purchasePlace
+        );
     }
 
     public void update(
@@ -153,7 +223,8 @@ public class CoffeeBean extends BaseTimeEntity {
             String variety,
             String altitude,
             ProcessType processType,
-            String flavorNotes,
+            List<FlavorNote> flavorNotes,
+            List<String> customFlavorNotes,
             String memo,
             LocalDate roastedDate,
             LocalDate purchasedDate,
@@ -170,11 +241,13 @@ public class CoffeeBean extends BaseTimeEntity {
                 altitude,
                 processType,
                 flavorNotes,
+                customFlavorNotes,
                 memo,
                 roastedDate,
                 purchasedDate,
                 price,
                 weight,
+                status,
                 purchasePlace
         );
     }
@@ -188,12 +261,14 @@ public class CoffeeBean extends BaseTimeEntity {
             String variety,
             String altitude,
             ProcessType processType,
-            String flavorNotes,
+            List<FlavorNote> flavorNotes,
+            List<String> customFlavorNotes,
             String memo,
             LocalDate roastedDate,
             LocalDate purchasedDate,
             Integer price,
             Integer weight,
+            CoffeeBeanStatus status,
             PurchasePlace purchasePlace
     ) {
         this.name = name;
@@ -204,12 +279,42 @@ public class CoffeeBean extends BaseTimeEntity {
         this.variety = variety;
         this.altitude = altitude;
         this.processType = processType;
-        this.flavorNotes = flavorNotes;
+        this.flavorNotes.clear();
+        if (flavorNotes != null) {
+            this.flavorNotes.addAll(flavorNotes);
+        }
+        this.customFlavorNotes.clear();
+        if (customFlavorNotes != null) {
+            this.customFlavorNotes.addAll(customFlavorNotes);
+        }
         this.memo = memo;
         this.roastedDate = roastedDate;
         this.purchasedDate = purchasedDate;
         this.price = price;
         this.weight = weight;
+        this.status = status != null ? status : CoffeeBeanStatus.CURRENT;
         this.purchasePlace = purchasePlace;
+    }
+
+    public Integer useWeight(Integer usedWeight) {
+        if (status != CoffeeBeanStatus.CURRENT || weight == null || usedWeight == null || usedWeight <= 0) {
+            return 0;
+        }
+        int deductedWeight = Math.min(weight, usedWeight);
+        this.weight = Math.max(0, weight - usedWeight);
+        if (this.weight == 0) {
+            this.status = CoffeeBeanStatus.FINISHED;
+        }
+        return deductedWeight;
+    }
+
+    public void restoreWeight(Integer restoredWeight) {
+        if (status == CoffeeBeanStatus.CAFE || weight == null || restoredWeight == null || restoredWeight <= 0) {
+            return;
+        }
+        this.weight += restoredWeight;
+        if (status == CoffeeBeanStatus.FINISHED && this.weight > 0) {
+            this.status = CoffeeBeanStatus.CURRENT;
+        }
     }
 }

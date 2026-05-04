@@ -54,6 +54,10 @@
                     <dd th:text="${coffeeBean.processType ?: '-'}">WASHED</dd>
                 </div>
                 <div>
+                    <dt>원두 상태</dt>
+                    <dd th:text="${coffeeBean.status != null ? coffeeBean.status.displayName : '-'}">보유 중</dd>
+                </div>
+                <div>
                     <dt>로스팅일</dt>
                     <dd th:text="${coffeeBean.roastedDate ?: '-'}">2026-05-01</dd>
                 </div>
@@ -66,7 +70,7 @@
                     <dd th:text="${coffeeBean.price != null ? #numbers.formatInteger(coffeeBean.price, 0, 'COMMA') + '원' : '-'}">18,000원</dd>
                 </div>
                 <div>
-                    <dt>용량</dt>
+                    <dt>남은 무게</dt>
                     <dd th:text="${coffeeBean.weight != null ? coffeeBean.weight + 'g' : '-'}">200g</dd>
                 </div>
             </dl>
@@ -97,7 +101,14 @@
 
             <div class="detail__memo">
                 <h2>향미 노트</h2>
-                <p th:text="${coffeeBean.flavorNotes ?: '-'}">floral, citrus, tea-like</p>
+                <span class="flavor-gradient flavor-gradient--large" th:style="${coffeeBean.flavorGradientStyle}"></span>
+                <div class="selected-tags" th:if="${!#lists.isEmpty(coffeeBean.flavorNotes) || !#lists.isEmpty(coffeeBean.customFlavorNotes)}">
+                    <span th:each="note : ${coffeeBean.flavorNotes}"
+                          th:style="'border-color:' + ${note.color} + '; background:' + ${note.color} + '22;'"
+                          th:text="${note.displayName}">레몬</span>
+                    <span class="selected-tags__custom" th:each="note : ${coffeeBean.customFlavorNotes}" th:text="${note}">청포도</span>
+                </div>
+                <p th:if="${#lists.isEmpty(coffeeBean.flavorNotes) && #lists.isEmpty(coffeeBean.customFlavorNotes)}">선택한 향미 노트가 없습니다.</p>
                 <h2>메모</h2>
                 <p th:text="${coffeeBean.memo ?: '-'}">메모</p>
             </div>

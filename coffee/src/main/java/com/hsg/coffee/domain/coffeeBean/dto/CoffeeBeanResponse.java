@@ -2,8 +2,12 @@ package com.hsg.coffee.domain.coffeeBean.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBean;
+import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBeanStatus;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
@@ -22,7 +26,9 @@ public class CoffeeBeanResponse {
     private final String variety;
     private final String altitude;
     private final ProcessType processType;
-    private final String flavorNotes;
+    private final CoffeeBeanStatus status;
+    private final List<FlavorNote> flavorNotes;
+    private final List<String> customFlavorNotes;
     private final String memo;
     private final LocalDate roastedDate;
     private final LocalDate purchasedDate;
@@ -50,7 +56,9 @@ public class CoffeeBeanResponse {
         this.variety = coffeeBean.getVariety();
         this.altitude = coffeeBean.getAltitude();
         this.processType = coffeeBean.getProcessType();
-        this.flavorNotes = coffeeBean.getFlavorNotes();
+        this.status = coffeeBean.getStatus();
+        this.flavorNotes = List.copyOf(coffeeBean.getFlavorNotes());
+        this.customFlavorNotes = List.copyOf(coffeeBean.getCustomFlavorNotes());
         this.memo = coffeeBean.getMemo();
         this.roastedDate = coffeeBean.getRoastedDate();
         this.purchasedDate = coffeeBean.getPurchasedDate();
@@ -69,5 +77,35 @@ public class CoffeeBeanResponse {
 
     public static CoffeeBeanResponse from(CoffeeBean coffeeBean) {
         return new CoffeeBeanResponse(coffeeBean);
+    }
+
+    public String getFlavorGradientStyle() {
+        if (flavorNotes.isEmpty()) {
+            return "background: #ded4c8;";
+        }
+
+        String colors = flavorNotes.stream()
+                .map(FlavorNote::getColor)
+                .collect(Collectors.joining(", "));
+        return "background: linear-gradient(90deg, " + colors + ");";
+    }
+
+    public String getFlavorNoteSummary() {
+        if (flavorNotes.isEmpty() && customFlavorNotes.isEmpty()) {
+            return "-";
+        }
+
+        String selectedNotes = flavorNotes.stream()
+                .map(FlavorNote::getDisplayName)
+                .collect(Collectors.joining(", "));
+        String customNotes = String.join(", ", customFlavorNotes);
+
+        if (selectedNotes.isBlank()) {
+            return customNotes;
+        }
+        if (customNotes.isBlank()) {
+            return selectedNotes;
+        }
+        return selectedNotes + ", " + customNotes;
     }
 }

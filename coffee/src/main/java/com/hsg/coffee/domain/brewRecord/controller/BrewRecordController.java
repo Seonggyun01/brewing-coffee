@@ -1,9 +1,5 @@
 package com.hsg.coffee.domain.brewRecord.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,8 +13,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.hsg.coffee.domain.brewRecord.dto.BrewRecordForm;
 import com.hsg.coffee.domain.brewRecord.entity.BrewFeelingTag;
 import com.hsg.coffee.domain.brewRecord.entity.BrewMethod;
-import com.hsg.coffee.domain.brewRecord.entity.FlavorCategory;
-import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
+import com.hsg.coffee.domain.brewRecord.entity.BrewTemperatureType;
 import com.hsg.coffee.domain.brewRecord.service.BrewRecordService;
 import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanService;
 
@@ -102,16 +97,12 @@ public class BrewRecordController {
     }
 
     private void addFormAttributes(Model model, String title, String actionUrl) {
-        Map<FlavorCategory, java.util.List<FlavorNote>> flavorNotesByCategory = Arrays.stream(FlavorNote.values())
-                .collect(Collectors.groupingBy(FlavorNote::getCategory));
-
         model.addAttribute("title", title);
         model.addAttribute("actionUrl", actionUrl);
         model.addAttribute("coffeeBeans", coffeeBeanService.getAll());
         model.addAttribute("brewMethods", BrewMethod.values());
+        model.addAttribute("temperatureTypes", BrewTemperatureType.values());
         model.addAttribute("tasteScores", java.util.List.of(1, 2, 3, 4, 5));
-        model.addAttribute("flavorCategories", FlavorCategory.values());
-        model.addAttribute("flavorNotesByCategory", flavorNotesByCategory);
         model.addAttribute("feelingTags", BrewFeelingTag.values());
     }
 }

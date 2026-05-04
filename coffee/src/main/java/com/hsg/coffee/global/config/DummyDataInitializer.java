@@ -11,10 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hsg.coffee.domain.brewRecord.entity.BrewFeelingTag;
 import com.hsg.coffee.domain.brewRecord.entity.BrewMethod;
+import com.hsg.coffee.domain.brewRecord.entity.BrewPourStep;
 import com.hsg.coffee.domain.brewRecord.entity.BrewRecord;
+import com.hsg.coffee.domain.brewRecord.entity.BrewTemperatureType;
 import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 import com.hsg.coffee.domain.brewRecord.repository.BrewRecordRepository;
 import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBean;
+import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBeanStatus;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
@@ -74,12 +77,14 @@ public class DummyDataInitializer implements ApplicationRunner {
                         "Heirloom",
                         "1900-2100m",
                         ProcessType.WASHED,
-                        "floral, citrus, tea-like",
+                        List.of(FlavorNote.JASMINE, FlavorNote.LEMON, FlavorNote.PEACH),
+                        List.of("오렌지 껍질"),
                         "개발 확인용 더미 원두",
                         LocalDate.of(2026, 5, 1),
                         LocalDate.of(2026, 5, 2),
                         18000,
                         200,
+                        CoffeeBeanStatus.CURRENT,
                         fritz
                 ),
                 CoffeeBean.create(
@@ -91,12 +96,14 @@ public class DummyDataInitializer implements ApplicationRunner {
                         "SL28, SL34",
                         "1600-1800m",
                         ProcessType.WASHED,
-                        "blackcurrant, grapefruit, brown sugar",
+                        List.of(FlavorNote.BLACKCURRANT, FlavorNote.GRAPEFRUIT, FlavorNote.BROWN_SUGAR),
+                        List.of("포도잼"),
                         "목록/검색 확인용 더미 원두",
                         LocalDate.of(2026, 4, 28),
                         LocalDate.of(2026, 5, 2),
                         22000,
-                        200,
+                        0,
+                        CoffeeBeanStatus.FINISHED,
                         smartStore
                 ),
                 CoffeeBean.create(
@@ -108,12 +115,14 @@ public class DummyDataInitializer implements ApplicationRunner {
                         "Castillo",
                         "1850m",
                         ProcessType.ANAEROBIC,
-                        "mango, peach, tropical",
+                        List.of(FlavorNote.MANGO, FlavorNote.PEACH, FlavorNote.PINEAPPLE),
+                        List.of("열대 과일"),
                         "수정/삭제 확인용 더미 원두",
                         LocalDate.of(2026, 4, 25),
                         LocalDate.of(2026, 5, 1),
                         25000,
-                        100,
+                        null,
+                        CoffeeBeanStatus.CAFE,
                         cafe
                 )
         ));
@@ -123,12 +132,18 @@ public class DummyDataInitializer implements ApplicationRunner {
                         coffeeBeans.get(0),
                         LocalDate.of(2026, 5, 3),
                         BrewMethod.V60,
+                        BrewTemperatureType.HOT,
                         java.math.BigDecimal.valueOf(15),
                         java.math.BigDecimal.valueOf(240),
                         java.math.BigDecimal.valueOf(92),
-                        "코만단테 24클릭",
+                        720,
                         150,
-                        "뜸 40초 후 3회 푸어링",
+                        List.of(
+                                BrewPourStep.of(0, 40),
+                                BrewPourStep.of(40, 80),
+                                BrewPourStep.of(85, 80),
+                                BrewPourStep.of(125, 40)
+                        ),
                         4,
                         4,
                         4,
@@ -136,9 +151,7 @@ public class DummyDataInitializer implements ApplicationRunner {
                         3,
                         5,
                         4,
-                        List.of(FlavorNote.JASMINE, FlavorNote.LEMON, FlavorNote.PEACH),
                         List.of(BrewFeelingTag.CLEAN, BrewFeelingTag.BRIGHT, BrewFeelingTag.SWEET_FINISH),
-                        List.of("오렌지 껍질"),
                         List.of("맑은 여운"),
                         "향이 화사하고 마무리가 깨끗했다."
                 ),
@@ -146,12 +159,18 @@ public class DummyDataInitializer implements ApplicationRunner {
                         coffeeBeans.get(1),
                         LocalDate.of(2026, 5, 2),
                         BrewMethod.ORIGAMI,
+                        BrewTemperatureType.ICE,
                         java.math.BigDecimal.valueOf(16),
                         java.math.BigDecimal.valueOf(250),
                         java.math.BigDecimal.valueOf(93),
-                        "중간보다 살짝 곱게",
+                        680,
                         165,
-                        "뜸 35초, 80g씩 나누어 추출",
+                        List.of(
+                                BrewPourStep.of(0, 45),
+                                BrewPourStep.of(35, 80),
+                                BrewPourStep.of(80, 80),
+                                BrewPourStep.of(125, 45)
+                        ),
                         5,
                         5,
                         4,
@@ -159,9 +178,7 @@ public class DummyDataInitializer implements ApplicationRunner {
                         3,
                         4,
                         4,
-                        List.of(FlavorNote.BLACKCURRANT, FlavorNote.GRAPEFRUIT, FlavorNote.BROWN_SUGAR),
                         List.of(BrewFeelingTag.JUICY, BrewFeelingTag.LONG_AFTERTASTE),
-                        List.of("포도잼"),
                         List.of("선명함"),
                         "산미가 또렷하고 베리 계열 인상이 선명했다."
                 )

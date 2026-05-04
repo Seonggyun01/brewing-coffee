@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCreateForm;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
@@ -71,7 +72,7 @@ class CoffeeBeanControllerTest {
         mockMvc.perform(get("/coffee-beans/new"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("coffee-beans/form"))
-                .andExpect(model().attributeExists("purchasePlaces"));
+                .andExpect(model().attributeExists("coffeeBeanStatuses", "purchasePlaces"));
     }
 
     @Test
@@ -85,7 +86,8 @@ class CoffeeBeanControllerTest {
                         .param("variety", "Heirloom")
                         .param("altitude", "1900-2100m")
                         .param("processType", ProcessType.WASHED.name())
-                        .param("flavorNotes", "floral, citrus, tea-like")
+                        .param("flavorNotes", FlavorNote.JASMINE.name(), FlavorNote.LEMON.name(), FlavorNote.PEACH.name())
+                        .param("customFlavorNotesText", "오렌지 껍질")
                         .param("memo", "컨트롤러 등록 테스트")
                         .param("roastedDate", "2026-05-01")
                         .param("purchasedDate", "2026-05-02")
@@ -152,7 +154,8 @@ class CoffeeBeanControllerTest {
                         .param("variety", "Heirloom")
                         .param("altitude", "1900-2100m")
                         .param("processType", ProcessType.NATURAL.name())
-                        .param("flavorNotes", "berry, floral")
+                        .param("flavorNotes", FlavorNote.BLUEBERRY.name(), FlavorNote.JASMINE.name())
+                        .param("customFlavorNotesText", "베리잼")
                         .param("memo", "컨트롤러 수정 테스트")
                         .param("roastedDate", "2026-05-01")
                         .param("purchasedDate", "2026-05-02")
@@ -192,7 +195,8 @@ class CoffeeBeanControllerTest {
         form.setVariety("Heirloom");
         form.setAltitude("1900-2100m");
         form.setProcessType(ProcessType.WASHED);
-        form.setFlavorNotes("floral, citrus, tea-like");
+        form.setFlavorNotes(java.util.List.of(FlavorNote.JASMINE, FlavorNote.LEMON, FlavorNote.PEACH));
+        form.setCustomFlavorNotesText("오렌지 껍질");
         form.setMemo("컨트롤러 테스트 기록");
         form.setPrice(18000);
         form.setWeight(200);
