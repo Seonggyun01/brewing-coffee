@@ -24,38 +24,27 @@
             <a class="button button--ghost" th:href="@{/coffee-beans}">초기화</a>
         </form>
 
-        <section class="table-wrap">
-            <table>
-                <thead>
-                    <tr>
-                        <th>원두</th>
-                        <th>로스터리</th>
-                        <th>구매처</th>
-                        <th>상태</th>
-                        <th>산지</th>
-                        <th>가공</th>
-                        <th>남은 무게</th>
-                        <th>가격</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:if="${#lists.isEmpty(coffeeBeans)}">
-                        <td colspan="8" class="empty">등록된 원두가 없습니다.</td>
-                    </tr>
-                    <tr th:each="coffeeBean : ${coffeeBeans}">
-                        <td>
-                            <a class="table-link" th:href="@{/coffee-beans/{id}(id=${coffeeBean.id})}" th:text="${coffeeBean.name}">원두 이름</a>
-                        </td>
-                        <td th:text="${coffeeBean.roastery ?: '-'}">로스터리</td>
-                        <td th:text="${coffeeBean.purchasePlaceName ?: '-'}">구매처</td>
-                        <td th:text="${coffeeBean.status != null ? coffeeBean.status.displayName : '-'}">보유 중</td>
-                        <td th:text="${(coffeeBean.country ?: '-') + ' / ' + (coffeeBean.region ?: '-')}">산지</td>
-                        <td th:text="${coffeeBean.processType ?: '-'}">WASHED</td>
-                        <td th:text="${coffeeBean.weight != null ? coffeeBean.weight + 'g' : '-'}">200g</td>
-                        <td th:text="${coffeeBean.price != null ? #numbers.formatInteger(coffeeBean.price, 0, 'COMMA') + '원' : '-'}">18,000원</td>
-                    </tr>
-                </tbody>
-            </table>
+        <section class="record-grid" th:if="${!#lists.isEmpty(coffeeBeans)}">
+            <article class="record-card coffee-bean-card" th:each="coffeeBean : ${coffeeBeans}">
+                <a class="record-card__link" th:href="@{/coffee-beans/{id}(id=${coffeeBean.id})}">
+                    <span class="flavor-gradient" th:style="${coffeeBean.flavorGradientStyle}"></span>
+                    <span class="record-card__date" th:text="${coffeeBean.status != null ? coffeeBean.status.displayName : '상태 미기록'}">보유 중</span>
+                    <strong th:text="${coffeeBean.name}">에티오피아 구지</strong>
+                    <span th:text="${coffeeBean.roastery ?: '로스터리 미기록'}">브루잉 로스터스</span>
+                    <span th:text="${(coffeeBean.country ?: '산지 미기록') + (coffeeBean.region != null ? ' / ' + coffeeBean.region : '')}">Ethiopia / Guji</span>
+                    <span th:text="${coffeeBean.processType != null ? coffeeBean.processType : '가공 미기록'}">WASHED</span>
+                    <div class="coffee-bean-card__meta">
+                        <span th:text="${coffeeBean.weight != null ? coffeeBean.weight + 'g 남음' : '무게 미기록'}">200g 남음</span>
+                        <span th:text="${coffeeBean.price != null ? #numbers.formatInteger(coffeeBean.price, 0, 'COMMA') + '원' : '가격 미기록'}">18,000원</span>
+                    </div>
+                    <span class="record-card__notes" th:text="${coffeeBean.flavorNoteSummary}">자스민, 레몬, 복숭아</span>
+                </a>
+            </article>
+        </section>
+
+        <section class="empty-panel" th:if="${#lists.isEmpty(coffeeBeans)}">
+            <p>등록된 원두가 없습니다.</p>
+            <a class="button button--secondary" th:href="@{/coffee-beans/new}">첫 원두 등록하기</a>
         </section>
     </main>
 </body>
