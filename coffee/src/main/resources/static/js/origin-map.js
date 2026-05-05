@@ -38,6 +38,11 @@
             link.className = 'origin-bean-card';
             link.href = `/coffee-beans/${bean.id}`;
 
+            const flavorGradient = document.createElement('span');
+            flavorGradient.className = 'flavor-gradient origin-bean-card__flavor-gradient';
+            flavorGradient.setAttribute('aria-hidden', 'true');
+            flavorGradient.setAttribute('style', bean.flavorGradientStyle || 'background: linear-gradient(90deg, #d8c8b5, #efe4d3);');
+
             const name = document.createElement('strong');
             name.textContent = bean.name;
 
@@ -47,7 +52,11 @@
             const meta = document.createElement('small');
             meta.textContent = `${bean.region || '지역 미기록'} · ${bean.processType || '가공 미기록'}`;
 
-            link.append(name, roastery, meta);
+            const notes = document.createElement('small');
+            notes.className = 'origin-bean-card__notes';
+            notes.textContent = bean.flavorNoteSummary || '향미 미기록';
+
+            link.append(flavorGradient, name, roastery, meta, notes);
             recentBeans.appendChild(link);
         });
     }

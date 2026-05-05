@@ -1,5 +1,6 @@
 package com.hsg.coffee.domain.originMap.dto;
 
+import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBean;
 
 public record OriginBeanPreviewResponse(
@@ -8,7 +9,8 @@ public record OriginBeanPreviewResponse(
         String roastery,
         String region,
         String processType,
-        String flavorNoteSummary
+        String flavorNoteSummary,
+        String flavorGradientStyle
 ) {
 
     public static OriginBeanPreviewResponse from(CoffeeBean coffeeBean) {
@@ -18,6 +20,12 @@ public record OriginBeanPreviewResponse(
                 .map(flavorNote -> flavorNote.getDisplayName())
                 .reduce((left, right) -> left + ", " + right)
                 .orElse("-");
+        String flavorGradientStyle = coffeeBean.getFlavorNotes().isEmpty()
+                ? "background: linear-gradient(90deg, #d8c8b5, #efe4d3);"
+                : "background: linear-gradient(90deg, " + coffeeBean.getFlavorNotes().stream()
+                        .map(FlavorNote::getColor)
+                        .reduce((left, right) -> left + ", " + right)
+                        .orElse("#d8c8b5") + ");";
 
         return new OriginBeanPreviewResponse(
                 coffeeBean.getId(),
@@ -25,7 +33,8 @@ public record OriginBeanPreviewResponse(
                 coffeeBean.getRoastery(),
                 coffeeBean.getRegion(),
                 processType,
-                flavorNoteSummary
+                flavorNoteSummary,
+                flavorGradientStyle
         );
     }
 }

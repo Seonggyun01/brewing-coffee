@@ -19,7 +19,7 @@ public interface CoffeeBeanRepository extends JpaRepository<CoffeeBean, Long> {
 
     List<CoffeeBean> findByOriginCountryCodeAndNameContainingIgnoreCaseOrderByIdDesc(String originCountryCode, String name);
 
-    List<CoffeeBean> findTop3ByOriginCountryCodeOrderByIdDesc(String originCountryCode);
+    List<CoffeeBean> findTop8ByOriginCountryCodeOrderByIdDesc(String originCountryCode);
 
     @Query("select cb.originCountryCode, count(cb) from CoffeeBean cb "
             + "where cb.originCountryCode is not null group by cb.originCountryCode")

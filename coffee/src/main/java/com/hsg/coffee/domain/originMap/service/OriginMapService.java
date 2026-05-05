@@ -51,7 +51,7 @@ public class OriginMapService {
             return null;
         }
 
-        List<OriginBeanPreviewResponse> recentBeans = coffeeBeanRepository.findTop3ByOriginCountryCodeOrderByIdDesc(countryCode)
+        List<OriginBeanPreviewResponse> recentBeans = coffeeBeanRepository.findTop8ByOriginCountryCodeOrderByIdDesc(countryCode)
                 .stream()
                 .map(OriginBeanPreviewResponse::from)
                 .toList();
