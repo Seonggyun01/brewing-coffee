@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BrewLog Origin Map</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
-    <link rel="stylesheet" th:href="@{/css/origin-map.css(v=10)}">
+    <link rel="stylesheet" th:href="@{/css/origin-map.css(v=12)}">
 </head>
 <body class="origin-map-page">
     <header class="app-header">
@@ -25,6 +25,12 @@
     <main class="origin-map-shell">
         <section class="origin-map-visual" aria-label="커피 원산지 세계 지도">
             <div class="origin-map-stage" th:replace="~{fragments/world-map :: worldMap}"></div>
+            <div class="origin-map-zoom" aria-label="세계 지도 확대 조절">
+                <button type="button" data-origin-zoom-out aria-label="지도 축소">−</button>
+                <span data-origin-zoom-label>100%</span>
+                <button type="button" data-origin-zoom-in aria-label="지도 확대">+</button>
+                <button type="button" data-origin-zoom-reset>초기화</button>
+            </div>
 
             <section class="origin-map-stats" aria-label="원산지 경험 요약">
                 <article>
@@ -69,6 +75,6 @@
         </aside>
     </main>
 
-    <script th:src="@{/js/origin-map.js(v=7)}"></script>
+    <script th:src="@{/js/origin-map.js(v=10)}"></script>
 </body>
 </html>

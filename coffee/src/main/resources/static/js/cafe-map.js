@@ -4,6 +4,7 @@ const cafeCountElement = document.querySelector('[data-cafe-count]');
 const markerLayerElement = document.querySelector('[data-cafe-marker-layer]');
 const koreaMapElement = document.querySelector('[data-korea-map]');
 const mapBackButton = document.querySelector('[data-map-back]');
+const cafeMapElement = document.querySelector('#cafeMap');
 const pageElement = document.body;
 
 const VIEW_BOX = {
@@ -26,11 +27,20 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 const EMPTY_REGION_COLOR = '#ddd2c4';
 const LIGHT_REGION_COLOR = { r: 219, g: 181, b: 122 };
 const DARK_REGION_COLOR = { r: 92, g: 46, b: 31 };
+const ZOOM_STEP = 0.1;
+const DETAIL_ZOOM_THRESHOLD = 1.9;
+const OVERVIEW_ZOOM_INTERVAL_MS = 70;
 
 let currentCafes = [];
 let currentTopology = null;
 let municipalityTopology = null;
 let currentRegionName = null;
+let focusedRegionName = null;
+let overviewZoomLevel = 1;
+let overviewPanOffset = { x: 0, y: 0 };
+let overviewDragStart = null;
+let isZoomTransitioning = false;
+let lastOverviewZoomAt = 0;
 
 const REGION_LABELS = {
     Busan: '부산',
@@ -348,6 +358,18 @@ const buildSubregionCounts = (subregions, cafes) => {
     }, new Map());
 };
 
+const setMapScale = (scale) => {
+    koreaMapElement.style.transform = `translate(${overviewPanOffset.x}px, ${overviewPanOffset.y}px) scale(${scale})`;
+    koreaMapElement.classList.toggle('is-overview-zoomed', !currentRegionName && scale > 1);
+};
+
+const resetMapScale = () => {
+    overviewZoomLevel = 1;
+    overviewPanOffset = { x: 0, y: 0 };
+    koreaMapElement.classList.remove('is-overview-dragging');
+    setMapScale(1);
+};
+
 const createRegionPath = (geometry, count, maxCount, options = {}) => {
     const {
         topology = currentTopology,
@@ -364,7 +386,12 @@ const createRegionPath = (geometry, count, maxCount, options = {}) => {
     path.setAttribute('d', geometryToPath(topology, geometry));
     path.setAttribute('fill', colorForCount(count, maxCount));
     path.setAttribute('data-region', displayName);
+    path.setAttribute('data-region-name', regionName);
     path.setAttribute('data-count', String(count));
+
+    if (subregionName) {
+        path.setAttribute('data-subregion-name', subregionName);
+    }
 
     const title = document.createElementNS(SVG_NS, 'title');
     title.textContent = `${REGION_LABELS[displayName] || displayName}: 방문 카페 ${count}개`;
@@ -372,6 +399,12 @@ const createRegionPath = (geometry, count, maxCount, options = {}) => {
 
     if (onClick) {
         path.addEventListener('click', onClick);
+    }
+
+    if (!isDetail) {
+        path.addEventListener('mouseenter', () => {
+            focusedRegionName = regionName;
+        });
     }
 
     return path;
@@ -445,11 +478,15 @@ const renderOverviewMap = () => {
     const maxCount = Math.max(1, ...regionCounts.values());
 
     currentRegionName = null;
+    focusedRegionName = null;
+    isZoomTransitioning = false;
+    lastOverviewZoomAt = 0;
     pageElement.classList.remove('has-region-detail');
     koreaMapElement.setAttribute('viewBox', VIEW_BOX.value);
     koreaMapElement.innerHTML = '';
     markerLayerElement.innerHTML = '';
     mapBackButton.hidden = true;
+    resetMapScale();
 
     regionCollection().geometries.forEach((geometry) => {
         const regionName = geometry.properties.NAME_1;
@@ -478,11 +515,13 @@ const renderDetailMap = (regionName) => {
     const height = Math.min(VIEW_BOX.height - minY, bounds.maxY - bounds.minY + padding * 2);
 
     currentRegionName = regionName;
+    isZoomTransitioning = false;
     pageElement.classList.add('has-region-detail');
     koreaMapElement.setAttribute('viewBox', `${minX} ${minY} ${width} ${height}`);
     koreaMapElement.innerHTML = '';
     markerLayerElement.innerHTML = '';
     mapBackButton.hidden = false;
+    resetMapScale();
 
     detailGeometries.forEach((geometry) => {
         const subregionName = geometry.properties.NAME_2;
@@ -503,6 +542,96 @@ const renderDetailMap = (regionName) => {
 
 const selectRegion = (regionName) => {
     renderDetailMap(regionName);
+};
+
+const regionNameFromEventTarget = (target) => {
+    const path = target.closest?.('[data-region-name]');
+    return path ? path.dataset.regionName : null;
+};
+
+const regionNameFromPoint = (event) => {
+    return document.elementsFromPoint(event.clientX, event.clientY)
+        .map(regionNameFromEventTarget)
+        .find(Boolean) || null;
+};
+
+const zoomIntoRegion = (regionName) => {
+    if (!regionName || isZoomTransitioning) {
+        return;
+    }
+
+    overviewZoomLevel = clamp(overviewZoomLevel + ZOOM_STEP, 1, DETAIL_ZOOM_THRESHOLD);
+    setMapScale(overviewZoomLevel);
+
+    if (overviewZoomLevel >= DETAIL_ZOOM_THRESHOLD) {
+        isZoomTransitioning = true;
+        window.setTimeout(() => selectRegion(regionName), 180);
+    }
+};
+
+const zoomOutOverviewMap = () => {
+    overviewZoomLevel = clamp(overviewZoomLevel - ZOOM_STEP, 1, DETAIL_ZOOM_THRESHOLD);
+    if (overviewZoomLevel === 1) {
+        overviewPanOffset = { x: 0, y: 0 };
+    }
+    setMapScale(overviewZoomLevel);
+};
+
+const startOverviewDrag = (event) => {
+    if (currentRegionName || overviewZoomLevel === 1 || event.button !== 0) {
+        return;
+    }
+
+    overviewDragStart = {
+        pointerId: event.pointerId,
+        x: event.clientX,
+        y: event.clientY,
+        panX: overviewPanOffset.x,
+        panY: overviewPanOffset.y
+    };
+    koreaMapElement.classList.add('is-overview-dragging');
+    cafeMapElement.setPointerCapture(event.pointerId);
+};
+
+const dragOverviewMap = (event) => {
+    if (!overviewDragStart || overviewDragStart.pointerId !== event.pointerId) {
+        return;
+    }
+
+    const deltaX = event.clientX - overviewDragStart.x;
+    const deltaY = event.clientY - overviewDragStart.y;
+
+    overviewPanOffset = {
+        x: overviewDragStart.panX + deltaX,
+        y: overviewDragStart.panY + deltaY
+    };
+    setMapScale(overviewZoomLevel);
+};
+
+const endOverviewDrag = (event) => {
+    if (!overviewDragStart || overviewDragStart.pointerId !== event.pointerId) {
+        return;
+    }
+
+    overviewDragStart = null;
+    koreaMapElement.classList.remove('is-overview-dragging');
+
+    if (cafeMapElement.hasPointerCapture(event.pointerId)) {
+        cafeMapElement.releasePointerCapture(event.pointerId);
+    }
+};
+
+const zoomOutToOverview = () => {
+    if (!currentRegionName || isZoomTransitioning) {
+        return;
+    }
+
+    isZoomTransitioning = true;
+    setMapScale(0.94);
+    window.setTimeout(() => {
+        renderOverviewMap();
+        selectedCafeElement.innerHTML = '<p>지도나 목록에서 카페를 선택하세요.</p>';
+    }, 120);
 };
 
 const renderCafeList = (cafes) => {
@@ -534,6 +663,62 @@ const renderCafeList = (cafes) => {
 mapBackButton.addEventListener('click', () => {
     renderOverviewMap();
     selectedCafeElement.innerHTML = '<p>지도나 목록에서 카페를 선택하세요.</p>';
+});
+
+cafeMapElement.addEventListener('wheel', (event) => {
+    const isZoomIn = event.deltaY < 0;
+    const isZoomOut = event.deltaY > 0;
+
+    if (!currentRegionName && (isZoomIn || isZoomOut)) {
+        const regionName = regionNameFromEventTarget(event.target) || focusedRegionName;
+
+        if (!regionName && overviewZoomLevel === 1) {
+            return;
+        }
+
+        event.preventDefault();
+        const now = Date.now();
+
+        if (now - lastOverviewZoomAt < OVERVIEW_ZOOM_INTERVAL_MS) {
+            return;
+        }
+
+        lastOverviewZoomAt = now;
+
+        if (isZoomIn) {
+            zoomIntoRegion(regionName);
+        } else {
+            zoomOutOverviewMap();
+        }
+
+        return;
+    }
+
+    if (currentRegionName && isZoomOut) {
+        event.preventDefault();
+        zoomOutToOverview();
+    }
+}, { passive: false });
+
+cafeMapElement.addEventListener('click', (event) => {
+    if (currentRegionName) {
+        return;
+    }
+
+    const regionName = regionNameFromEventTarget(event.target) || regionNameFromPoint(event);
+
+    if (regionName) {
+        selectRegion(regionName);
+    }
+});
+
+cafeMapElement.addEventListener('pointerdown', startOverviewDrag);
+cafeMapElement.addEventListener('pointermove', dragOverviewMap);
+cafeMapElement.addEventListener('pointerup', endOverviewDrag);
+cafeMapElement.addEventListener('pointercancel', endOverviewDrag);
+cafeMapElement.addEventListener('lostpointercapture', () => {
+    overviewDragStart = null;
+    koreaMapElement.classList.remove('is-overview-dragging');
 });
 
 Promise.all([

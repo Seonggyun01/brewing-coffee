@@ -94,11 +94,13 @@
 .origin-map-visual {
     position: relative;
     min-height: calc(100vh - 156px);
+    overflow: hidden;
 }
 
 .origin-map-stage {
     min-height: calc(100vh - 176px);
     padding: 0 0 76px;
+    overflow: hidden;
 }
 
 .world-map {
@@ -106,6 +108,64 @@
     height: min(74vh, 760px);
     min-height: 620px;
     display: block;
+    transform-origin: 50% 50%;
+    transition: transform 160ms ease;
+    will-change: transform;
+    touch-action: none;
+    cursor: default;
+}
+
+.world-map.is-zoomed {
+    cursor: grab;
+}
+
+.world-map.is-dragging {
+    cursor: grabbing;
+    transition: none;
+}
+
+.origin-map-zoom {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid rgba(132, 105, 76, 0.22);
+    border-radius: 8px;
+    background: rgba(255, 252, 247, 0.9);
+    box-shadow: 0 12px 24px rgba(68, 48, 31, 0.08);
+    backdrop-filter: blur(12px);
+}
+
+.origin-map-zoom button,
+.origin-map-zoom span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 34px;
+    border-radius: 8px;
+    font-weight: 900;
+}
+
+.origin-map-zoom button {
+    border: 1px solid var(--line);
+    color: var(--text);
+    background: #fffaf3;
+    cursor: pointer;
+}
+
+.origin-map-zoom button:hover {
+    border-color: #8f6237;
+    color: #5c2e1f;
+}
+
+.origin-map-zoom span {
+    color: #6f6359;
+    font-size: 14px;
 }
 
 .map-country {
