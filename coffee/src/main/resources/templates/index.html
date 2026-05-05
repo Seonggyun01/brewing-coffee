@@ -3,39 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BrewLog</title>
+    <title>BrewLog Origin Map</title>
     <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/origin-map.css(v=3)}">
 </head>
-<body>
-    <main class="home">
-        <section class="home__hero">
-            <p class="home__eyebrow">Brewing Coffee Journal</p>
-            <h1>BrewLog</h1>
-            <p class="home__summary">원두, 브루잉, 카페 방문 기록을 차곡차곡 쌓아가는 커피 기록 서비스</p>
-            <div class="home__actions">
-                <a class="button button--primary" th:href="@{/coffee-beans}">원두 관리</a>
-                <a class="button button--secondary" th:href="@{/brew-records}">브루잉 기록</a>
-                <a class="button button--ghost" th:href="@{/h2-console}">H2 콘솔</a>
-            </div>
+<body class="origin-map-page">
+    <header class="app-header">
+        <a class="app-header__brand" th:href="@{/}">
+            <span class="app-header__logo">B</span>
+            <strong>BrewLog</strong>
+        </a>
+        <nav class="app-header__nav" aria-label="주요 메뉴">
+            <a class="is-active" th:href="@{/}">Home</a>
+            <a th:href="@{/coffee-beans}">Beans</a>
+            <a th:href="@{/brew-records}">Brew Records</a>
+        </nav>
+        <a class="button button--primary" th:href="@{/coffee-beans/new}">새 원두 등록</a>
+    </header>
+
+    <main class="origin-map-shell">
+        <section class="origin-map-visual" aria-label="커피 원산지 세계 지도">
+            <div class="origin-map-stage" th:replace="~{fragments/world-map :: worldMap}"></div>
+
+            <section class="origin-map-stats" aria-label="원산지 경험 요약">
+                <article>
+                    <span>Countries</span>
+                    <strong data-stat="countries">0</strong>
+                    <small>경험한 산지</small>
+                </article>
+                <article>
+                    <span>Beans</span>
+                    <strong data-stat="beans">0</strong>
+                    <small>기록한 원두</small>
+                </article>
+                <article>
+                    <span>Brews</span>
+                    <strong data-stat="brews">0</strong>
+                    <small>브루잉 순간</small>
+                </article>
+            </section>
         </section>
 
-        <section class="home__grid" aria-label="BrewLog 주요 기록">
-            <article class="home__card">
-                <span>01</span>
-                <h2>원두</h2>
-                <p>이름, 로스터리, 산지, 가공 방식, 로스팅 날짜와 구매 정보를 기록합니다.</p>
-            </article>
-            <article class="home__card">
-                <span>02</span>
-                <h2>브루잉</h2>
-                <p>레시피, 추출 조건, 맛 평가를 한 곳에서 관리합니다.</p>
-            </article>
-            <article class="home__card">
-                <span>03</span>
-                <h2>카페 방문</h2>
-                <p>방문한 카페와 마신 커피의 인상을 남깁니다.</p>
-            </article>
-        </section>
+        <aside class="origin-country-panel" data-country-panel aria-live="polite" hidden>
+            <button class="origin-country-panel__close" type="button" data-country-panel-close aria-label="국가 정보 닫기">×</button>
+            <p class="origin-country-panel__eyebrow">Selected Country</p>
+            <h1 data-country-name>국가를 선택하세요</h1>
+            <p data-country-summary>지도에서 색이 칠해진 산지를 선택하면 원두 기록을 볼 수 있어요.</p>
+            <a class="origin-country-panel__cta" data-country-link th:href="@{/coffee-beans}">전체 원두 보기</a>
+
+            <div class="origin-country-panel__meta">
+                <span>색상 기준</span>
+                <p>1개, 2-3개, 4개 이상 원두 경험에 따라 진하게 표시됩니다.</p>
+            </div>
+
+            <section class="origin-bean-preview">
+                <div>
+                    <h2>최근 원두</h2>
+                    <a data-country-more th:href="@{/coffee-beans}">전체 보기</a>
+                </div>
+                <div class="origin-bean-preview__list" data-recent-beans>
+                    <p>아직 선택된 국가가 없습니다.</p>
+                </div>
+            </section>
+        </aside>
     </main>
+
+    <script th:src="@{/js/origin-map.js(v=4)}"></script>
 </body>
 </html>

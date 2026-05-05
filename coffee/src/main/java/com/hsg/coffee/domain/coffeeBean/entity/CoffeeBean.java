@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
+import com.hsg.coffee.global.country.CountryInfo;
 import com.hsg.coffee.global.entity.BaseTimeEntity;
 
 import jakarta.persistence.CollectionTable;
@@ -44,6 +45,9 @@ public class CoffeeBean extends BaseTimeEntity {
 
     @Column(length = 100)
     private String country;
+
+    @Column(length = 2)
+    private String originCountryCode;
 
     @Column(length = 100)
     private String region;
@@ -114,6 +118,45 @@ public class CoffeeBean extends BaseTimeEntity {
                 name,
                 roastery,
                 country,
+                CountryInfo.findCodeByName(country),
+                region,
+                farm,
+                variety,
+                altitude,
+                processType,
+                flavorNotes,
+                customFlavorNotes,
+                memo,
+                roastedDate,
+                purchasedDate,
+                price,
+                weight
+        );
+    }
+
+    public static CoffeeBean create(
+            String name,
+            String roastery,
+            String country,
+            String originCountryCode,
+            String region,
+            String farm,
+            String variety,
+            String altitude,
+            ProcessType processType,
+            List<FlavorNote> flavorNotes,
+            List<String> customFlavorNotes,
+            String memo,
+            LocalDate roastedDate,
+            LocalDate purchasedDate,
+            Integer price,
+            Integer weight
+    ) {
+        return create(
+                name,
+                roastery,
+                country,
+                originCountryCode,
                 region,
                 farm,
                 variety,
@@ -135,6 +178,7 @@ public class CoffeeBean extends BaseTimeEntity {
             String name,
             String roastery,
             String country,
+            String originCountryCode,
             String region,
             String farm,
             String variety,
@@ -154,6 +198,7 @@ public class CoffeeBean extends BaseTimeEntity {
         coffeeBean.name = name;
         coffeeBean.roastery = roastery;
         coffeeBean.country = country;
+        coffeeBean.originCountryCode = normalizeCountryCode(originCountryCode);
         coffeeBean.region = region;
         coffeeBean.farm = farm;
         coffeeBean.variety = variety;
@@ -191,12 +236,54 @@ public class CoffeeBean extends BaseTimeEntity {
             LocalDate purchasedDate,
             Integer price,
             Integer weight,
+            CoffeeBeanStatus status,
             PurchasePlace purchasePlace
     ) {
         return create(
                 name,
                 roastery,
                 country,
+                CountryInfo.findCodeByName(country),
+                region,
+                farm,
+                variety,
+                altitude,
+                processType,
+                flavorNotes,
+                customFlavorNotes,
+                memo,
+                roastedDate,
+                purchasedDate,
+                price,
+                weight,
+                status,
+                purchasePlace
+        );
+    }
+
+    public static CoffeeBean create(
+            String name,
+            String roastery,
+            String country,
+            String region,
+            String farm,
+            String variety,
+            String altitude,
+            ProcessType processType,
+            List<FlavorNote> flavorNotes,
+            List<String> customFlavorNotes,
+            String memo,
+            LocalDate roastedDate,
+            LocalDate purchasedDate,
+            Integer price,
+            Integer weight,
+            PurchasePlace purchasePlace
+    ) {
+        return create(
+                name,
+                roastery,
+                country,
+                CountryInfo.findCodeByName(country),
                 region,
                 farm,
                 variety,
@@ -235,6 +322,45 @@ public class CoffeeBean extends BaseTimeEntity {
                 name,
                 roastery,
                 country,
+                CountryInfo.findCodeByName(country),
+                region,
+                farm,
+                variety,
+                altitude,
+                processType,
+                flavorNotes,
+                customFlavorNotes,
+                memo,
+                roastedDate,
+                purchasedDate,
+                price,
+                weight
+        );
+    }
+
+    public void update(
+            String name,
+            String roastery,
+            String country,
+            String originCountryCode,
+            String region,
+            String farm,
+            String variety,
+            String altitude,
+            ProcessType processType,
+            List<FlavorNote> flavorNotes,
+            List<String> customFlavorNotes,
+            String memo,
+            LocalDate roastedDate,
+            LocalDate purchasedDate,
+            Integer price,
+            Integer weight
+    ) {
+        update(
+                name,
+                roastery,
+                country,
+                originCountryCode,
                 region,
                 farm,
                 variety,
@@ -256,6 +382,7 @@ public class CoffeeBean extends BaseTimeEntity {
             String name,
             String roastery,
             String country,
+            String originCountryCode,
             String region,
             String farm,
             String variety,
@@ -274,6 +401,7 @@ public class CoffeeBean extends BaseTimeEntity {
         this.name = name;
         this.roastery = roastery;
         this.country = country;
+        this.originCountryCode = normalizeCountryCode(originCountryCode);
         this.region = region;
         this.farm = farm;
         this.variety = variety;
@@ -296,6 +424,47 @@ public class CoffeeBean extends BaseTimeEntity {
         this.purchasePlace = purchasePlace;
     }
 
+    public void update(
+            String name,
+            String roastery,
+            String country,
+            String region,
+            String farm,
+            String variety,
+            String altitude,
+            ProcessType processType,
+            List<FlavorNote> flavorNotes,
+            List<String> customFlavorNotes,
+            String memo,
+            LocalDate roastedDate,
+            LocalDate purchasedDate,
+            Integer price,
+            Integer weight,
+            CoffeeBeanStatus status,
+            PurchasePlace purchasePlace
+    ) {
+        update(
+                name,
+                roastery,
+                country,
+                CountryInfo.findCodeByName(country),
+                region,
+                farm,
+                variety,
+                altitude,
+                processType,
+                flavorNotes,
+                customFlavorNotes,
+                memo,
+                roastedDate,
+                purchasedDate,
+                price,
+                weight,
+                status,
+                purchasePlace
+        );
+    }
+
     public Integer useWeight(Integer usedWeight) {
         if (status != CoffeeBeanStatus.CURRENT || weight == null || usedWeight == null || usedWeight <= 0) {
             return 0;
@@ -316,5 +485,12 @@ public class CoffeeBean extends BaseTimeEntity {
         if (status == CoffeeBeanStatus.FINISHED && this.weight > 0) {
             this.status = CoffeeBeanStatus.CURRENT;
         }
+    }
+
+    private static String normalizeCountryCode(String originCountryCode) {
+        if (originCountryCode == null || originCountryCode.isBlank()) {
+            return null;
+        }
+        return originCountryCode.trim().toUpperCase();
     }
 }

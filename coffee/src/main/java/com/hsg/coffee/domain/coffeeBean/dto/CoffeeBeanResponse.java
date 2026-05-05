@@ -11,6 +11,7 @@ import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBeanStatus;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
+import com.hsg.coffee.global.country.CountryInfo;
 
 import lombok.Getter;
 
@@ -21,6 +22,8 @@ public class CoffeeBeanResponse {
     private final String name;
     private final String roastery;
     private final String country;
+    private final String originCountryCode;
+    private final String originCountryDisplayName;
     private final String region;
     private final String farm;
     private final String variety;
@@ -51,6 +54,9 @@ public class CoffeeBeanResponse {
         this.name = coffeeBean.getName();
         this.roastery = coffeeBean.getRoastery();
         this.country = coffeeBean.getCountry();
+        this.originCountryCode = coffeeBean.getOriginCountryCode();
+        CountryInfo countryInfo = CountryInfo.findByCode(coffeeBean.getOriginCountryCode());
+        this.originCountryDisplayName = countryInfo != null ? countryInfo.getDisplayName() : coffeeBean.getCountry();
         this.region = coffeeBean.getRegion();
         this.farm = coffeeBean.getFarm();
         this.variety = coffeeBean.getVariety();

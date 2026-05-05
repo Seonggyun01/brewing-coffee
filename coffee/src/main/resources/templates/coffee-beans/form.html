@@ -31,8 +31,14 @@
                     </label>
 
                     <label>
-                        <span>국가</span>
-                        <input type="text" th:field="*{country}" placeholder="예: Ethiopia">
+                        <span>산지 국가</span>
+                        <select th:field="*{originCountryCode}">
+                            <option value="">선택 안 함</option>
+                            <option th:each="countryInfo : ${countryInfos}"
+                                    th:value="${countryInfo.code}"
+                                    th:text="${countryInfo.displayName}">에티오피아 (Ethiopia)</option>
+                        </select>
+                        <small th:if="${#fields.hasErrors('originCountryCode')}" th:errors="*{originCountryCode}"></small>
                     </label>
 
                     <label>

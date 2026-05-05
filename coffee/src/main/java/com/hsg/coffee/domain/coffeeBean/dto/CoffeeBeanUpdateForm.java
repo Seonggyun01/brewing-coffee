@@ -33,6 +33,9 @@ public class CoffeeBeanUpdateForm {
     @Size(max = 100, message = "국가는 100자 이하로 입력해주세요.")
     private String country;
 
+    @Size(max = 2, message = "국가 코드는 2자 이하로 입력해주세요.")
+    private String originCountryCode;
+
     @Size(max = 100, message = "지역은 100자 이하로 입력해주세요.")
     private String region;
 
@@ -86,6 +89,7 @@ public class CoffeeBeanUpdateForm {
         form.name = coffeeBean.getName();
         form.roastery = coffeeBean.getRoastery();
         form.country = coffeeBean.getCountry();
+        form.originCountryCode = coffeeBean.getOriginCountryCode();
         form.region = coffeeBean.getRegion();
         form.farm = coffeeBean.getFarm();
         form.variety = coffeeBean.getVariety();

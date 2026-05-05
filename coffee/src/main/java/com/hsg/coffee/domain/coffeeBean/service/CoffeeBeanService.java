@@ -14,6 +14,7 @@ import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBean;
 import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
 import com.hsg.coffee.domain.purchasePlace.service.PurchasePlaceService;
+import com.hsg.coffee.global.country.CountryInfo;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,11 +37,14 @@ public class CoffeeBeanService {
                 form.getPurchasePlaceAddress(),
                 form.getPurchasePlaceMemo()
         );
+        CountryInfo originCountry = CountryInfo.findByCode(form.getOriginCountryCode());
+        String country = originCountry != null ? originCountry.getEnglishName() : form.getCountry();
 
         CoffeeBean coffeeBean = coffeeBeanRepository.save(CoffeeBean.create(
                 form.getName(),
                 form.getRoastery(),
-                form.getCountry(),
+                country,
+                form.getOriginCountryCode(),
                 form.getRegion(),
                 form.getFarm(),
                 form.getVariety(),
@@ -71,12 +75,28 @@ public class CoffeeBeanService {
     }
 
     public List<CoffeeBeanResponse> searchByName(String keyword) {
-        if (!StringUtils.hasText(keyword)) {
-            return getAll();
+        return findCoffeeBeans(keyword, null);
+    }
+
+    public List<CoffeeBeanResponse> findCoffeeBeans(String keyword, String countryCode) {
+        String trimmedKeyword = StringUtils.hasText(keyword) ? keyword.trim() : null;
+        String normalizedCountryCode = normalizeCountryCode(countryCode);
+
+        List<CoffeeBean> coffeeBeans;
+        if (normalizedCountryCode != null && trimmedKeyword != null) {
+            coffeeBeans = coffeeBeanRepository.findByOriginCountryCodeAndNameContainingIgnoreCaseOrderByIdDesc(
+                    normalizedCountryCode,
+                    trimmedKeyword
+            );
+        } else if (normalizedCountryCode != null) {
+            coffeeBeans = coffeeBeanRepository.findByOriginCountryCodeOrderByIdDesc(normalizedCountryCode);
+        } else if (trimmedKeyword != null) {
+            coffeeBeans = coffeeBeanRepository.findByNameContainingIgnoreCaseOrderByIdDesc(trimmedKeyword);
+        } else {
+            coffeeBeans = coffeeBeanRepository.findAllByOrderByIdDesc();
         }
 
-        return coffeeBeanRepository.findByNameContainingIgnoreCaseOrderByIdDesc(keyword.trim())
-                .stream()
+        return coffeeBeans.stream()
                 .map(CoffeeBeanResponse::from)
                 .toList();
     }
@@ -106,11 +126,14 @@ public class CoffeeBeanService {
                 form.getPurchasePlaceAddress(),
                 form.getPurchasePlaceMemo()
         );
+        CountryInfo originCountry = CountryInfo.findByCode(form.getOriginCountryCode());
+        String country = originCountry != null ? originCountry.getEnglishName() : form.getCountry();
 
         coffeeBean.update(
                 form.getName(),
                 form.getRoastery(),
-                form.getCountry(),
+                country,
+                form.getOriginCountryCode(),
                 form.getRegion(),
                 form.getFarm(),
                 form.getVariety(),
@@ -154,5 +177,12 @@ public class CoffeeBeanService {
                 .distinct()
                 .limit(12)
                 .toList();
+    }
+
+    private String normalizeCountryCode(String countryCode) {
+        if (!StringUtils.hasText(countryCode)) {
+            return null;
+        }
+        return countryCode.trim().toUpperCase();
     }
 }

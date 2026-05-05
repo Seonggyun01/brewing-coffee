@@ -1,11 +1,10 @@
 package com.hsg.coffee.domain.coffeeBean.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.hsg.coffee.domain.brewRecord.entity.FlavorCategory;
-import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,13 +16,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.hsg.coffee.domain.brewRecord.entity.FlavorCategory;
+import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCreateForm;
+import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanResponse;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanUpdateForm;
 import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBeanStatus;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanService;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
 import com.hsg.coffee.domain.purchasePlace.service.PurchasePlaceService;
+import com.hsg.coffee.global.country.CountryInfo;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,9 +40,21 @@ public class CoffeeBeanController {
     private final PurchasePlaceService purchasePlaceService;
 
     @GetMapping
-    public String list(@RequestParam(required = false) String keyword, Model model) {
-        model.addAttribute("coffeeBeans", coffeeBeanService.searchByName(keyword));
+    public String list(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String countryCode,
+            Model model
+    ) {
+        List<CoffeeBeanResponse> coffeeBeans = coffeeBeanService.findCoffeeBeans(keyword, countryCode);
+        CountryInfo selectedCountry = CountryInfo.findByCode(countryCode);
+
+        model.addAttribute("coffeeBeans", coffeeBeans);
+        model.addAttribute("currentCoffeeBeans", filterByStatus(coffeeBeans, CoffeeBeanStatus.CURRENT));
+        model.addAttribute("finishedCoffeeBeans", filterByStatus(coffeeBeans, CoffeeBeanStatus.FINISHED));
+        model.addAttribute("cafeCoffeeBeans", filterByStatus(coffeeBeans, CoffeeBeanStatus.CAFE));
         model.addAttribute("keyword", keyword);
+        model.addAttribute("selectedCountryCode", selectedCountry != null ? selectedCountry.getCode() : null);
+        model.addAttribute("selectedCountryName", selectedCountry != null ? selectedCountry.getDisplayName() : null);
         return "coffee-beans/list";
     }
 
@@ -114,8 +129,18 @@ public class CoffeeBeanController {
         model.addAttribute("processTypes", ProcessType.values());
         model.addAttribute("coffeeBeanStatuses", CoffeeBeanStatus.values());
         model.addAttribute("purchasePlaceTypes", PurchasePlaceType.values());
+        model.addAttribute("countryInfos", CountryInfo.values());
         model.addAttribute("purchasePlaces", purchasePlaceService.getAll());
         model.addAttribute("flavorCategories", FlavorCategory.values());
         model.addAttribute("flavorNotesByCategory", flavorNotesByCategory);
+    }
+
+    private List<CoffeeBeanResponse> filterByStatus(
+            List<CoffeeBeanResponse> coffeeBeans,
+            CoffeeBeanStatus status
+    ) {
+        return coffeeBeans.stream()
+                .filter(coffeeBean -> coffeeBean.getStatus() == status)
+                .toList();
     }
 }

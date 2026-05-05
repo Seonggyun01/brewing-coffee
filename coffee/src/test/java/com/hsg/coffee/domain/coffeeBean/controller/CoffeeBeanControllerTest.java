@@ -55,7 +55,12 @@ class CoffeeBeanControllerTest {
         mockMvc.perform(get("/coffee-beans"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("coffee-beans/list"))
-                .andExpect(model().attributeExists("coffeeBeans"));
+                .andExpect(model().attributeExists(
+                        "coffeeBeans",
+                        "currentCoffeeBeans",
+                        "finishedCoffeeBeans",
+                        "cafeCoffeeBeans"
+                ));
     }
 
     @Test
