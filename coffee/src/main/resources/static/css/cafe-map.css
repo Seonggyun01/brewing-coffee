@@ -191,10 +191,20 @@
 }
 
 .cafe-detail-marker path {
-    fill: #6b321f;
-    stroke: rgba(255, 250, 243, 0.94);
-    stroke-width: 18;
+    fill: #2f6f5e;
+    stroke: #fffaf3;
+    stroke-width: 22;
     stroke-linejoin: round;
+    filter: drop-shadow(0 10px 18px rgba(47, 111, 94, 0.38));
+}
+
+.cafe-detail-marker.is-active path,
+.cafe-detail-marker:hover path {
+    fill: #1f5146;
+}
+
+.cafe-map__geo-path--subregion {
+    cursor: default;
 }
 
 .cafe-map__grid {

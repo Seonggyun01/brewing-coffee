@@ -29,6 +29,7 @@ const DARK_REGION_COLOR = { r: 92, g: 46, b: 31 };
 
 let currentCafes = [];
 let currentTopology = null;
+let municipalityTopology = null;
 let currentRegionName = null;
 
 const REGION_LABELS = {
@@ -76,6 +77,34 @@ const ADDRESS_REGION_RULES = [
     { keyword: '제주', region: 'Jeju' }
 ];
 
+const ADDRESS_SUBREGION_RULES = [
+    { keyword: '강남구', region: 'Seoul', subregion: 'Gangnam' },
+    { keyword: '강동구', region: 'Seoul', subregion: 'Gandong' },
+    { keyword: '강북구', region: 'Seoul', subregion: 'Gangbuk' },
+    { keyword: '강서구', region: 'Seoul', subregion: 'Gangseo' },
+    { keyword: '관악구', region: 'Seoul', subregion: 'Gwanak' },
+    { keyword: '광진구', region: 'Seoul', subregion: 'Gwang-jin' },
+    { keyword: '구로구', region: 'Seoul', subregion: 'Guro' },
+    { keyword: '금천구', region: 'Seoul', subregion: 'Geum-cheon' },
+    { keyword: '노원구', region: 'Seoul', subregion: 'Nowon' },
+    { keyword: '도봉구', region: 'Seoul', subregion: 'Dobong' },
+    { keyword: '동대문구', region: 'Seoul', subregion: 'Dong-daemun' },
+    { keyword: '동작구', region: 'Seoul', subregion: 'Dongjak' },
+    { keyword: '마포구', region: 'Seoul', subregion: 'Mapo' },
+    { keyword: '서대문구', region: 'Seoul', subregion: 'Seodaemun' },
+    { keyword: '서초구', region: 'Seoul', subregion: 'Seocho' },
+    { keyword: '성동구', region: 'Seoul', subregion: 'Seongdong' },
+    { keyword: '성북구', region: 'Seoul', subregion: 'Seongbuk' },
+    { keyword: '송파구', region: 'Seoul', subregion: 'Songpa' },
+    { keyword: '양천구', region: 'Seoul', subregion: 'Yangcheon' },
+    { keyword: '영등포구', region: 'Seoul', subregion: 'Yeongdeungpo' },
+    { keyword: '용산구', region: 'Seoul', subregion: 'Yongsan' },
+    { keyword: '은평구', region: 'Seoul', subregion: 'Eun-pyeong' },
+    { keyword: '종로구', region: 'Seoul', subregion: 'Jongro' },
+    { keyword: '중구', region: 'Seoul', subregion: 'Jung' },
+    { keyword: '중랑구', region: 'Seoul', subregion: 'Jungnang' }
+];
+
 const coordinateRegionRules = [
     { region: 'Seoul', test: ({ latitude, longitude }) => latitude >= 37.41 && latitude <= 37.7 && longitude >= 126.76 && longitude <= 127.2 },
     { region: 'Incheon', test: ({ latitude, longitude }) => latitude >= 37.25 && latitude <= 37.65 && longitude >= 126.35 && longitude <= 126.86 },
@@ -112,6 +141,15 @@ const resolveRegionName = (cafe) => {
 
     const coordinateRule = coordinateRegionRules.find((rule) => rule.test(cafe));
     return coordinateRule ? coordinateRule.region : null;
+};
+
+const resolveSubregionName = (cafe, regionName) => {
+    const address = cafe.address || '';
+    const addressRule = ADDRESS_SUBREGION_RULES.find((rule) => {
+        return rule.region === regionName && address.includes(rule.keyword);
+    });
+
+    return addressRule ? addressRule.subregion : null;
 };
 
 const cafesInRegion = (regionName) => {
@@ -181,8 +219,27 @@ const collectProjectedCoordinates = (topology, geometry) => {
     });
 };
 
+const collectGeometryCoordinates = (topology, geometry) => {
+    return geometryPolygons(geometry).map((polygon) => {
+        return polygon.map((ring) => ringCoordinates(topology, ring));
+    });
+};
+
 const boundsForGeometry = (topology, geometry) => {
     const points = collectProjectedCoordinates(topology, geometry);
+    const xs = points.map(([x]) => x);
+    const ys = points.map(([, y]) => y);
+
+    return {
+        minX: Math.min(...xs),
+        maxX: Math.max(...xs),
+        minY: Math.min(...ys),
+        maxY: Math.max(...ys)
+    };
+};
+
+const boundsForGeometries = (topology, geometries) => {
+    const points = geometries.flatMap((geometry) => collectProjectedCoordinates(topology, geometry));
     const xs = points.map(([x]) => x);
     const ys = points.map(([, y]) => y);
 
@@ -222,27 +279,99 @@ const geometryToPath = (topology, geometry) => {
 };
 
 const regionCollection = () => currentTopology.objects['skorea-provinces-geo'];
+const municipalityCollection = () => municipalityTopology.objects['skorea-municipalities-geo'];
 
 const findRegionGeometry = (regionName) => {
     return regionCollection().geometries.find((geometry) => geometry.properties.NAME_1 === regionName);
 };
 
-const createRegionPath = (geometry, count, maxCount, isDetail = false) => {
+const findSubregionGeometries = (regionName) => {
+    if (!municipalityTopology) {
+        return [];
+    }
+
+    return municipalityCollection().geometries.filter((geometry) => geometry.properties.NAME_1 === regionName);
+};
+
+const pointInRing = ([longitude, latitude], ring) => {
+    let isInside = false;
+
+    for (let index = 0, previousIndex = ring.length - 1; index < ring.length; previousIndex = index++) {
+        const [currentLongitude, currentLatitude] = ring[index];
+        const [previousLongitude, previousLatitude] = ring[previousIndex];
+        const intersects = (currentLatitude > latitude) !== (previousLatitude > latitude)
+            && longitude < ((previousLongitude - currentLongitude) * (latitude - currentLatitude)) / (previousLatitude - currentLatitude) + currentLongitude;
+
+        if (intersects) {
+            isInside = !isInside;
+        }
+    }
+
+    return isInside;
+};
+
+const pointInGeometry = (topology, geometry, coordinate) => {
+    return collectGeometryCoordinates(topology, geometry).some((polygon) => {
+        const [outerRing, ...innerRings] = polygon;
+        const isInsideOuterRing = pointInRing(coordinate, outerRing);
+        const isInsideInnerRing = innerRings.some((ring) => pointInRing(coordinate, ring));
+
+        return isInsideOuterRing && !isInsideInnerRing;
+    });
+};
+
+const findSubregionForCafe = (subregions, cafe) => {
+    const regionName = resolveRegionName(cafe);
+    const addressSubregionName = resolveSubregionName(cafe, regionName);
+    const addressSubregion = subregions.find((geometry) => geometry.properties.NAME_2 === addressSubregionName);
+
+    if (addressSubregion) {
+        return addressSubregion;
+    }
+
+    return subregions.find((geometry) => {
+        return pointInGeometry(municipalityTopology, geometry, [cafe.longitude, cafe.latitude]);
+    });
+};
+
+const buildSubregionCounts = (subregions, cafes) => {
+    return cafes.reduce((counts, cafe) => {
+        const subregion = findSubregionForCafe(subregions, cafe);
+
+        if (!subregion) {
+            return counts;
+        }
+
+        const subregionName = subregion.properties.NAME_2;
+        counts.set(subregionName, (counts.get(subregionName) || 0) + 1);
+        return counts;
+    }, new Map());
+};
+
+const createRegionPath = (geometry, count, maxCount, options = {}) => {
+    const {
+        topology = currentTopology,
+        isDetail = false,
+        isSubregion = false,
+        onClick = null
+    } = options;
     const regionName = geometry.properties.NAME_1;
+    const subregionName = geometry.properties.NAME_2;
+    const displayName = subregionName || regionName;
     const path = document.createElementNS(SVG_NS, 'path');
 
-    path.setAttribute('class', `cafe-map__geo-path${isDetail ? ' cafe-map__geo-path--detail' : ''}`);
-    path.setAttribute('d', geometryToPath(currentTopology, geometry));
+    path.setAttribute('class', `cafe-map__geo-path${isDetail ? ' cafe-map__geo-path--detail' : ''}${isSubregion ? ' cafe-map__geo-path--subregion' : ''}`);
+    path.setAttribute('d', geometryToPath(topology, geometry));
     path.setAttribute('fill', colorForCount(count, maxCount));
-    path.setAttribute('data-region', regionName);
+    path.setAttribute('data-region', displayName);
     path.setAttribute('data-count', String(count));
 
     const title = document.createElementNS(SVG_NS, 'title');
-    title.textContent = `${REGION_LABELS[regionName] || regionName}: 방문 카페 ${count}개`;
+    title.textContent = `${REGION_LABELS[displayName] || displayName}: 방문 카페 ${count}개`;
     path.appendChild(title);
 
-    if (!isDetail) {
-        path.addEventListener('click', () => selectRegion(regionName));
+    if (onClick) {
+        path.addEventListener('click', onClick);
     }
 
     return path;
@@ -276,8 +405,22 @@ const setActiveCafe = (cafe) => {
     });
 };
 
-const renderCafeMarker = (cafe, viewBoxSize) => {
-    const [x, y] = projectCoordinate([cafe.longitude, cafe.latitude]);
+const markerPositionForCafe = (cafe, subregions) => {
+    const coordinate = [cafe.longitude, cafe.latitude];
+    const regionName = resolveRegionName(cafe);
+    const addressSubregionName = resolveSubregionName(cafe, regionName);
+    const addressSubregion = subregions.find((geometry) => geometry.properties.NAME_2 === addressSubregionName);
+
+    if (addressSubregion && !pointInGeometry(municipalityTopology, addressSubregion, coordinate)) {
+        return centerForGeometry(municipalityTopology, addressSubregion);
+    }
+
+    const [x, y] = projectCoordinate(coordinate);
+    return { x, y };
+};
+
+const renderCafeMarker = (cafe, viewBoxSize, subregions = []) => {
+    const { x, y } = markerPositionForCafe(cafe, subregions);
     const scale = clamp(viewBoxSize * 0.000034, 0.0022, 0.0052);
     const marker = document.createElementNS(SVG_NS, 'g');
     const pin = document.createElementNS(SVG_NS, 'path');
@@ -311,19 +454,23 @@ const renderOverviewMap = () => {
     regionCollection().geometries.forEach((geometry) => {
         const regionName = geometry.properties.NAME_1;
         const count = regionCounts.get(regionName) || 0;
-        koreaMapElement.appendChild(createRegionPath(geometry, count, maxCount));
+        koreaMapElement.appendChild(createRegionPath(geometry, count, maxCount, {
+            onClick: () => selectRegion(regionName)
+        }));
     });
 
     cafeCountElement.textContent = currentCafes.length;
 };
 
 const renderDetailMap = (regionName) => {
-    const geometry = findRegionGeometry(regionName);
+    const fallbackGeometry = findRegionGeometry(regionName);
+    const subregions = findSubregionGeometries(regionName);
+    const detailGeometries = subregions.length > 0 ? subregions : [fallbackGeometry];
+    const detailTopology = subregions.length > 0 ? municipalityTopology : currentTopology;
     const regionCafes = cafesInRegion(regionName);
-    const regionCounts = buildRegionCounts(currentCafes);
-    const maxCount = Math.max(1, ...regionCounts.values());
-    const count = regionCounts.get(regionName) || 0;
-    const bounds = boundsForGeometry(currentTopology, geometry);
+    const subregionCounts = buildSubregionCounts(subregions, regionCafes);
+    const maxCount = Math.max(1, ...subregionCounts.values(), regionCafes.length);
+    const bounds = boundsForGeometries(detailTopology, detailGeometries);
     const padding = Math.max(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY) * 0.18;
     const minX = Math.max(0, bounds.minX - padding);
     const minY = Math.max(0, bounds.minY - padding);
@@ -337,8 +484,18 @@ const renderDetailMap = (regionName) => {
     markerLayerElement.innerHTML = '';
     mapBackButton.hidden = false;
 
-    koreaMapElement.appendChild(createRegionPath(geometry, count, maxCount, true));
-    regionCafes.forEach((cafe) => koreaMapElement.appendChild(renderCafeMarker(cafe, Math.max(width, height))));
+    detailGeometries.forEach((geometry) => {
+        const subregionName = geometry.properties.NAME_2;
+        const count = subregionName ? (subregionCounts.get(subregionName) || 0) : regionCafes.length;
+
+        koreaMapElement.appendChild(createRegionPath(geometry, count, maxCount, {
+            topology: detailTopology,
+            isDetail: true,
+            isSubregion: Boolean(subregionName)
+        }));
+    });
+
+    regionCafes.forEach((cafe) => koreaMapElement.appendChild(renderCafeMarker(cafe, Math.max(width, height), subregions)));
 
     renderSelectedRegion(regionName, regionCafes);
     renderCafeList(regionCafes);
@@ -381,11 +538,13 @@ mapBackButton.addEventListener('click', () => {
 
 Promise.all([
     fetch('/api/maps/cafes').then((response) => response.json()),
-    fetch('/data/skorea-provinces-topo.json').then((response) => response.json())
+    fetch('/data/skorea-provinces-topo.json').then((response) => response.json()),
+    fetch('/data/skorea-municipalities-topo.json').then((response) => response.json())
 ])
-    .then(([cafes, topology]) => {
+    .then(([cafes, topology, municipalityData]) => {
         currentCafes = cafes;
         currentTopology = topology;
+        municipalityTopology = municipalityData;
         renderOverviewMap();
     })
     .catch(() => {
