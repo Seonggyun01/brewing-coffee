@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>카페 지도 - BrewLog</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/cafe-map.css(v=12)}">
+</head>
+<body class="cafe-map-page">
+    <header class="app-header">
+        <a class="app-header__brand" th:href="@{/}">
+            <span class="app-header__logo">B</span>
+            <strong>BrewLog</strong>
+        </a>
+        <nav class="app-header__nav" aria-label="주요 메뉴">
+            <a th:href="@{/}">Home</a>
+            <a th:href="@{/coffee-beans}">Beans</a>
+            <a th:href="@{/brew-records}">Brew Records</a>
+            <a class="is-active" th:href="@{/cafes/map}">Cafe Map</a>
+        </nav>
+        <a class="button button--primary" th:href="@{/coffee-beans/new}">새 원두 등록</a>
+    </header>
+
+    <main class="cafe-map-shell">
+        <section class="cafe-map-hero">
+            <div>
+                <p class="cafe-map-hero__eyebrow">Cafe Map</p>
+                <h1>카페 지도</h1>
+                <p>방문했거나 기록해둔 카페를 지도에서 확인해보세요.</p>
+            </div>
+            <a class="button button--secondary" href="#">카페 방문 기록</a>
+        </section>
+
+        <section class="cafe-map-layout">
+            <div class="cafe-map-card">
+                <div id="cafeMap" class="cafe-map" aria-label="방문 카페 한국 지도">
+                    <button class="cafe-map__back" type="button" data-map-back hidden>전체 지도</button>
+                    <svg class="cafe-map__svg" viewBox="0 0 560 720" role="img" aria-label="대한민국 시도별 방문 카페 지도" data-korea-map></svg>
+                    <div class="cafe-map__grid" aria-hidden="true"></div>
+                    <div class="cafe-map__marker-layer" data-cafe-marker-layer></div>
+                </div>
+            </div>
+
+            <aside class="cafe-map-panel">
+                <div class="cafe-map-panel__header">
+                    <div>
+                        <span>Visited Cafes</span>
+                        <h2>방문 카페</h2>
+                    </div>
+                    <strong data-cafe-count>0</strong>
+                </div>
+                <div class="cafe-map-panel__selected" data-selected-cafe>
+                    <p>지도나 목록에서 카페를 선택하세요.</p>
+                </div>
+                <div class="cafe-map-list" data-cafe-list>
+                    <p>카페 데이터를 불러오는 중입니다.</p>
+                </div>
+            </aside>
+        </section>
+    </main>
+
+    <script th:src="@{/js/cafe-map.js(v=12)}"></script>
+</body>
+</html>
