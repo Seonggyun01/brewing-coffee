@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -80,6 +81,8 @@ class CoffeeBeanControllerTest {
         mockMvc.perform(get("/coffee-beans/new"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("coffee-beans/form"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("원두 카드 사진으로 자동 입력")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("/coffee-beans/card-extraction")))
                 .andExpect(model().attributeExists("coffeeBeanStatuses", "purchasePlaces"));
     }
 
@@ -161,6 +164,8 @@ class CoffeeBeanControllerTest {
         mockMvc.perform(multipart("/coffee-beans/card-extraction").file(image))
                 .andExpect(status().isOk())
                 .andExpect(view().name("coffee-beans/form"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("추출된 텍스트")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Ethiopia Yirgacheffe Kochere")))
                 .andExpect(model().attributeExists(
                         "coffeeBeanForm",
                         "extractedRawText",
@@ -186,6 +191,8 @@ class CoffeeBeanControllerTest {
         mockMvc.perform(multipart("/coffee-beans/card-extraction").file(image))
                 .andExpect(status().isOk())
                 .andExpect(view().name("coffee-beans/form"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("자동 입력 확인이 필요해요")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("이미지 파일만 업로드할 수 있습니다.")))
                 .andExpect(model().attributeExists("coffeeBeanForm", "extractionWarnings"))
                 .andExpect(model().attributeDoesNotExist("extractedRawText"));
 

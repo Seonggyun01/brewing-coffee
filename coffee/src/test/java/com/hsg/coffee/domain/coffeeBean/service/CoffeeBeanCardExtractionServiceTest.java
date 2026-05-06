@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -50,6 +51,9 @@ class CoffeeBeanCardExtractionServiceTest {
         System.out.println("국가: " + form.getCountry());
         System.out.println("가공 방식: " + form.getProcessType());
         System.out.println("향미 노트: " + form.getFlavorNotes());
+        System.out.println("용량: " + form.getWeight());
+        System.out.println("가격: " + form.getPrice());
+        System.out.println("로스팅일: " + form.getRoastedDate());
 
         assertTrue(result.getRawText().contains("Ethiopia Yirgacheffe Kochere"));
         assertEquals("Ethiopia Yirgacheffe Kochere", form.getName());
@@ -58,6 +62,9 @@ class CoffeeBeanCardExtractionServiceTest {
         assertEquals("ET", form.getOriginCountryCode());
         assertEquals(ProcessType.WASHED, form.getProcessType());
         assertEquals(List.of(FlavorNote.JASMINE, FlavorNote.LEMON, FlavorNote.PEACH), form.getFlavorNotes());
+        assertEquals(200, form.getWeight());
+        assertEquals(18000, form.getPrice());
+        assertEquals(LocalDate.of(2026, 5, 1), form.getRoastedDate());
         assertTrue(result.getWarnings().isEmpty());
     }
 
@@ -173,7 +180,33 @@ class CoffeeBeanCardExtractionServiceTest {
         assertEquals("Kenya Kirinyaga", result.getName());
         assertEquals("Kenya", result.getCountry());
         assertEquals("KE", result.getOriginCountryCode());
+        assertEquals(200, result.getWeight());
+        assertEquals(18000, result.getPrice());
+        assertEquals(LocalDate.of(2026, 5, 1), result.getRoastedDate());
         assertEquals(List.of(FlavorNote.BROWN_SUGAR, FlavorNote.BLACK_TEA), result.getFlavorNotes());
+    }
+
+    @Test
+    void parseKgWeightWonPriceAndHyphenDate() {
+        CoffeeBeanCardTextParser parser = new CoffeeBeanCardTextParser();
+
+        CoffeeBeanCardTextParseResult result = parser.parse("""
+                Brazil Fazenda Santa Ines
+                Natural
+                1kg
+                ₩42,000
+                Roasted 2026-05-03
+                Milk Chocolate, Almond
+                """);
+
+        assertEquals("Brazil Fazenda Santa Ines", result.getName());
+        assertEquals("Brazil", result.getCountry());
+        assertEquals("BR", result.getOriginCountryCode());
+        assertEquals(ProcessType.NATURAL, result.getProcessType());
+        assertEquals(1000, result.getWeight());
+        assertEquals(42000, result.getPrice());
+        assertEquals(LocalDate.of(2026, 5, 3), result.getRoastedDate());
+        assertEquals(List.of(FlavorNote.MILK_CHOCOLATE, FlavorNote.ALMOND), result.getFlavorNotes());
     }
 
     @Test

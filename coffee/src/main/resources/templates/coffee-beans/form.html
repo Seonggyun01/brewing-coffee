@@ -15,6 +15,43 @@
             </div>
         </header>
 
+        <section class="card-extraction-section" th:if="${actionUrl == '/coffee-beans'}">
+            <div class="card-extraction-section__header">
+                <div>
+                    <span>Photo Assist</span>
+                    <h2>원두 카드 사진으로 자동 입력</h2>
+                    <p>원두 카드 이미지를 업로드하면 가능한 정보를 먼저 채워드려요. 저장 전에는 언제든 직접 수정할 수 있습니다.</p>
+                </div>
+            </div>
+            <form th:action="@{/coffee-beans/card-extraction}"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="card-extraction-form">
+                <label class="card-extraction-file">
+                    <span>원두 카드 이미지</span>
+                    <input type="file" name="image" accept="image/*" required>
+                </label>
+                <button class="button button--secondary" type="submit">사진으로 등록</button>
+            </form>
+        </section>
+
+        <section class="extraction-warning-box"
+                 th:if="${extractionWarnings != null and !extractionWarnings.isEmpty()}">
+            <strong>자동 입력 확인이 필요해요</strong>
+            <ul>
+                <li th:each="warning : ${extractionWarnings}" th:text="${warning}">일부 정보를 찾지 못했어요.</li>
+            </ul>
+        </section>
+
+        <section class="extracted-result-section" th:if="${extractedRawText != null}">
+            <div>
+                <span>OCR Raw Text</span>
+                <h2>추출된 텍스트</h2>
+                <p>아래 텍스트를 기준으로 원두 정보가 자동 입력되었습니다.</p>
+            </div>
+            <textarea class="extracted-raw-text" readonly th:text="${extractedRawText}"></textarea>
+        </section>
+
         <form class="form" th:action="@{${actionUrl}}" th:object="${coffeeBeanForm}" method="post">
             <section class="form-section">
                 <h2>원두 정보</h2>
