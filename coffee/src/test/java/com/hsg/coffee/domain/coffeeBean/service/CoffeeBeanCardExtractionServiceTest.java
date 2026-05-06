@@ -1,0 +1,213 @@
+package com.hsg.coffee.domain.coffeeBean.service;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockMultipartFile;
+
+import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
+import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCardExtractResult;
+import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCardTextParseResult;
+import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCreateForm;
+import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
+
+class CoffeeBeanCardExtractionServiceTest {
+
+    private CoffeeBeanCardExtractionService extractionService;
+
+    @BeforeEach
+    void setUp() {
+        extractionService = new CoffeeBeanCardExtractionService(
+                new MockCoffeeBeanCardOcrService(),
+                new CoffeeBeanCardTextParser()
+        );
+    }
+
+    @Test
+    void extractWithMockOcr() {
+        MockMultipartFile image = new MockMultipartFile(
+                "image",
+                "coffee-card.jpg",
+                "image/jpeg",
+                "mock image".getBytes()
+        );
+
+        CoffeeBeanCardExtractResult result = extractionService.extract(image);
+        CoffeeBeanCreateForm form = result.getForm();
+
+        System.out.println("=== 원두 카드 Mock OCR 추출 테스트 결과 ===");
+        System.out.println("OCR 원문: " + result.getRawText().replace("\n", " / "));
+        System.out.println("원두명: " + form.getName());
+        System.out.println("로스터리: " + form.getRoastery());
+        System.out.println("국가: " + form.getCountry());
+        System.out.println("가공 방식: " + form.getProcessType());
+        System.out.println("향미 노트: " + form.getFlavorNotes());
+
+        assertTrue(result.getRawText().contains("Ethiopia Yirgacheffe Kochere"));
+        assertEquals("Ethiopia Yirgacheffe Kochere", form.getName());
+        assertEquals("Fritz Coffee", form.getRoastery());
+        assertEquals("Ethiopia", form.getCountry());
+        assertEquals("ET", form.getOriginCountryCode());
+        assertEquals(ProcessType.WASHED, form.getProcessType());
+        assertEquals(List.of(FlavorNote.JASMINE, FlavorNote.LEMON, FlavorNote.PEACH), form.getFlavorNotes());
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
+    @Test
+    void rejectEmptyImage() {
+        MockMultipartFile image = new MockMultipartFile(
+                "image",
+                "empty.jpg",
+                "image/jpeg",
+                new byte[0]
+        );
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> extractionService.extract(image)
+        );
+
+        assertEquals("원두 카드 이미지를 업로드해주세요.", exception.getMessage());
+    }
+
+    @Test
+    void rejectNonImageFile() {
+        MockMultipartFile image = new MockMultipartFile(
+                "image",
+                "coffee-card.txt",
+                "text/plain",
+                "not image".getBytes()
+        );
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> extractionService.extract(image)
+        );
+
+        assertEquals("이미지 파일만 업로드할 수 있습니다.", exception.getMessage());
+    }
+
+    @Test
+    void rejectTooLargeImage() {
+        MockMultipartFile image = new MockMultipartFile(
+                "image",
+                "large-card.jpg",
+                "image/jpeg",
+                new byte[5 * 1024 * 1024 + 1]
+        );
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> extractionService.extract(image)
+        );
+
+        assertEquals("이미지 파일은 5MB 이하만 업로드할 수 있습니다.", exception.getMessage());
+    }
+
+    @Test
+    void parseEmptyTextAsWarning() {
+        CoffeeBeanCardTextParser parser = new CoffeeBeanCardTextParser();
+
+        var result = parser.parse("   ");
+
+        assertFalse(result.getWarnings().isEmpty());
+        assertTrue(result.getWarnings().getFirst().contains("텍스트를 추출하지 못했어요"));
+    }
+
+    @Test
+    void parseKoreanCountryAndFlavorNotes() {
+        CoffeeBeanCardTextParser parser = new CoffeeBeanCardTextParser();
+
+        CoffeeBeanCardTextParseResult result = parser.parse("""
+                에티오피아 예가체프 코체레
+                워시드
+                자스민, 레몬, 복숭아
+                """);
+
+        assertEquals("에티오피아 예가체프 코체레", result.getName());
+        assertEquals("Ethiopia", result.getCountry());
+        assertEquals("ET", result.getOriginCountryCode());
+        assertEquals(ProcessType.WASHED, result.getProcessType());
+        assertEquals(List.of(FlavorNote.JASMINE, FlavorNote.LEMON, FlavorNote.PEACH), result.getFlavorNotes());
+        assertTrue(result.getWarnings().isEmpty());
+    }
+
+    @Test
+    void parseAnaerobicBeforeNatural() {
+        CoffeeBeanCardTextParser parser = new CoffeeBeanCardTextParser();
+
+        CoffeeBeanCardTextParseResult result = parser.parse("""
+                Colombia El Paraiso
+                Anaerobic Natural
+                Strawberry, Mango
+                """);
+
+        assertEquals("Colombia El Paraiso", result.getName());
+        assertEquals("Colombia", result.getCountry());
+        assertEquals("CO", result.getOriginCountryCode());
+        assertEquals(ProcessType.ANAEROBIC, result.getProcessType());
+        assertEquals(List.of(FlavorNote.STRAWBERRY, FlavorNote.MANGO), result.getFlavorNotes());
+    }
+
+    @Test
+    void skipMetadataLinesWhenExtractingName() {
+        CoffeeBeanCardTextParser parser = new CoffeeBeanCardTextParser();
+
+        CoffeeBeanCardTextParseResult result = parser.parse("""
+                200g
+                Roasted 2026.05.01
+                18,000 KRW
+                Kenya Kirinyaga
+                Washed
+                Black Tea, Brown Sugar
+                """);
+
+        assertEquals("Kenya Kirinyaga", result.getName());
+        assertEquals("Kenya", result.getCountry());
+        assertEquals("KE", result.getOriginCountryCode());
+        assertEquals(List.of(FlavorNote.BROWN_SUGAR, FlavorNote.BLACK_TEA), result.getFlavorNotes());
+    }
+
+    @Test
+    void addWarningWhenCountryIsMissing() {
+        CoffeeBeanCardTextParser parser = new CoffeeBeanCardTextParser();
+
+        CoffeeBeanCardTextParseResult result = parser.parse("""
+                Mystery Lot 03
+                Honey
+                Orange, Caramel
+                """);
+
+        assertEquals("Mystery Lot 03", result.getName());
+        assertNull(result.getCountry());
+        assertNull(result.getOriginCountryCode());
+        assertEquals(ProcessType.HONEY, result.getProcessType());
+        assertTrue(result.getWarnings().stream()
+                .anyMatch(warning -> warning.contains("원산지 국가를 자동으로 찾지 못했어요")));
+    }
+
+    @Test
+    void rejectImageWithoutContentType() {
+        MockMultipartFile image = new MockMultipartFile(
+                "image",
+                "coffee-card",
+                null,
+                "mock image".getBytes(StandardCharsets.UTF_8)
+        );
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> extractionService.extract(image)
+        );
+
+        assertEquals("이미지 파일만 업로드할 수 있습니다.", exception.getMessage());
+    }
+}
