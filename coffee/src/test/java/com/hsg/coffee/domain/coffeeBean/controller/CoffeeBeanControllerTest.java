@@ -1,8 +1,10 @@
 package com.hsg.coffee.domain.coffeeBean.controller;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
@@ -144,6 +147,49 @@ class CoffeeBeanControllerTest {
         Long id = Long.valueOf(detailUrl.substring(detailUrl.lastIndexOf("/") + 1));
 
         assertTrue("프릳츠 원서점".equals(coffeeBeanService.get(id).getPurchasePlaceName()));
+    }
+
+    @Test
+    void extractFromCardReturnsCreateFormWithoutSaving() throws Exception {
+        MockMultipartFile image = new MockMultipartFile(
+                "image",
+                "coffee-card.jpg",
+                "image/jpeg",
+                "mock image".getBytes()
+        );
+
+        mockMvc.perform(multipart("/coffee-beans/card-extraction").file(image))
+                .andExpect(status().isOk())
+                .andExpect(view().name("coffee-beans/form"))
+                .andExpect(model().attributeExists(
+                        "coffeeBeanForm",
+                        "extractedRawText",
+                        "extractionWarnings",
+                        "processTypes",
+                        "coffeeBeanStatuses",
+                        "countryInfos",
+                        "purchasePlaces"
+                ));
+
+        assertEquals(0, coffeeBeanRepository.count());
+    }
+
+    @Test
+    void extractFromCardWithInvalidFileReturnsWarningWithoutSaving() throws Exception {
+        MockMultipartFile image = new MockMultipartFile(
+                "image",
+                "coffee-card.txt",
+                "text/plain",
+                "not image".getBytes()
+        );
+
+        mockMvc.perform(multipart("/coffee-beans/card-extraction").file(image))
+                .andExpect(status().isOk())
+                .andExpect(view().name("coffee-beans/form"))
+                .andExpect(model().attributeExists("coffeeBeanForm", "extractionWarnings"))
+                .andExpect(model().attributeDoesNotExist("extractedRawText"));
+
+        assertEquals(0, coffeeBeanRepository.count());
     }
 
     @Test

@@ -14,15 +14,18 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.hsg.coffee.domain.brewRecord.entity.FlavorCategory;
 import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCreateForm;
+import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCardExtractResult;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanResponse;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanUpdateForm;
 import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBeanStatus;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
+import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanCardExtractionService;
 import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanService;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
 import com.hsg.coffee.domain.purchasePlace.service.PurchasePlaceService;
@@ -37,6 +40,7 @@ import lombok.RequiredArgsConstructor;
 public class CoffeeBeanController {
 
     private final CoffeeBeanService coffeeBeanService;
+    private final CoffeeBeanCardExtractionService coffeeBeanCardExtractionService;
     private final PurchasePlaceService purchasePlaceService;
 
     @GetMapping
@@ -61,6 +65,26 @@ public class CoffeeBeanController {
     @GetMapping("/new")
     public String createForm(Model model) {
         model.addAttribute("coffeeBeanForm", new CoffeeBeanCreateForm());
+        addFormAttributes(model, "원두 등록", "/coffee-beans");
+        return "coffee-beans/form";
+    }
+
+    @PostMapping("/card-extraction")
+    public String extractFromCard(
+            @RequestParam("image") MultipartFile image,
+            Model model
+    ) {
+        CoffeeBeanCardExtractResult result;
+        try {
+            result = coffeeBeanCardExtractionService.extract(image);
+            model.addAttribute("coffeeBeanForm", result.getForm());
+            model.addAttribute("extractedRawText", result.getRawText());
+            model.addAttribute("extractionWarnings", result.getWarnings());
+        } catch (IllegalArgumentException exception) {
+            model.addAttribute("coffeeBeanForm", new CoffeeBeanCreateForm());
+            model.addAttribute("extractionWarnings", List.of(exception.getMessage()));
+        }
+
         addFormAttributes(model, "원두 등록", "/coffee-beans");
         return "coffee-beans/form";
     }
