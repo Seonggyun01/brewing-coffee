@@ -230,12 +230,74 @@ Password:
 - 카페 유형 구매처는 위도, 경도가 있으면 카페 지도에 표시
 - 위도, 경도는 현재 개발용 더미 데이터에 포함되어 있으며, 추후 주소 변환 또는 지도 API 연동으로 자동 저장 예정
 
+## 다음 구현 스텝: 원두 카드 이미지 자동 입력
+
+`coffee_bean_card_image_extraction_spec_v1.md` 기준으로 원두 정보 카드 이미지를 업로드하면 원두 등록 폼을 자동으로 채워주는 기능을 구현합니다.
+
+핵심 원칙:
+
+- 사진 업로드 결과는 바로 DB에 저장하지 않음
+- OCR/파싱 결과는 `CoffeeBeanCreateForm`을 채우는 임시 후보로만 사용
+- 최종 저장은 사용자가 확인하고 수정한 뒤 기존 `POST /coffee-beans` 흐름으로만 처리
+- 1차 구현은 실제 OCR 연동 전 Mock OCR로 전체 흐름을 먼저 검증
+- MVP에서는 업로드 이미지를 저장하지 않고 텍스트 추출 결과만 화면에 표시
+
+구현 순서:
+
+1. DTO와 인터페이스 추가
+   - `CoffeeBeanCardExtractResult`
+   - `CoffeeBeanCardTextParseResult`
+   - `CoffeeBeanCardOcrService`
+
+2. Mock OCR 기반 추출 흐름 추가
+   - `MockCoffeeBeanCardOcrService`
+   - `CoffeeBeanCardExtractionService`
+   - `CoffeeBeanCardTextParser` 기본 구조
+   - 이미지 파일 유효성 검증: 빈 파일, 이미지 타입, 5MB 제한
+
+3. 원두 등록 컨트롤러 연동
+   - `POST /coffee-beans/card-extraction` 추가
+   - 업로드 이미지를 OCR/파싱 처리한 뒤 기존 원두 등록 폼으로 재렌더링
+   - 원두 등록 폼 옵션 데이터를 공통 메서드로 분리
+   - 해당 URL에서는 DB 저장을 하지 않도록 보장
+
+4. 원두 등록 화면 UI 추가
+   - `coffee-beans/form.html` 상단에 사진 업로드 영역 추가
+   - 추출된 rawText 표시 영역 추가
+   - 추출 실패 또는 일부 누락 경고 메시지 표시
+   - 자동 입력된 값은 사용자가 직접 수정 가능하게 유지
+
+5. 규칙 기반 텍스트 파서 구현
+   - 가공 방식, 용량, 가격, 로스팅 날짜 추출
+   - 국가 코드와 국가명 매핑
+   - 향미 노트 enum 및 사용자 입력 향미 후보 매핑
+   - 원두명과 로스터리 후보 추출
+   - 불확실하거나 실패한 항목은 warning으로 반환
+
+6. 테스트와 수동 검증
+   - 파서 단위 테스트
+   - 추출 서비스 테스트
+   - `POST /coffee-beans/card-extraction` 컨트롤러 테스트
+   - 업로드 후 자동 입력, 수정, 기존 등록 저장 흐름 수동 확인
+
+7. 실제 OCR 연동 확장
+   - Tesseract.js, PaddleOCR, OCR.space, Google Vision OCR 중 선택
+   - `CoffeeBeanCardOcrService` 구현체만 교체할 수 있게 유지
+   - 외부 API 키는 서버 설정으로만 관리하고 프론트에 노출하지 않음
+
+8. 이후 LLM 구조화 확장
+   - OCR rawText를 JSON 후보로 구조화
+   - 확실하지 않은 값은 `null` 또는 warning으로 처리
+   - 웹은 Thymeleaf 폼 재렌더링, 앱은 `POST /api/coffee-beans/card-extraction`로 확장
+
 ## 개발 로드맵
 
 1. 원두 목록과 브루잉 목록의 디자인 일관성 추가 개선
-2. 구매처 관리 화면 분리
-3. 카페 지도 행정구역 데이터 정밀도 개선
-4. 카페 음용 원두와 구매 원두의 입력 흐름 분리
-5. 브루잉 기록 기반 통계 대시보드
-6. 원두와 브루잉 기록 검색, 필터, 정렬 개선
-7. 파일 기반 DB 또는 운영 DB 전환
+2. 원두 카드 이미지 기반 자동 입력 MVP 구현
+3. 구매처 관리 화면 분리
+4. 카페 지도 행정구역 데이터 정밀도 개선
+5. 카페 음용 원두와 구매 원두의 입력 흐름 분리
+6. 브루잉 기록 카드 디자인을 노트형 UI로 개선
+7. 브루잉 기록 기반 통계 대시보드
+8. 원두와 브루잉 기록 검색, 필터, 정렬 개선
+9. 파일 기반 DB 또는 운영 DB 전환
