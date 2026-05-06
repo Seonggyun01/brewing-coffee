@@ -40,6 +40,7 @@ public class CoffeeBeanCardExtractionService {
         form.setRegion(parseResult.getRegion());
         form.setFarm(parseResult.getFarm());
         form.setVariety(parseResult.getVariety());
+        form.setAltitude(parseResult.getAltitude());
         form.setProcessType(parseResult.getProcessType());
         form.setFlavorNotes(parseResult.getFlavorNotes());
         form.setCustomFlavorNotesText(parseResult.getCustomFlavorNotesText());

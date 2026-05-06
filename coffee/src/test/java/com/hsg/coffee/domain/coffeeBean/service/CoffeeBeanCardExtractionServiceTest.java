@@ -210,6 +210,103 @@ class CoffeeBeanCardExtractionServiceTest {
     }
 
     @Test
+    void parseLabeledRoasteryOriginDetailsAndTwoDigitRoastedDate() {
+        CoffeeBeanCardTextParser parser = new CoffeeBeanCardTextParser();
+
+        CoffeeBeanCardTextParseResult result = parser.parse("""
+                Roastery: Sample Roasters
+                Colombia La Palma
+                Region: Cundinamarca
+                Farm: La Palma y El Tucan
+                Variety: Gesha
+                Carbonic Maceration
+                26.05.04
+                White Grape, Cane Sugar, Yuzu
+                """);
+
+        assertEquals("Colombia La Palma", result.getName());
+        assertEquals("Sample Roasters", result.getRoastery());
+        assertEquals("Colombia", result.getCountry());
+        assertEquals("CO", result.getOriginCountryCode());
+        assertEquals("Cundinamarca", result.getRegion());
+        assertEquals("La Palma y El Tucan", result.getFarm());
+        assertEquals("Gesha", result.getVariety());
+        assertEquals(ProcessType.CARBONIC_MACERATION, result.getProcessType());
+        assertEquals(LocalDate.of(2026, 5, 4), result.getRoastedDate());
+        assertEquals(List.of(FlavorNote.YUZU, FlavorNote.GRAPE), result.getFlavorNotes());
+        assertEquals("Cane Sugar", result.getCustomFlavorNotesText());
+    }
+
+    @Test
+    void parseOriginLineAltitudeAndProducerLabels() {
+        CoffeeBeanCardTextParser parser = new CoffeeBeanCardTextParser();
+
+        CoffeeBeanCardTextParseResult result = parser.parse("""
+                Ethiopia Hambela Buku
+                Origin: Ethiopia / Guji / Hambela Washing Station
+                Producer: METAD
+                Altitude: 1,900 - 2,100 masl
+                Heirloom
+                Washed
+                Earl Grey, Bergamot, White Peach
+                """);
+
+        assertEquals("Ethiopia Hambela Buku", result.getName());
+        assertEquals("Ethiopia", result.getCountry());
+        assertEquals("ET", result.getOriginCountryCode());
+        assertEquals("Guji", result.getRegion());
+        assertEquals("METAD", result.getFarm());
+        assertEquals("1,900 - 2,100 masl", result.getAltitude());
+        assertEquals(ProcessType.WASHED, result.getProcessType());
+        assertEquals(List.of(FlavorNote.WHITE_PEACH, FlavorNote.EARL_GREY), result.getFlavorNotes());
+        assertEquals("Bergamot", result.getCustomFlavorNotesText());
+    }
+
+    @Test
+    void parseKoreanOriginAndAltitudeLabels() {
+        CoffeeBeanCardTextParser parser = new CoffeeBeanCardTextParser();
+
+        CoffeeBeanCardTextParseResult result = parser.parse("""
+                케냐 키린야가 기추구
+                원산지: 케냐 / Kirinyaga / Gichugu
+                고도: 1800m
+                품종: SL28, SL34
+                워시드
+                블랙커런트, 자몽, 흑설탕
+                """);
+
+        assertEquals("케냐 키린야가 기추구", result.getName());
+        assertEquals("Kenya", result.getCountry());
+        assertEquals("KE", result.getOriginCountryCode());
+        assertEquals("Kirinyaga", result.getRegion());
+        assertEquals("Gichugu", result.getFarm());
+        assertEquals("1800m", result.getAltitude());
+        assertEquals("SL28, SL34", result.getVariety());
+        assertEquals(ProcessType.WASHED, result.getProcessType());
+        assertEquals(List.of(FlavorNote.GRAPEFRUIT, FlavorNote.BLACKCURRANT, FlavorNote.BROWN_SUGAR), result.getFlavorNotes());
+        assertNull(result.getCustomFlavorNotesText());
+    }
+
+    @Test
+    void preferDateNearRoastedKeywordWhenSeveralDatesExist() {
+        CoffeeBeanCardTextParser parser = new CoffeeBeanCardTextParser();
+
+        CoffeeBeanCardTextParseResult result = parser.parse("""
+                Guatemala El Injerto
+                Purchased 2026.05.10
+                Roasted 2026.05.02
+                Washed
+                Orange, Caramel
+                """);
+
+        assertEquals("Guatemala El Injerto", result.getName());
+        assertEquals("Guatemala", result.getCountry());
+        assertEquals("GT", result.getOriginCountryCode());
+        assertEquals(LocalDate.of(2026, 5, 2), result.getRoastedDate());
+        assertEquals(List.of(FlavorNote.ORANGE, FlavorNote.CARAMEL), result.getFlavorNotes());
+    }
+
+    @Test
     void addWarningWhenCountryIsMissing() {
         CoffeeBeanCardTextParser parser = new CoffeeBeanCardTextParser();
 

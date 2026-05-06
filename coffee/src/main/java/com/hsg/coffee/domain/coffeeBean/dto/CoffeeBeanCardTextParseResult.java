@@ -23,6 +23,7 @@ public class CoffeeBeanCardTextParseResult {
     private String region;
     private String farm;
     private String variety;
+    private String altitude;
     private ProcessType processType;
     private List<FlavorNote> flavorNotes = new ArrayList<>();
     private String customFlavorNotesText;
