@@ -12,6 +12,13 @@ Thumbs.db
 .env.*
 !.env.example
 coffee/src/main/resources/application-local.yml
+coffee-brew-495612-56546848205b.json
+coffee/src/main/resources/coffee-brew-495612-56546848205b.json
+*service-account*.json
+*google-credentials*.json
+
+# Local OCR sample images
+docs/image/
 
 # Logs
 *.log

@@ -232,7 +232,7 @@ Password:
 
 ## 다음 구현 스텝: 원두 카드 이미지 자동 입력
 
-`coffee_bean_card_image_extraction_spec_v1.md` 기준으로 원두 정보 카드 이미지를 업로드하면 원두 등록 폼을 자동으로 채워주는 기능을 구현합니다.
+`docs/specs/coffee_bean_card_image_extraction_spec_v1.md` 기준으로 원두 정보 카드 이미지를 업로드하면 원두 등록 폼을 자동으로 채워주는 기능을 구현합니다.
 
 핵심 원칙:
 
