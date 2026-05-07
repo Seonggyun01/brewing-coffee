@@ -1,20 +1,27 @@
 package com.hsg.coffee.domain.coffeeBean.service;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.google.api.gax.core.FixedCredentialsProvider;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.vision.v1.AnnotateImageRequest;
 import com.google.cloud.vision.v1.AnnotateImageResponse;
 import com.google.cloud.vision.v1.Feature;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
+import com.google.cloud.vision.v1.ImageAnnotatorSettings;
 import com.google.protobuf.ByteString;
 
 @Service
@@ -24,9 +31,14 @@ public class GoogleVisionCoffeeBeanCardOcrService implements CoffeeBeanCardOcrSe
     private static final Logger log = LoggerFactory.getLogger(GoogleVisionCoffeeBeanCardOcrService.class);
 
     private final CoffeeBeanCardImagePreprocessor imagePreprocessor;
+    private final String googleCredentialsPath;
 
-    public GoogleVisionCoffeeBeanCardOcrService(CoffeeBeanCardImagePreprocessor imagePreprocessor) {
+    public GoogleVisionCoffeeBeanCardOcrService(
+            CoffeeBeanCardImagePreprocessor imagePreprocessor,
+            @Value("${brewlog.ocr.google-credentials-path:}") String googleCredentialsPath
+    ) {
         this.imagePreprocessor = imagePreprocessor;
+        this.googleCredentialsPath = googleCredentialsPath;
     }
 
     @Override
@@ -51,7 +63,7 @@ public class GoogleVisionCoffeeBeanCardOcrService implements CoffeeBeanCardOcrSe
                     preparedImage.contentType()
             );
 
-            try (ImageAnnotatorClient client = ImageAnnotatorClient.create()) {
+            try (ImageAnnotatorClient client = createClient()) {
                 AnnotateImageResponse response = client.batchAnnotateImages(List.of(request))
                         .getResponses(0);
 
@@ -80,6 +92,20 @@ public class GoogleVisionCoffeeBeanCardOcrService implements CoffeeBeanCardOcrSe
         } catch (Exception exception) {
             log.warn("Google Vision OCR request failed. filename={}", image.getOriginalFilename(), exception);
             throw new IllegalArgumentException("OCR 서비스 인증 또는 이미지 분석 중 문제가 발생했습니다. 설정을 확인해주세요.");
+        }
+    }
+
+    private ImageAnnotatorClient createClient() throws IOException {
+        if (!StringUtils.hasText(googleCredentialsPath)) {
+            return ImageAnnotatorClient.create();
+        }
+
+        try (InputStream credentialsStream = Files.newInputStream(Path.of(googleCredentialsPath))) {
+            GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsStream);
+            ImageAnnotatorSettings settings = ImageAnnotatorSettings.newBuilder()
+                    .setCredentialsProvider(FixedCredentialsProvider.create(credentials))
+                    .build();
+            return ImageAnnotatorClient.create(settings);
         }
     }
 }
