@@ -321,9 +321,35 @@ Google Vision API 호출 전에 다음을 검증한다.
 image/jpeg
 image/png
 image/webp
+image/heic
+image/heif
 ```
 
-프로젝트 정책에 따라 webp는 제외해도 된다.
+Google Vision 입력은 JPEG/PNG/WEBP 계열을 우선 사용한다.  
+아이폰 기본 사진 포맷인 HEIC/HEIF는 업로드 단계에서 허용하되, Google Vision 호출 전에 서버에서 PNG로 변환한다.
+
+### 11.1 HEIC/HEIF 이미지 전처리
+
+HEIC/HEIF 이미지는 다음 기준으로 감지한다.
+
+```text
+Content-Type: image/heic
+Content-Type: image/heif
+확장자: .heic
+확장자: .heif
+```
+
+처리 흐름:
+
+1. Controller는 기존처럼 업로드 파일만 수신한다.
+2. Application Service가 파일 크기, MIME 타입, 확장자를 검증한다.
+3. Google Vision OCR 구현체 호출 직전에 이미지 전처리 Service가 HEIC/HEIF 여부를 확인한다.
+4. HEIC/HEIF라면 이미지 변환 라이브러리로 PNG 바이트 배열을 생성한다.
+5. 변환된 PNG 바이트를 Google Vision API 요청에 사용한다.
+6. 변환 실패 시 OCR 호출을 중단하고 사용자에게 직접 업로드 가능한 안내 메시지를 보여준다.
+
+전처리 책임은 OCR 구현체 내부의 보조 Service로 분리한다.  
+Controller에 HEIC 변환 로직을 작성하지 않는다.
 
 ---
 
@@ -517,6 +543,17 @@ OCR raw text → 로스터리/원두명/원산지 정도만 후보 추출
 ocr:
   provider: google-vision
   max-file-size-mb: 5
+```
+
+기본 애플리케이션 실행에서는 실제 OCR 응답을 기준으로 raw text를 추출하고, 그 raw text를 파서에 전달해 등록 폼 후보값을 채운다.
+Mock OCR은 테스트 또는 명시적인 개발 모드에서만 사용한다.
+
+테스트 설정 예시:
+
+```yaml
+brewlog:
+  ocr:
+    provider: mock
 ```
 
 서비스 계정 JSON 경로는 코드나 yml에 고정하지 않고, 로컬에서는 환경 변수로 관리한다.

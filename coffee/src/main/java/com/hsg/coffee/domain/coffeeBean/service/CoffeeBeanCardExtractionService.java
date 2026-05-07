@@ -1,6 +1,9 @@
 package com.hsg.coffee.domain.coffeeBean.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCardExtractResult;
@@ -14,6 +17,21 @@ import lombok.RequiredArgsConstructor;
 public class CoffeeBeanCardExtractionService {
 
     private static final long MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+    private static final List<String> ALLOWED_CONTENT_TYPES = List.of(
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+            "image/heic",
+            "image/heif"
+    );
+    private static final List<String> ALLOWED_EXTENSIONS = List.of(
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "heic",
+            "heif"
+    );
 
     private final CoffeeBeanCardOcrService ocrService;
     private final CoffeeBeanCardTextParser textParser;
@@ -56,12 +74,30 @@ public class CoffeeBeanCardExtractionService {
         }
 
         String contentType = image.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new IllegalArgumentException("이미지 파일만 업로드할 수 있습니다.");
+        if (!StringUtils.hasText(contentType) || !ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase())) {
+            throw new IllegalArgumentException("JPG, PNG, WEBP, HEIC 이미지만 업로드할 수 있습니다.");
+        }
+
+        String extension = extractExtension(image.getOriginalFilename());
+        if (StringUtils.hasText(extension) && !ALLOWED_EXTENSIONS.contains(extension)) {
+            throw new IllegalArgumentException("JPG, PNG, WEBP, HEIC 이미지만 업로드할 수 있습니다.");
         }
 
         if (image.getSize() > MAX_IMAGE_SIZE) {
             throw new IllegalArgumentException("이미지 파일은 5MB 이하만 업로드할 수 있습니다.");
         }
+    }
+
+    private String extractExtension(String filename) {
+        if (!StringUtils.hasText(filename)) {
+            return "";
+        }
+
+        int dotIndex = filename.lastIndexOf('.');
+        if (dotIndex < 0 || dotIndex == filename.length() - 1) {
+            return "";
+        }
+
+        return filename.substring(dotIndex + 1).toLowerCase();
     }
 }

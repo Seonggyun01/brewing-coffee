@@ -1067,13 +1067,43 @@ jpg
 jpeg
 png
 webp
+heic
+heif
 ```
+
+`heic`, `heif`는 아이폰 기본 사진 포맷 대응을 위한 허용 확장자이다.  
+실제 OCR 호출 전에는 서버에서 PNG로 변환한 뒤 OCR API에 전달한다.
 
 ### 15.2 Content-Type 검증
 
-`MultipartFile.getContentType()`이 `image/`로 시작하는지 확인한다.
+허용 MIME 타입:
 
-### 15.3 API 키 관리
+```text
+image/jpeg
+image/png
+image/webp
+image/heic
+image/heif
+```
+
+`MultipartFile.getContentType()`과 파일 확장자를 함께 확인한다.  
+허용 목록에 없는 이미지 포맷은 OCR API를 호출하지 않고 사용자에게 안내한다.
+
+### 15.3 HEIC/HEIF 전처리
+
+HEIC/HEIF 이미지는 업로드 검증 후 OCR 전처리 단계에서 PNG로 변환한다.
+
+```text
+MultipartFile
+→ 파일 형식 검증
+→ HEIC/HEIF 여부 확인
+→ PNG 변환
+→ OCR API 호출
+```
+
+변환 실패 시 OCR 결과 후보를 만들지 않고, 사용자가 다시 촬영하거나 JPG/PNG로 변환해 업로드할 수 있도록 안내한다.
+
+### 15.4 API 키 관리
 
 외부 OCR API나 LLM API를 사용할 경우 API 키는 절대 프론트에 노출하지 않는다.
 

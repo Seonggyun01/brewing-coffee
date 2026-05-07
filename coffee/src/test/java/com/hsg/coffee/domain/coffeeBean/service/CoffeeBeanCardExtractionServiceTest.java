@@ -99,7 +99,7 @@ class CoffeeBeanCardExtractionServiceTest {
                 () -> extractionService.extract(image)
         );
 
-        assertEquals("이미지 파일만 업로드할 수 있습니다.", exception.getMessage());
+        assertEquals("JPG, PNG, WEBP, HEIC 이미지만 업로드할 수 있습니다.", exception.getMessage());
     }
 
     @Test
@@ -338,6 +338,37 @@ class CoffeeBeanCardExtractionServiceTest {
                 () -> extractionService.extract(image)
         );
 
-        assertEquals("이미지 파일만 업로드할 수 있습니다.", exception.getMessage());
+        assertEquals("JPG, PNG, WEBP, HEIC 이미지만 업로드할 수 있습니다.", exception.getMessage());
+    }
+
+    @Test
+    void allowHeicImageBeforeOcrProviderProcessing() {
+        MockMultipartFile image = new MockMultipartFile(
+                "image",
+                "coffee-card.heic",
+                "image/heic",
+                "mock image".getBytes(StandardCharsets.UTF_8)
+        );
+
+        CoffeeBeanCardExtractResult result = extractionService.extract(image);
+
+        assertTrue(result.getRawText().contains("Ethiopia Yirgacheffe Kochere"));
+    }
+
+    @Test
+    void rejectUnsupportedImageExtension() {
+        MockMultipartFile image = new MockMultipartFile(
+                "image",
+                "coffee-card.gif",
+                "image/gif",
+                "mock image".getBytes(StandardCharsets.UTF_8)
+        );
+
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> extractionService.extract(image)
+        );
+
+        assertEquals("JPG, PNG, WEBP, HEIC 이미지만 업로드할 수 있습니다.", exception.getMessage());
     }
 }

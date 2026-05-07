@@ -19,3 +19,5 @@ logging:
 brewlog:
   dummy-data:
     enabled: false
+  ocr:
+    provider: mock

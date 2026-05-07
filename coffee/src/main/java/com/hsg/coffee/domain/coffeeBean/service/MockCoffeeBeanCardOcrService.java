@@ -1,9 +1,11 @@
 package com.hsg.coffee.domain.coffeeBean.service;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
+@ConditionalOnProperty(name = "brewlog.ocr.provider", havingValue = "mock")
 public class MockCoffeeBeanCardOcrService implements CoffeeBeanCardOcrService {
 
     @Override

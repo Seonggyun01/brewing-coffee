@@ -192,7 +192,7 @@ class CoffeeBeanControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("coffee-beans/form"))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("자동 입력 확인이 필요해요")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("이미지 파일만 업로드할 수 있습니다.")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("JPG, PNG, WEBP, HEIC 이미지만 업로드할 수 있습니다.")))
                 .andExpect(model().attributeExists("coffeeBeanForm", "extractionWarnings"))
                 .andExpect(model().attributeDoesNotExist("extractedRawText"));
 
