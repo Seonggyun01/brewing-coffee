@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -19,6 +22,8 @@ import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCardExtractResult;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCardTextParseResult;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCreateForm;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
+import com.hsg.coffee.domain.llmparsing.dto.LlmParsingResponse;
+import com.hsg.coffee.domain.llmparsing.service.HuggingFaceBeanMappingService;
 
 class CoffeeBeanCardExtractionServiceTest {
 
@@ -26,9 +31,13 @@ class CoffeeBeanCardExtractionServiceTest {
 
     @BeforeEach
     void setUp() {
+        HuggingFaceBeanMappingService huggingFaceBeanMappingService = mock(HuggingFaceBeanMappingService.class);
+        when(huggingFaceBeanMappingService.parseOcrText(anyString())).thenReturn(LlmParsingResponse.empty());
+
         extractionService = new CoffeeBeanCardExtractionService(
                 new MockCoffeeBeanCardOcrService(),
-                new CoffeeBeanCardTextParser()
+                new CoffeeBeanCardTextParser(),
+                huggingFaceBeanMappingService
         );
     }
 
