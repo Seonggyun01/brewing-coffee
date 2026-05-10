@@ -26,12 +26,19 @@ BrewLog는 커피 원두, 브루잉 레시피, 맛 기록, 원산지와 카페 �
 - 원두 목록 카드형 UI 적용
 - 원두 상태 구분: 보유 중, 소진 기록, 카페 음용
 - 원산지, 농장, 품종, 가공 방식, 고도, 로스팅일, 구매일, 가격, 남은 무게 기록
+- 등록 폼은 기본 정보, 상세 정보, 부가 정보로 나누어 입력 부담을 낮춤
+- 기본 정보는 원두명, 산지 국가, 품종, 가공 방식, 향미 노트, 메모 중심으로 구성
+- 상세 정보는 로스터리, 지역, 농장/워싱스테이션, 고도, 로스팅일처럼 선택 입력 중심으로 구성
+- 부가 정보는 남은 무게, 가격, 구매일, 구매처처럼 구매/재고 맥락의 정보로 분리
+- 카페에서 마신 원두는 구매/재고 정보 없이도 저장할 수 있도록 부가 정보는 선택 입력으로 유지
+- 원두 목록에서 카페 원두 등록 진입을 제공하며, 해당 흐름은 내부 상태를 `CAFE`로 저장
 - 원두 분쇄도는 브루잉 기록에서 마이크론미터 단위로 입력
 - 원두 향미 노트 저장
 - 정해진 향미 노트 선택과 사용자 직접 입력 향미 노트 저장
 - 선택한 향미 노트를 별도 영역에 표시해 선택 상태를 인지할 수 있도록 개선
 - 구매처 선택 또는 신규 구매처 입력 후 원두와 연결
-- 구매처 주소와 지도 연동을 위한 위도, 경도 필드 준비
+- 구매처 주소, 장소 링크, 지도 연동을 위한 위도, 경도 필드 준비
+- 구매처 장소 링크는 카카오맵뿐 아니라 네이버지도, 구글맵, 온라인 구매 링크까지 담을 수 있도록 범용 `placeUrl`로 저장
 - 원두 카드 이미지 업로드 후 OCR 결과를 등록 폼 후보값으로 자동 반영
 - JPG, PNG, WEBP, HEIC, HEIF 이미지 업로드 지원
 - HEIC/HEIF 이미지는 서버에서 PNG로 변환한 뒤 Google Vision OCR에 전달
@@ -95,7 +102,7 @@ BrewLog는 커피 원두, 브루잉 레시피, 맛 기록, 원산지와 카페 �
 
 ```mermaid
 flowchart LR
-    purchasePlaces["PURCHASE_PLACES<br/>PK id<br/>name<br/>type<br/>address<br/>latitude<br/>longitude<br/>memo<br/>created_at / updated_at"]
+    purchasePlaces["PURCHASE_PLACES<br/>PK id<br/>name<br/>type<br/>address<br/>place_url<br/>latitude<br/>longitude<br/>memo<br/>created_at / updated_at"]
     coffeeBeans["COFFEE_BEANS<br/>PK id<br/>nullable FK purchase_place_id<br/>name<br/>roastery<br/>country / region / farm<br/>variety / altitude<br/>process_type<br/>status<br/>roasted_date<br/>purchased_date<br/>price<br/>weight<br/>memo<br/>created_at / updated_at"]
     brewRecords["BREW_RECORDS<br/>PK id<br/>not null FK coffee_bean_id<br/>brewed_date<br/>brew_method<br/>temperature_type<br/>bean_amount<br/>water_amount<br/>water_temperature<br/>grind_size_micron<br/>brew_time_sec<br/>inventory_deducted_weight<br/>rating<br/>acidity / sweetness / bitterness<br/>body / aroma / balance<br/>memo<br/>created_at / updated_at"]
 

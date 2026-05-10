@@ -29,6 +29,52 @@
 
 ---
 
+### `docs/specs/google_vision_ocr_implementation_spec_v1.md`
+
+읽어야 하는 경우:
+- Google Vision OCR 실제 API 연동 방식을 구현하거나 수정할 때
+- Google Vision 인증, 요청, 응답 처리 방식을 확인할 때
+- OCR Provider를 mock에서 실제 Google Vision으로 전환할 때
+- OCR 호출 실패 처리나 인증 설정 문제를 확인할 때
+
+읽지 말아야 하는 경우:
+- OCR 이후 텍스트 파싱이나 LLM 매핑만 수정할 때
+- 원두 등록 폼 UI만 수정할 때
+- 브루잉 기록 기능만 수정할 때
+
+---
+
+### `docs/specs/huggingface_ocr_json_mapping_spec.md`
+
+읽어야 하는 경우:
+- OCR 텍스트를 Hugging Face LLM으로 JSON 매핑하는 기능을 구현하거나 수정할 때
+- `HuggingFaceBeanMappingService`, LLM 테스트 Controller, LLM DTO 구조를 확인할 때
+- LLM 응답 JSON 추출, 검증, 후처리 규칙을 수정할 때
+- `/dev/llm-parsing/huggingface` 테스트 API 동작을 확인할 때
+
+읽지 말아야 하는 경우:
+- Google Vision OCR 이미지 인식 자체만 수정할 때
+- 원두/브루잉 DB 엔티티 구조만 수정할 때
+- 단순 Thymeleaf/CSS 수정일 때
+
+---
+
+### `docs/specs/ocr_preprocessing_country_roastery_mapping_spec.md`
+
+읽어야 하는 경우:
+- OCR 텍스트를 LLM에 보내기 전에 전처리하는 기능을 구현하거나 수정할 때
+- OCR 줄바꿈, key-value 분리, 후보 정보 생성 규칙을 확인할 때
+- 국가/지역 검증 또는 보정 로직을 구현하거나 수정할 때
+- 로스터리명과 원두명 구분 개선 로직을 구현하거나 수정할 때
+
+읽지 말아야 하는 경우:
+- Google Vision API 호출 자체만 수정할 때
+- Hugging Face API 연결 설정만 수정할 때
+- 원두 등록 폼 UI만 수정할 때
+- 브루잉 기록 기능만 수정할 때
+
+---
+
 ### `docs/specs/brewlog_erd_backend_design_v1.md`
 
 읽어야 하는 경우:
@@ -98,7 +144,7 @@
 
 ---
 
-### `docs/specs/README.md`
+### `docs/specs/INDEX.md`
 
 읽어야 하는 경우:
 - docs/specs 폴더의 전체 문서 구성을 이해해야 할 때
