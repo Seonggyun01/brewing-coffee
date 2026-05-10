@@ -108,6 +108,7 @@ class CoffeeBeanServiceTest {
                 "서울 종로구 율곡로 83",
                 null,
                 null,
+                null,
                 "기존 구매처"
         ));
         CoffeeBeanCreateForm form = createForm("에티오피아 구지", "브루잉 로스터스");

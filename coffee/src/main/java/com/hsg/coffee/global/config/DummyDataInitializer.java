@@ -47,6 +47,7 @@ public class DummyDataInitializer implements ApplicationRunner {
                 "프릳츠 원서점",
                 PurchasePlaceType.ROASTERY,
                 "서울 종로구 율곡로 83",
+                null,
                 37.575864,
                 126.989499,
                 "지도 표시 확인용 로스터리 구매처"
@@ -57,12 +58,14 @@ public class DummyDataInitializer implements ApplicationRunner {
                 null,
                 null,
                 null,
+                null,
                 "온라인 구매처 예시"
         ));
         PurchasePlace cafe = purchasePlaceRepository.save(PurchasePlace.create(
                 "샘플 카페",
                 PurchasePlaceType.CAFE,
                 "서울 성동구 성수동",
+                null,
                 37.544579,
                 127.055961,
                 "카페 판매 원두 구매처 예시"
@@ -72,6 +75,7 @@ public class DummyDataInitializer implements ApplicationRunner {
                         "센터커피 서울숲",
                         PurchasePlaceType.CAFE,
                         "서울 성동구 서울숲2길 28-11",
+                        null,
                         37.547723,
                         127.043268,
                         "카카오 지도 마커 확인용 방문 카페"
@@ -80,6 +84,7 @@ public class DummyDataInitializer implements ApplicationRunner {
                         "테라로사 포스코센터",
                         PurchasePlaceType.CAFE,
                         "서울 강남구 테헤란로 440",
+                        null,
                         37.505593,
                         127.056880,
                         "강남권 마커 확인용 방문 카페"
@@ -88,6 +93,7 @@ public class DummyDataInitializer implements ApplicationRunner {
                         "앤트러사이트 한남",
                         PurchasePlaceType.CAFE,
                         "서울 용산구 이태원로 240",
+                        null,
                         37.535790,
                         127.000833,
                         "한남권 마커 확인용 방문 카페"
@@ -96,6 +102,7 @@ public class DummyDataInitializer implements ApplicationRunner {
                         "커피 리브레 연남",
                         PurchasePlaceType.CAFE,
                         "서울 마포구 성미산로 200",
+                        null,
                         37.562444,
                         126.923055,
                         "연남권 마커 확인용 방문 카페"

@@ -79,6 +79,9 @@ public class CoffeeBeanCreateForm {
     @Size(max = 300, message = "구매처 주소는 300자 이하로 입력해주세요.")
     private String purchasePlaceAddress;
 
+    @Size(max = 500, message = "장소 링크는 500자 이하로 입력해주세요.")
+    private String purchasePlaceUrl;
+
     @Size(max = 1000, message = "구매처 메모는 1000자 이하로 입력해주세요.")
     private String purchasePlaceMemo;
 }

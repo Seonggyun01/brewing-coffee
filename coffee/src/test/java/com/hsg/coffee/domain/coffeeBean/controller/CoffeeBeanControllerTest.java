@@ -75,6 +75,7 @@ class CoffeeBeanControllerTest {
                 "서울 종로구 율곡로 83",
                 null,
                 null,
+                null,
                 "기존 구매처"
         ));
 
@@ -131,6 +132,7 @@ class CoffeeBeanControllerTest {
                 "프릳츠 원서점",
                 PurchasePlaceType.ROASTERY,
                 "서울 종로구 율곡로 83",
+                null,
                 null,
                 null,
                 "기존 구매처"

@@ -383,6 +383,31 @@ tr:last-child td {
     font-size: 20px;
 }
 
+.form-section h3 {
+    margin: 4px 0 -4px;
+    font-size: 16px;
+}
+
+.form-section details {
+    display: grid;
+    gap: 18px;
+}
+
+.form-section details[open] {
+    gap: 18px;
+}
+
+.form-section summary {
+    cursor: pointer;
+    color: var(--ink);
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.form-section summary::marker {
+    color: var(--muted);
+}
+
 .section-help {
     margin: -6px 0 0;
     color: var(--muted);

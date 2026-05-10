@@ -41,6 +41,7 @@ public class CoffeeBeanResponse {
     private final String purchasePlaceName;
     private final PurchasePlaceType purchasePlaceType;
     private final String purchasePlaceAddress;
+    private final String purchasePlaceUrl;
     private final Double purchasePlaceLatitude;
     private final Double purchasePlaceLongitude;
     private final String purchasePlaceMemo;
@@ -74,6 +75,7 @@ public class CoffeeBeanResponse {
         this.purchasePlaceName = purchasePlace != null ? purchasePlace.getName() : null;
         this.purchasePlaceType = purchasePlace != null ? purchasePlace.getType() : null;
         this.purchasePlaceAddress = purchasePlace != null ? purchasePlace.getAddress() : null;
+        this.purchasePlaceUrl = purchasePlace != null ? purchasePlace.getPlaceUrl() : null;
         this.purchasePlaceLatitude = purchasePlace != null ? purchasePlace.getLatitude() : null;
         this.purchasePlaceLongitude = purchasePlace != null ? purchasePlace.getLongitude() : null;
         this.purchasePlaceMemo = purchasePlace != null ? purchasePlace.getMemo() : null;

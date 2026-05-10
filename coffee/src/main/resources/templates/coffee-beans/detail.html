@@ -92,6 +92,17 @@
                         <dd th:text="${coffeeBean.purchasePlaceAddress ?: '-'}">서울 종로구</dd>
                     </div>
                     <div>
+                        <dt>장소 링크</dt>
+                        <dd>
+                            <a th:if="${coffeeBean.purchasePlaceUrl != null}"
+                               th:href="${coffeeBean.purchasePlaceUrl}"
+                               target="_blank"
+                               rel="noopener"
+                               th:text="${coffeeBean.purchasePlaceUrl}">https://place.map.kakao.com/...</a>
+                            <span th:if="${coffeeBean.purchasePlaceUrl == null}">-</span>
+                        </dd>
+                    </div>
+                    <div>
                         <dt>좌표</dt>
                         <dd th:text="${coffeeBean.purchasePlaceLatitude != null && coffeeBean.purchasePlaceLongitude != null ? coffeeBean.purchasePlaceLatitude + ', ' + coffeeBean.purchasePlaceLongitude : '지도 연동 후 자동 저장 예정'}">지도 연동 후 자동 저장 예정</dd>
                     </div>

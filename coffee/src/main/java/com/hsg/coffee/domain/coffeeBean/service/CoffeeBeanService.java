@@ -35,24 +35,25 @@ public class CoffeeBeanService {
                 form.getPurchasePlaceName(),
                 form.getPurchasePlaceType(),
                 form.getPurchasePlaceAddress(),
+                form.getPurchasePlaceUrl(),
                 form.getPurchasePlaceMemo()
         );
         CountryInfo originCountry = CountryInfo.findByCode(form.getOriginCountryCode());
-        String country = originCountry != null ? originCountry.getEnglishName() : form.getCountry();
+        String country = originCountry != null ? originCountry.getEnglishName() : clean(form.getCountry());
 
         CoffeeBean coffeeBean = coffeeBeanRepository.save(CoffeeBean.create(
-                form.getName(),
-                form.getRoastery(),
+                clean(form.getName()),
+                clean(form.getRoastery()),
                 country,
                 form.getOriginCountryCode(),
-                form.getRegion(),
-                form.getFarm(),
-                form.getVariety(),
-                form.getAltitude(),
+                clean(form.getRegion()),
+                clean(form.getFarm()),
+                clean(form.getVariety()),
+                clean(form.getAltitude()),
                 form.getProcessType(),
                 form.getFlavorNotes(),
                 parseTags(form.getCustomFlavorNotesText()),
-                form.getMemo(),
+                clean(form.getMemo()),
                 form.getRoastedDate(),
                 form.getPurchasedDate(),
                 form.getPrice(),
@@ -124,24 +125,25 @@ public class CoffeeBeanService {
                 form.getPurchasePlaceName(),
                 form.getPurchasePlaceType(),
                 form.getPurchasePlaceAddress(),
+                form.getPurchasePlaceUrl(),
                 form.getPurchasePlaceMemo()
         );
         CountryInfo originCountry = CountryInfo.findByCode(form.getOriginCountryCode());
-        String country = originCountry != null ? originCountry.getEnglishName() : form.getCountry();
+        String country = originCountry != null ? originCountry.getEnglishName() : clean(form.getCountry());
 
         coffeeBean.update(
-                form.getName(),
-                form.getRoastery(),
+                clean(form.getName()),
+                clean(form.getRoastery()),
                 country,
                 form.getOriginCountryCode(),
-                form.getRegion(),
-                form.getFarm(),
-                form.getVariety(),
-                form.getAltitude(),
+                clean(form.getRegion()),
+                clean(form.getFarm()),
+                clean(form.getVariety()),
+                clean(form.getAltitude()),
                 form.getProcessType(),
                 form.getFlavorNotes(),
                 parseTags(form.getCustomFlavorNotesText()),
-                form.getMemo(),
+                clean(form.getMemo()),
                 form.getRoastedDate(),
                 form.getPurchasedDate(),
                 form.getPrice(),
@@ -184,5 +186,12 @@ public class CoffeeBeanService {
             return null;
         }
         return countryCode.trim().toUpperCase();
+    }
+
+    private String clean(String value) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+        return value.trim();
     }
 }

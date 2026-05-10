@@ -34,13 +34,14 @@ public class PurchasePlaceService {
             String name,
             PurchasePlaceType type,
             String address,
+            String placeUrl,
             String memo
     ) {
         if (selectedId != null) {
             return getEntity(selectedId);
         }
 
-        return createIfPresent(name, type, address, memo);
+        return createIfPresent(name, type, address, placeUrl, memo);
     }
 
     @Transactional
@@ -48,6 +49,7 @@ public class PurchasePlaceService {
             String name,
             PurchasePlaceType type,
             String address,
+            String placeUrl,
             String memo
     ) {
         if (!StringUtils.hasText(name)) {
@@ -55,12 +57,13 @@ public class PurchasePlaceService {
         }
 
         return purchasePlaceRepository.save(PurchasePlace.create(
-                name,
+                clean(name),
                 typeOrDefault(type),
-                address,
+                clean(address),
+                clean(placeUrl),
                 null,
                 null,
-                memo
+                clean(memo)
         ));
     }
 
@@ -71,6 +74,7 @@ public class PurchasePlaceService {
                 purchasePlace.getName(),
                 purchasePlace.getType(),
                 purchasePlace.getAddress(),
+                purchasePlace.getPlaceUrl(),
                 latitude,
                 longitude,
                 purchasePlace.getMemo()
@@ -79,5 +83,12 @@ public class PurchasePlaceService {
 
     private PurchasePlaceType typeOrDefault(PurchasePlaceType type) {
         return type != null ? type : PurchasePlaceType.OTHER;
+    }
+
+    private String clean(String value) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+        return value.trim();
     }
 }

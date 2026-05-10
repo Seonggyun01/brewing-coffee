@@ -63,9 +63,14 @@ public class CoffeeBeanController {
     }
 
     @GetMapping("/new")
-    public String createForm(Model model) {
-        model.addAttribute("coffeeBeanForm", new CoffeeBeanCreateForm());
-        addFormAttributes(model, "원두 등록", "/coffee-beans");
+    public String createForm(
+            @RequestParam(required = false) CoffeeBeanStatus status,
+            Model model
+    ) {
+        CoffeeBeanCreateForm form = new CoffeeBeanCreateForm();
+        form.setStatus(status != null ? status : CoffeeBeanStatus.CURRENT);
+        model.addAttribute("coffeeBeanForm", form);
+        addFormAttributes(model, status == CoffeeBeanStatus.CAFE ? "카페 원두 등록" : "원두 등록", "/coffee-beans");
         return "coffee-beans/form";
     }
 

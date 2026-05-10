@@ -56,18 +56,14 @@
         </section>
 
         <form class="form" th:action="@{${actionUrl}}" th:object="${coffeeBeanForm}" method="post">
+            <input type="hidden" th:field="*{status}">
             <section class="form-section">
-                <h2>원두 정보</h2>
+                <h2>기본 정보</h2>
                 <div class="form__grid">
                     <label>
                         <span>원두 이름 *</span>
                         <input type="text" th:field="*{name}" placeholder="예: 에티오피아 구지">
                         <small th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></small>
-                    </label>
-
-                    <label>
-                        <span>로스터리</span>
-                        <input type="text" th:field="*{roastery}" placeholder="예: 브루잉 로스터스">
                     </label>
 
                     <label>
@@ -82,23 +78,8 @@
                     </label>
 
                     <label>
-                        <span>지역</span>
-                        <input type="text" th:field="*{region}" placeholder="예: Guji">
-                    </label>
-
-                    <label>
-                        <span>농장/워싱스테이션</span>
-                        <input type="text" th:field="*{farm}" placeholder="예: Hambela">
-                    </label>
-
-                    <label>
                         <span>품종</span>
                         <input type="text" th:field="*{variety}" placeholder="예: Heirloom">
-                    </label>
-
-                    <label>
-                        <span>고도</span>
-                        <input type="text" th:field="*{altitude}" placeholder="예: 1900-2100m">
                     </label>
 
                     <label>
@@ -107,35 +88,6 @@
                             <option value="">선택 안 함</option>
                             <option th:each="processType : ${processTypes}" th:value="${processType}" th:text="${processType}">WASHED</option>
                         </select>
-                    </label>
-
-                    <label>
-                        <span>원두 상태</span>
-                        <select th:field="*{status}">
-                            <option th:each="status : ${coffeeBeanStatuses}"
-                                    th:value="${status}"
-                                    th:text="${status.displayName}">보유 중</option>
-                        </select>
-                    </label>
-
-                    <label>
-                        <span>로스팅일</span>
-                        <input type="date" th:field="*{roastedDate}">
-                    </label>
-
-                    <label>
-                        <span>구매일</span>
-                        <input type="date" th:field="*{purchasedDate}">
-                    </label>
-
-                    <label>
-                        <span>가격</span>
-                        <input type="number" min="0" th:field="*{price}" placeholder="예: 18000">
-                    </label>
-
-                    <label>
-                        <span>남은 무게(g)</span>
-                        <input type="number" min="0" th:field="*{weight}" placeholder="예: 200">
                     </label>
                 </div>
 
@@ -184,43 +136,104 @@
             </section>
 
             <section class="form-section">
-                <h2>구매처 추가 정보</h2>
-                <p class="section-help">구매처 정보는 선택 입력입니다. 기존 구매처를 고르거나, 새 구매처 이름을 입력하면 함께 저장됩니다.</p>
+                <details open>
+                    <summary>상세 정보</summary>
+                    <p class="section-help">로스터리, 산지 세부 정보, 로스팅일은 선택 입력입니다. OCR로 찾은 값만 가볍게 확인해도 괜찮습니다.</p>
 
-                <label>
-                    <span>기존 구매처 선택</span>
-                    <select th:field="*{purchasePlaceId}">
-                        <option value="">선택 안 함</option>
-                        <option th:each="purchasePlace : ${purchasePlaces}"
-                                th:value="${purchasePlace.id}"
-                                th:text="${purchasePlace.name + ' (' + purchasePlace.type + ')'}">프릳츠 원서점</option>
-                    </select>
-                </label>
+                    <div class="form__grid">
+                        <label>
+                            <span>로스터리</span>
+                            <input type="text" th:field="*{roastery}" placeholder="예: 브루잉 로스터스">
+                        </label>
 
-                <div class="form__grid">
+                        <label>
+                            <span>지역</span>
+                            <input type="text" th:field="*{region}" placeholder="예: Guji">
+                        </label>
+
+                        <label>
+                            <span>농장/워싱스테이션</span>
+                            <input type="text" th:field="*{farm}" placeholder="예: Hambela">
+                        </label>
+
+                        <label>
+                            <span>고도</span>
+                            <input type="text" th:field="*{altitude}" placeholder="예: 1900-2100m">
+                        </label>
+
+                        <label>
+                            <span>로스팅일</span>
+                            <input type="date" th:field="*{roastedDate}">
+                        </label>
+                    </div>
+                </details>
+            </section>
+
+            <section class="form-section">
+                <details>
+                    <summary>부가 정보</summary>
+                    <p class="section-help">구매 또는 보유 중인 원두라면 용량, 가격, 구매처를 남길 수 있습니다. 카페에서 마신 원두라면 비워두어도 됩니다.</p>
+
+                    <div class="form__grid">
+                        <label>
+                            <span>남은 무게(g)</span>
+                            <input type="number" min="0" th:field="*{weight}" placeholder="예: 200">
+                        </label>
+
+                        <label>
+                            <span>가격</span>
+                            <input type="number" min="0" th:field="*{price}" placeholder="예: 18000">
+                        </label>
+
+                        <label>
+                            <span>구매일</span>
+                            <input type="date" th:field="*{purchasedDate}">
+                        </label>
+                    </div>
+
+                    <h3>구매처</h3>
+                    <p class="section-help">기존 구매처를 고르거나, 새 구매처 이름과 장소 링크를 함께 저장할 수 있습니다.</p>
+
                     <label>
-                        <span>새 구매처 이름</span>
-                        <input type="text" th:field="*{purchasePlaceName}" placeholder="예: 프릳츠 원서점, 네이버 스마트스토어">
-                    </label>
-
-                    <label>
-                        <span>새 구매처 유형</span>
-                        <select th:field="*{purchasePlaceType}">
+                        <span>기존 구매처 선택</span>
+                        <select th:field="*{purchasePlaceId}">
                             <option value="">선택 안 함</option>
-                            <option th:each="type : ${purchasePlaceTypes}" th:value="${type}" th:text="${type}">ROASTERY</option>
+                            <option th:each="purchasePlace : ${purchasePlaces}"
+                                    th:value="${purchasePlace.id}"
+                                    th:text="${purchasePlace.name + ' (' + purchasePlace.type + ')'}">프릳츠 원서점</option>
                         </select>
                     </label>
 
-                    <label>
-                        <span>주소</span>
-                        <input type="text" th:field="*{purchasePlaceAddress}" placeholder="예: 서울 종로구 율곡로 83">
-                    </label>
-                </div>
+                    <div class="form__grid">
+                        <label>
+                            <span>새 구매처 이름</span>
+                            <input type="text" th:field="*{purchasePlaceName}" placeholder="예: 프릳츠 원서점, 네이버 스마트스토어">
+                        </label>
 
-                <label>
-                    <span>구매처 메모</span>
-                    <textarea rows="3" th:field="*{purchasePlaceMemo}" placeholder="온라인 링크, 매장 분위기, 재구매 메모 등을 남겨보세요."></textarea>
-                </label>
+                        <label>
+                            <span>새 구매처 유형</span>
+                            <select th:field="*{purchasePlaceType}">
+                                <option value="">선택 안 함</option>
+                                <option th:each="type : ${purchasePlaceTypes}" th:value="${type}" th:text="${type}">ROASTERY</option>
+                            </select>
+                        </label>
+
+                        <label>
+                            <span>주소</span>
+                            <input type="text" th:field="*{purchasePlaceAddress}" placeholder="예: 서울 종로구 율곡로 83">
+                        </label>
+
+                        <label>
+                            <span>장소 링크</span>
+                            <input type="url" th:field="*{purchasePlaceUrl}" placeholder="예: https://place.map.kakao.com/...">
+                        </label>
+                    </div>
+
+                    <label>
+                        <span>구매처 메모</span>
+                        <textarea rows="3" th:field="*{purchasePlaceMemo}" placeholder="온라인 링크, 매장 분위기, 재구매 메모 등을 남겨보세요."></textarea>
+                    </label>
+                </details>
             </section>
 
             <div class="form__actions">

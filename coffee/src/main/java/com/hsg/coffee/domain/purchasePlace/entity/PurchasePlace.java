@@ -34,6 +34,9 @@ public class PurchasePlace extends BaseTimeEntity {
     @Column(length = 300)
     private String address;
 
+    @Column(length = 500)
+    private String placeUrl;
+
     private Double latitude;
 
     private Double longitude;
@@ -45,6 +48,7 @@ public class PurchasePlace extends BaseTimeEntity {
             String name,
             PurchasePlaceType type,
             String address,
+            String placeUrl,
             Double latitude,
             Double longitude,
             String memo
@@ -53,6 +57,7 @@ public class PurchasePlace extends BaseTimeEntity {
         purchasePlace.name = name;
         purchasePlace.type = type;
         purchasePlace.address = address;
+        purchasePlace.placeUrl = placeUrl;
         purchasePlace.latitude = latitude;
         purchasePlace.longitude = longitude;
         purchasePlace.memo = memo;
@@ -63,6 +68,7 @@ public class PurchasePlace extends BaseTimeEntity {
             String name,
             PurchasePlaceType type,
             String address,
+            String placeUrl,
             Double latitude,
             Double longitude,
             String memo
@@ -70,6 +76,7 @@ public class PurchasePlace extends BaseTimeEntity {
         this.name = name;
         this.type = type;
         this.address = address;
+        this.placeUrl = placeUrl;
         this.latitude = latitude;
         this.longitude = longitude;
         this.memo = memo;
