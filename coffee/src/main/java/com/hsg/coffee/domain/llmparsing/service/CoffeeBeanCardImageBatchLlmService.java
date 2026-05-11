@@ -24,6 +24,9 @@ import tools.jackson.databind.ObjectMapper;
 @Service
 public class CoffeeBeanCardImageBatchLlmService {
 
+    private static final int MAX_LLM_ATTEMPTS = 3;
+    private static final long LLM_RETRY_DELAY_MILLIS = 1500;
+
     private final CoffeeBeanCardOcrService ocrService;
     private final HuggingFaceBeanMappingService huggingFaceBeanMappingService;
     private final ObjectMapper objectMapper;
@@ -93,7 +96,7 @@ public class CoffeeBeanCardImageBatchLlmService {
             String ocrText = ocrService.extractText(new PathMultipartFile(imagePath));
             Files.writeString(ocrTextFile, ocrText);
 
-            LlmParsingDebugResponse llmDebugResponse = huggingFaceBeanMappingService.debugParseOcrText(ocrText);
+            LlmParsingDebugResponse llmDebugResponse = debugParseWithRetry(ocrText);
             Files.writeString(
                     llmDebugFile,
                     objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(llmDebugResponse)
@@ -117,6 +120,31 @@ public class CoffeeBeanCardImageBatchLlmService {
                     null
             );
         }
+    }
+
+    private LlmParsingDebugResponse debugParseWithRetry(String ocrText) throws InterruptedException {
+        LlmParsingDebugResponse response = null;
+        for (int attempt = 1; attempt <= MAX_LLM_ATTEMPTS; attempt++) {
+            response = huggingFaceBeanMappingService.debugParseOcrText(ocrText);
+            if (!isTransientLlmFailure(response) || attempt == MAX_LLM_ATTEMPTS) {
+                return response;
+            }
+            Thread.sleep(LLM_RETRY_DELAY_MILLIS);
+        }
+
+        return response;
+    }
+
+    private boolean isTransientLlmFailure(LlmParsingDebugResponse response) {
+        if (response == null) {
+            return true;
+        }
+        String status = response.status() == null ? "" : response.status();
+        String error = response.error() == null ? "" : response.error().toLowerCase();
+        return status.equals("429")
+                || error.contains("timeout")
+                || error.contains("timed out")
+                || error.contains("server overload");
     }
 
     private boolean isSupportedImage(Path path) {

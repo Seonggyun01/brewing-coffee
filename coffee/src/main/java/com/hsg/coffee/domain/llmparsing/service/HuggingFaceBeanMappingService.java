@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import com.hsg.coffee.domain.llmparsing.dto.LlmParsingDebugResponse;
 import com.hsg.coffee.domain.llmparsing.dto.LlmParsingResponse;
+import com.hsg.coffee.domain.llmparsing.dto.OcrPreprocessResult;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -35,6 +36,7 @@ public class HuggingFaceBeanMappingService {
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final BeanOcrMappingValidator validator;
+    private final OcrTextPreprocessor preprocessor;
 
     public HuggingFaceBeanMappingService(
             @Value("${huggingface.api-key:${brewlog.llm.huggingface.api-key:}}") String apiKey,
@@ -44,7 +46,8 @@ public class HuggingFaceBeanMappingService {
             @Value("${huggingface.max-new-tokens:${brewlog.llm.huggingface.max-new-tokens:700}}") int maxNewTokens,
             @Value("${huggingface.temperature:${brewlog.llm.huggingface.temperature:0.1}}") double temperature,
             ObjectMapper objectMapper,
-            BeanOcrMappingValidator validator
+            BeanOcrMappingValidator validator,
+            OcrTextPreprocessor preprocessor
     ) {
         this.apiKey = apiKey;
         this.modelUrl = normalizeModelUrl(modelUrl);
@@ -53,10 +56,12 @@ public class HuggingFaceBeanMappingService {
         this.maxNewTokens = maxNewTokens;
         this.temperature = temperature;
         this.httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
                 .connectTimeout(Duration.ofSeconds(timeoutSeconds))
                 .build();
         this.objectMapper = objectMapper;
         this.validator = validator;
+        this.preprocessor = preprocessor;
     }
 
     public LlmParsingResponse parseOcrText(String ocrText) {
@@ -70,7 +75,8 @@ public class HuggingFaceBeanMappingService {
         }
 
         try {
-            String response = callHuggingFace(ocrText);
+            OcrPreprocessResult preprocessResult = preprocessor.preprocess(ocrText);
+            String response = callHuggingFace(preprocessResult);
             String generatedText = extractGeneratedText(response);
             String json = extractJson(generatedText);
             if (json.isBlank()) {
@@ -79,7 +85,7 @@ public class HuggingFaceBeanMappingService {
             }
 
             LlmParsingResponse parsed = objectMapper.readValue(json, LlmParsingResponse.class);
-            return validator.sanitize(parsed);
+            return validator.sanitize(parsed, preprocessResult);
         } catch (HuggingFaceApiException exception) {
             log.warn("Hugging Face API 호출 실패: status={}, body={}",
                     exception.getStatusCode(),
@@ -122,10 +128,11 @@ public class HuggingFaceBeanMappingService {
         }
 
         try {
-            String response = callHuggingFace(ocrText);
+            OcrPreprocessResult preprocessResult = preprocessor.preprocess(ocrText);
+            String response = callHuggingFace(preprocessResult);
             String generatedText = extractGeneratedText(response);
             String json = extractJson(generatedText);
-            LlmParsingResponse parsedResponse = parseAndSanitize(json);
+            LlmParsingResponse parsedResponse = parseAndSanitize(json, preprocessResult);
 
             return new LlmParsingDebugResponse(
                     modelUrl,
@@ -142,7 +149,7 @@ public class HuggingFaceBeanMappingService {
                     modelUrl,
                     modelId,
                     String.valueOf(exception.getStatusCode()),
-                    "",
+                    abbreviate(exception.getResponseBody()),
                     exception.getResponseBody(),
                     "",
                     "",
@@ -177,6 +184,10 @@ public class HuggingFaceBeanMappingService {
         return callHuggingFace(modelId, createPrompt(ocrText));
     }
 
+    private String callHuggingFace(OcrPreprocessResult preprocessResult) {
+        return callHuggingFace(modelId, createPrompt(preprocessResult));
+    }
+
     private String callHuggingFace(String targetModelId, Object content) {
         Map<String, Object> request = Map.of(
                 "model", targetModelId,
@@ -195,6 +206,7 @@ public class HuggingFaceBeanMappingService {
             String requestBody = objectMapper.writeValueAsString(request);
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .uri(URI.create(modelUrl))
+                    .version(HttpClient.Version.HTTP_1_1)
                     .timeout(Duration.ofSeconds(timeoutSeconds))
                     .header("Authorization", "Bearer " + apiKey)
                     .header("Content-Type", "application/json")
@@ -208,66 +220,77 @@ public class HuggingFaceBeanMappingService {
 
             return response.body();
         } catch (IOException exception) {
-            throw new IllegalStateException("Hugging Face API 요청에 실패했습니다.", exception);
+            throw new IllegalStateException("Hugging Face API 요청에 실패했습니다: "
+                    + exception.getClass().getSimpleName()
+                    + " - "
+                    + exception.getMessage(), exception);
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Hugging Face API 요청이 중단되었습니다.", exception);
         }
     }
 
-    private LlmParsingResponse parseAndSanitize(String json) throws Exception {
+    private LlmParsingResponse parseAndSanitize(String json, OcrPreprocessResult preprocessResult) throws Exception {
         if (json == null || json.isBlank()) {
             return LlmParsingResponse.empty();
         }
 
         LlmParsingResponse parsed = objectMapper.readValue(json, LlmParsingResponse.class);
-        return validator.sanitize(parsed);
+        return validator.sanitize(parsed, preprocessResult);
     }
 
-    private String createPrompt(String ocrText) {
+    private String createPrompt(OcrPreprocessResult preprocessResult) {
         return """
                 너는 커피 원두 카드 OCR 텍스트를 원두 등록 폼 JSON으로 변환하는 도우미다.
+                후보는 참고용이며 틀릴 수 있다. OCR 원문을 우선 보고 판단한다.
+                근거 없는 값은 만들지 말고 빈 문자열 "" 또는 []로 둔다.
+                JSON 외 설명은 출력하지 않는다.
+                process는 NATURAL, WASHED, HONEY, ANAEROBIC, DECAF, OTHER, "" 중 하나만 쓴다.
+                remainingWeightGram은 숫자만 쓴다.
+                roastery는 브랜드/카페명이고, name은 원두 상품명이다. 둘은 같으면 안 된다.
+                originCountry는 다음 목록 중 하나로 매핑한다: %s.
+                region은 국가명이 아니라 Guji, Yirgacheffe, Huila, Boquete 같은 산지/지역명만 쓴다.
+                flavorNotes는 원문 표현을 유지하되 향미 단위로 쪼개서 배열로 쓴다.
 
-                아래 OCR 텍스트는 오인식, 줄바꿈 오류, 불필요한 문장, 서로 충돌하는 단어를 포함할 수 있다.
-
-                규칙:
-                1. OCR 텍스트에 근거가 있는 값만 추출한다.
-                2. 확실하지 않거나 없는 값은 빈 문자열 ""로 반환한다.
-                3. 절대 추측해서 채우지 않는다.
-                4. JSON 외의 설명은 출력하지 않는다.
-                5. 국가가 여러 개 등장하면 원두명, 설명, 문맥에서 가장 일관된 국가만 선택한다.
-                6. 향미 노트는 "/", ",", "·", 줄바꿈 기준으로 분리한다.
-                7. 날짜가 없으면 빈 문자열로 반환한다.
-                8. 가격이 없으면 빈 문자열로 반환한다.
-                9. process는 다음 중 하나만 반환한다:
-                   NATURAL, WASHED, HONEY, ANAEROBIC, DECAF, OTHER, ""
-                10. remainingWeightGram은 숫자만 반환한다. 예: "100g" -> "100"
-                11. flavorNotes는 TASTING NOTES, Flavor Notes, 향미 노트, 맛 노트 라벨 아래 값을 우선 사용한다.
-                12. flavorNotes는 하나의 문자열로 합치지 말고 개별 문자열 배열 원소로 반환한다.
+                후보:
+                roastery=%s
+                name=%s
+                keyValue=%s
+                flavorNotes=%s
 
                 반환 JSON 형식:
-                {
-                  "name": "",
-                  "roastery": "",
-                  "originCountry": "",
-                  "region": "",
-                  "farmOrStation": "",
-                  "variety": "",
-                  "altitude": "",
-                  "process": "",
-                  "beanStatus": "",
-                  "roastedAt": "",
-                  "purchasedAt": "",
-                  "price": "",
-                  "remainingWeightGram": "",
-                  "flavorNotes": []
-                }
+                {"name":"","roastery":"","originCountry":"","region":"","farmOrStation":"","variety":"","altitude":"","process":"","beanStatus":"","roastedAt":"","purchasedAt":"","price":"","remainingWeightGram":"","flavorNotes":[]}
 
                 OCR 텍스트:
                 ---
                 %s
                 ---
-                """.formatted(ocrText);
+                """.formatted(
+                allowedCountryNames(),
+                String.join(", ", preprocessResult.roasteryCandidates()),
+                String.join(", ", preprocessResult.productNameCandidates()),
+                formatKeyValueCandidates(preprocessResult),
+                String.join(", ", preprocessResult.tastingNoteCandidates()),
+                preprocessResult.rawText()
+        );
+    }
+
+    private String allowedCountryNames() {
+        return java.util.Arrays.stream(com.hsg.coffee.global.country.CountryInfo.values())
+                .map(com.hsg.coffee.global.country.CountryInfo::getKoreanName)
+                .toList()
+                .toString();
+    }
+
+    private String formatKeyValueCandidates(OcrPreprocessResult preprocessResult) {
+        return preprocessResult.keyValueCandidates().stream()
+                .map(candidate -> candidate.key() + " -> " + candidate.value())
+                .toList()
+                .toString();
+    }
+
+    private String createPrompt(String ocrText) {
+        return createPrompt(preprocessor.preprocess(ocrText));
     }
 
     private String extractGeneratedText(String response) {

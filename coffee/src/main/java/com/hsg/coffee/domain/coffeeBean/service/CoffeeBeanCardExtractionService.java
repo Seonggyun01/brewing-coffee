@@ -3,11 +3,9 @@ package com.hsg.coffee.domain.coffeeBean.service;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
@@ -45,8 +43,6 @@ public class CoffeeBeanCardExtractionService {
             "heic",
             "heif"
     );
-    private static final Map<String, FlavorNote> FLAVOR_NOTE_ALIASES = createFlavorNoteAliases();
-
     private final CoffeeBeanCardOcrService ocrService;
     private final CoffeeBeanCardTextParser textParser;
     private final HuggingFaceBeanMappingService huggingFaceBeanMappingService;
@@ -120,7 +116,7 @@ public class CoffeeBeanCardExtractionService {
                 continue;
             }
 
-            List<FlavorNote> foundNotes = findFlavorNotes(cleanNoteText);
+            List<FlavorNote> foundNotes = FlavorNoteTextMapper.findFlavorNotes(cleanNoteText);
             if (foundNotes.isEmpty()) {
                 customNotes.add(cleanNoteText);
             } else {
@@ -130,51 +126,6 @@ public class CoffeeBeanCardExtractionService {
 
         form.setFlavorNotes(new ArrayList<>(matchedNotes));
         form.setCustomFlavorNotesText(customNotes.isEmpty() ? null : String.join(", ", customNotes));
-    }
-
-    private List<FlavorNote> findFlavorNotes(String text) {
-        String normalizedText = normalizeFlavorKeyword(text);
-        if (!StringUtils.hasText(normalizedText)) {
-            return List.of();
-        }
-
-        Set<FlavorNote> notes = new LinkedHashSet<>();
-        FlavorNote aliasNote = FLAVOR_NOTE_ALIASES.get(normalizedText);
-        if (aliasNote != null) {
-            notes.add(aliasNote);
-        }
-
-        for (FlavorNote note : FlavorNote.values()) {
-            String normalizedDisplayName = normalizeFlavorKeyword(note.getDisplayName());
-            String normalizedEnumName = normalizeFlavorKeyword(note.name());
-            if (normalizedText.contains(normalizedDisplayName) || normalizedText.contains(normalizedEnumName)) {
-                notes.add(note);
-            }
-        }
-
-        removeSubsumedFlavorNotes(notes);
-        return new ArrayList<>(notes);
-    }
-
-    private void removeSubsumedFlavorNotes(Set<FlavorNote> notes) {
-        Set<FlavorNote> notesToRemove = new LinkedHashSet<>();
-
-        for (FlavorNote note : notes) {
-            String keyword = normalizeFlavorKeyword(note.name());
-            for (FlavorNote otherNote : notes) {
-                if (note == otherNote) {
-                    continue;
-                }
-
-                String otherKeyword = normalizeFlavorKeyword(otherNote.name());
-                if (otherKeyword.contains(keyword)) {
-                    notesToRemove.add(note);
-                    break;
-                }
-            }
-        }
-
-        notes.removeAll(notesToRemove);
     }
 
     private ProcessType parseProcessType(String value, ProcessType fallback) {
@@ -233,44 +184,22 @@ public class CoffeeBeanCardExtractionService {
         return value.trim();
     }
 
-    private String normalizeFlavorKeyword(String value) {
-        if (value == null) {
-            return "";
-        }
-
-        return value.trim()
-                .toLowerCase(Locale.ROOT)
-                .replaceAll("[\\s_\\-·,/|()\\[\\]{}]+", "");
-    }
-
-    private static Map<String, FlavorNote> createFlavorNoteAliases() {
-        Map<String, FlavorNote> aliases = new LinkedHashMap<>();
-        aliases.put("허니", FlavorNote.HONEY);
-        aliases.put("밀크초콜릿", FlavorNote.MILK_CHOCOLATE);
-        aliases.put("다크초콜릿", FlavorNote.DARK_CHOCOLATE);
-        aliases.put("레드와인", FlavorNote.RED_WINE);
-        aliases.put("화이트와인", FlavorNote.WHITE_WINE);
-        aliases.put("청포도", FlavorNote.GRAPE);
-        aliases.put("오렌지주스", FlavorNote.ORANGE);
-        aliases.put("오렌지쥬스", FlavorNote.ORANGE);
-        aliases.put("자스민티", FlavorNote.JASMINE_TEA);
-        aliases.put("얼그레이티", FlavorNote.EARL_GREY);
-        aliases.put("블랙티", FlavorNote.BLACK_TEA);
-        aliases.put("그린티", FlavorNote.GREEN_TEA);
-        return aliases;
-    }
-
     private void validateImage(MultipartFile image) {
         if (image == null || image.isEmpty()) {
             throw new IllegalArgumentException("원두 카드 이미지를 업로드해주세요.");
         }
 
         String contentType = image.getContentType();
-        if (!StringUtils.hasText(contentType) || !ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase())) {
+        String extension = extractExtension(image.getOriginalFilename());
+        boolean allowedContentType = StringUtils.hasText(contentType)
+                && ALLOWED_CONTENT_TYPES.contains(contentType.toLowerCase());
+        boolean allowedExtension = StringUtils.hasText(extension)
+                && ALLOWED_EXTENSIONS.contains(extension);
+
+        if (!allowedContentType && !allowedExtension) {
             throw new IllegalArgumentException("JPG, PNG, WEBP, HEIC 이미지만 업로드할 수 있습니다.");
         }
 
-        String extension = extractExtension(image.getOriginalFilename());
         if (StringUtils.hasText(extension) && !ALLOWED_EXTENSIONS.contains(extension)) {
             throw new IllegalArgumentException("JPG, PNG, WEBP, HEIC 이미지만 업로드할 수 있습니다.");
         }

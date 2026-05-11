@@ -10,8 +10,10 @@ import com.hsg.coffee.domain.llmparsing.dto.LlmImageBatchResponse;
 import com.hsg.coffee.domain.llmparsing.dto.LlmParsingDebugResponse;
 import com.hsg.coffee.domain.llmparsing.dto.LlmParsingRequest;
 import com.hsg.coffee.domain.llmparsing.dto.LlmParsingResponse;
+import com.hsg.coffee.domain.llmparsing.dto.OcrPreprocessResult;
 import com.hsg.coffee.domain.llmparsing.service.CoffeeBeanCardImageBatchLlmService;
 import com.hsg.coffee.domain.llmparsing.service.HuggingFaceBeanMappingService;
+import com.hsg.coffee.domain.llmparsing.service.OcrTextPreprocessor;
 
 @RestController
 @RequestMapping("/dev/llm-parsing")
@@ -19,13 +21,21 @@ public class LlmParsingTestController {
 
     private final HuggingFaceBeanMappingService huggingFaceBeanMappingService;
     private final CoffeeBeanCardImageBatchLlmService coffeeBeanCardImageBatchLlmService;
+    private final OcrTextPreprocessor ocrTextPreprocessor;
 
     public LlmParsingTestController(
             HuggingFaceBeanMappingService huggingFaceBeanMappingService,
-            CoffeeBeanCardImageBatchLlmService coffeeBeanCardImageBatchLlmService
+            CoffeeBeanCardImageBatchLlmService coffeeBeanCardImageBatchLlmService,
+            OcrTextPreprocessor ocrTextPreprocessor
     ) {
         this.huggingFaceBeanMappingService = huggingFaceBeanMappingService;
         this.coffeeBeanCardImageBatchLlmService = coffeeBeanCardImageBatchLlmService;
+        this.ocrTextPreprocessor = ocrTextPreprocessor;
+    }
+
+    @PostMapping("/preprocess")
+    public ResponseEntity<OcrPreprocessResult> preprocess(@RequestBody LlmParsingRequest request) {
+        return ResponseEntity.ok(ocrTextPreprocessor.preprocess(request.ocrText()));
     }
 
     @PostMapping("/huggingface")

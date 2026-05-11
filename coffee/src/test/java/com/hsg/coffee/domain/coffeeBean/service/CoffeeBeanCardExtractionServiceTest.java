@@ -192,7 +192,7 @@ class CoffeeBeanCardExtractionServiceTest {
         assertEquals(200, result.getWeight());
         assertEquals(18000, result.getPrice());
         assertEquals(LocalDate.of(2026, 5, 1), result.getRoastedDate());
-        assertEquals(List.of(FlavorNote.BROWN_SUGAR, FlavorNote.BLACK_TEA), result.getFlavorNotes());
+        assertEquals(List.of(FlavorNote.BLACK_TEA, FlavorNote.BROWN_SUGAR), result.getFlavorNotes());
     }
 
     @Test
@@ -242,8 +242,8 @@ class CoffeeBeanCardExtractionServiceTest {
         assertEquals("Gesha", result.getVariety());
         assertEquals(ProcessType.CARBONIC_MACERATION, result.getProcessType());
         assertEquals(LocalDate.of(2026, 5, 4), result.getRoastedDate());
-        assertEquals(List.of(FlavorNote.YUZU, FlavorNote.GRAPE), result.getFlavorNotes());
-        assertEquals("Cane Sugar", result.getCustomFlavorNotesText());
+        assertEquals(List.of(FlavorNote.GRAPE, FlavorNote.BROWN_SUGAR, FlavorNote.YUZU), result.getFlavorNotes());
+        assertNull(result.getCustomFlavorNotesText());
     }
 
     @Test
@@ -267,8 +267,8 @@ class CoffeeBeanCardExtractionServiceTest {
         assertEquals("METAD", result.getFarm());
         assertEquals("1,900 - 2,100 masl", result.getAltitude());
         assertEquals(ProcessType.WASHED, result.getProcessType());
-        assertEquals(List.of(FlavorNote.WHITE_PEACH, FlavorNote.EARL_GREY), result.getFlavorNotes());
-        assertEquals("Bergamot", result.getCustomFlavorNotesText());
+        assertEquals(List.of(FlavorNote.EARL_GREY, FlavorNote.WHITE_PEACH), result.getFlavorNotes());
+        assertNull(result.getCustomFlavorNotesText());
     }
 
     @Test
@@ -292,7 +292,7 @@ class CoffeeBeanCardExtractionServiceTest {
         assertEquals("1800m", result.getAltitude());
         assertEquals("SL28, SL34", result.getVariety());
         assertEquals(ProcessType.WASHED, result.getProcessType());
-        assertEquals(List.of(FlavorNote.GRAPEFRUIT, FlavorNote.BLACKCURRANT, FlavorNote.BROWN_SUGAR), result.getFlavorNotes());
+        assertEquals(List.of(FlavorNote.BLACKCURRANT, FlavorNote.GRAPEFRUIT, FlavorNote.BROWN_SUGAR), result.getFlavorNotes());
         assertNull(result.getCustomFlavorNotesText());
     }
 

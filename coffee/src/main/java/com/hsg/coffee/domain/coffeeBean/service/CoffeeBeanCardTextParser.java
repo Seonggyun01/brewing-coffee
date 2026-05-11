@@ -257,38 +257,17 @@ public class CoffeeBeanCardTextParser {
 
     private Set<FlavorNote> extractFlavorNotes(String text) {
         Set<FlavorNote> notes = new LinkedHashSet<>();
-        String lower = text.toLowerCase(Locale.ROOT);
 
-        for (FlavorNote note : FlavorNote.values()) {
-            String enumKeyword = note.name().toLowerCase(Locale.ROOT).replace("_", " ");
-            if (lower.contains(enumKeyword) || text.contains(note.getDisplayName())) {
-                notes.add(note);
-            }
-        }
+        text.lines()
+                .map(String::trim)
+                .filter(StringUtils::hasText)
+                .flatMap(line -> Arrays.stream(line.split("[,，/·|]")))
+                .map(String::trim)
+                .filter(StringUtils::hasText)
+                .flatMap(token -> FlavorNoteTextMapper.findFlavorNotes(token).stream())
+                .forEach(notes::add);
 
-        removeSubsumedFlavorNotes(notes);
         return notes;
-    }
-
-    private void removeSubsumedFlavorNotes(Set<FlavorNote> notes) {
-        Set<FlavorNote> notesToRemove = new LinkedHashSet<>();
-
-        for (FlavorNote note : notes) {
-            String keyword = note.name().toLowerCase(Locale.ROOT).replace("_", " ");
-            for (FlavorNote otherNote : notes) {
-                if (note == otherNote) {
-                    continue;
-                }
-
-                String otherKeyword = otherNote.name().toLowerCase(Locale.ROOT).replace("_", " ");
-                if (otherKeyword.contains(keyword)) {
-                    notesToRemove.add(note);
-                    break;
-                }
-            }
-        }
-
-        notes.removeAll(notesToRemove);
     }
 
     private String extractCustomFlavorNotesText(String text, List<FlavorNote> matchedNotes) {
@@ -350,16 +329,7 @@ public class CoffeeBeanCardTextParser {
     }
 
     private boolean isKnownFlavorNote(String token, List<FlavorNote> matchedNotes) {
-        String lower = token.toLowerCase(Locale.ROOT);
-
-        for (FlavorNote note : matchedNotes) {
-            String enumKeyword = note.name().toLowerCase(Locale.ROOT).replace("_", " ");
-            if (lower.contains(enumKeyword) || token.contains(note.getDisplayName())) {
-                return true;
-            }
-        }
-
-        return false;
+        return FlavorNoteTextMapper.isKnownFlavorNote(token, matchedNotes);
     }
 
     private Integer extractWeight(String text) {
