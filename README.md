@@ -10,7 +10,7 @@ BrewLog는 커피 원두, 브루잉 레시피, 맛 기록, 원산지와 카페 �
 | Framework | Spring Boot 4.0.6 |
 | View | Thymeleaf |
 | Persistence | Spring Data JPA |
-| Database | H2 Database |
+| Database | MySQL |
 | Validation | Bean Validation |
 | OCR | Google Cloud Vision |
 | Image Conversion | Openize.HEIC |
@@ -66,7 +66,7 @@ BrewLog는 커피 원두, 브루잉 레시피, 맛 기록, 원산지와 카페 �
 
 - 루트 페이지를 원산지 세계 지도 메인 화면으로 제공
 - 서버 실행 시 개발용 더미 데이터 생성
-- H2 콘솔 접속
+- MySQL 기반 로컬 데이터 영속화
 - 주요 서비스/컨트롤러 흐름 테스트
 - Google Vision OCR 사용 시 `GOOGLE_APPLICATION_CREDENTIALS` 환경 변수로 로컬 인증 파일 지정
 - 기본 실행은 Google Vision OCR을 사용하며, 테스트 환경에서만 `mock` provider를 사용
@@ -212,26 +212,43 @@ cd coffee
 
 ## 개발 데이터베이스
 
-현재 개발 단계에서는 인메모리 H2를 사용합니다. 서버를 재시작하면 데이터가 초기화됩니다.
+기본 실행 환경은 MySQL을 사용합니다. 애플리케이션을 재시작해도 기록이 남도록 JPA 설정은 `ddl-auto: update`로 둡니다. 테스트 환경은 빠른 실행을 위해 `src/test/resources/application.yml`에서 H2 인메모리 DB를 계속 사용합니다.
 
-```yaml
-spring:
-  datasource:
-    url: jdbc:h2:mem:brewlog
+### MySQL 준비
+
+MySQL 8.x 기준으로 아래 데이터베이스와 계정을 준비합니다.
+
+```sql
+CREATE DATABASE brewlog
+  DEFAULT CHARACTER SET utf8mb4
+  DEFAULT COLLATE utf8mb4_unicode_ci;
+
+CREATE USER 'brewlog'@'localhost' IDENTIFIED BY 'brewlog';
+GRANT ALL PRIVILEGES ON brewlog.* TO 'brewlog'@'localhost';
+FLUSH PRIVILEGES;
 ```
 
-H2 콘솔:
+기본 접속값은 아래와 같습니다.
 
-```text
-http://localhost:8080/h2-console
-```
+| 설정 | 기본값 | 설명 |
+| --- | --- | --- |
+| `DB_HOST` | `localhost` | MySQL 호스트 |
+| `DB_PORT` | `3306` | MySQL 포트 |
+| `DB_NAME` | `brewlog` | 사용할 데이터베이스 이름 |
+| `DB_USERNAME` | `brewlog` | DB 사용자 |
+| `DB_PASSWORD` | `brewlog` | DB 비밀번호 |
+| `DB_TIMEZONE` | `Asia/Seoul` | JDBC 서버 타임존 |
+| `BREWLOG_DUMMY_DATA_ENABLED` | `false` | 개발용 더미 데이터 자동 생성 여부 |
 
-접속 정보:
+다른 계정이나 비밀번호를 쓸 경우 실행 전에 환경변수로 지정합니다.
 
-```text
-JDBC URL: jdbc:h2:mem:brewlog
-User Name: sa
-Password:
+```bash
+export DB_HOST=localhost
+export DB_PORT=3306
+export DB_NAME=brewlog
+export DB_USERNAME=brewlog
+export DB_PASSWORD='원하는_비밀번호'
+export DB_TIMEZONE=Asia/Seoul
 ```
 
 ## 구매처 정책
