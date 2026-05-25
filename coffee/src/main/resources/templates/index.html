@@ -4,23 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BrewLog Origin Map</title>
-    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='app-header-20260525')}">
     <link rel="stylesheet" th:href="@{/css/origin-map.css(v=12)}">
 </head>
 <body class="origin-map-page">
-    <header class="app-header">
-        <a class="app-header__brand" th:href="@{/}">
-            <span class="app-header__logo">B</span>
-            <strong>BrewLog</strong>
-        </a>
-        <nav class="app-header__nav" aria-label="주요 메뉴">
-            <a class="is-active" th:href="@{/}">Home</a>
-            <a th:href="@{/coffee-beans}">Beans</a>
-            <a th:href="@{/brew-records}">Brew Records</a>
-            <a th:href="@{/cafes/map}">Cafe Map</a>
-        </nav>
-        <a class="button button--primary" th:href="@{/coffee-beans/new}">새 원두 등록</a>
-    </header>
+    <header th:replace="~{fragments/app-header :: appHeader('home')}"></header>
 
     <main class="origin-map-shell">
         <section class="origin-map-visual" aria-label="커피 원산지 세계 지도">

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header class="app-header" th:fragment="appHeader(active)">
+    <a class="app-header__brand" th:href="@{/}">
+        <span class="app-header__logo">B</span>
+        <strong>BrewLog</strong>
+    </a>
+    <nav class="app-header__nav" aria-label="주요 메뉴">
+        <a th:href="@{/}" th:classappend="${active == 'home'} ? ' is-active'">Home</a>
+        <a th:href="@{/coffee-beans}" th:classappend="${active == 'beans'} ? ' is-active'">Beans</a>
+        <a th:href="@{/brew-records}" th:classappend="${active == 'records'} ? ' is-active'">Brew Records</a>
+        <a th:href="@{/cafes/map}" th:classappend="${active == 'cafes'} ? ' is-active'">Cafe Map</a>
+    </nav>
+    <div class="app-header__actions">
+        <a class="button button--secondary" th:href="@{/coffee-beans/new(status='CAFE')}">카페 원두</a>
+        <a class="button button--primary" th:href="@{/coffee-beans/new}">새 원두</a>
+    </div>
+</header>
+</body>
+</html>

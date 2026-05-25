@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${title + ' - BrewLog'}">원두 등록 - BrewLog</title>
-    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='app-header-20260525')}">
 </head>
 <body>
+    <header th:replace="~{fragments/app-header :: appHeader('beans')}"></header>
     <main class="page page--narrow">
         <header class="page__header">
             <div>
@@ -57,6 +58,8 @@
 
         <form class="form" th:action="@{${actionUrl}}" th:object="${coffeeBeanForm}" method="post">
             <input type="hidden" th:field="*{status}">
+            <input type="hidden" th:field="*{purchasePlaceLatitude}">
+            <input type="hidden" th:field="*{purchasePlaceLongitude}">
             <section class="form-section">
                 <h2>기본 정보</h2>
                 <div class="form__grid">
@@ -94,39 +97,58 @@
                 <div class="flavor-editor">
                     <div>
                         <span>향미 노트</span>
-                        <p class="section-help">원두에서 기대되거나 느껴지는 향미를 선택해주세요. 권장 3~5개, 최대 8개</p>
+                        <p class="section-help">카테고리를 클릭하여 향미 노트를 선택하세요. 권장 3~5개, 최대 8개</p>
                         <small th:if="${#fields.hasErrors('flavorNotes')}" th:errors="*{flavorNotes}"></small>
                     </div>
-                    <div class="selection-panel" data-selection-panel="flavorNotes">
-                        <div>
-                            <strong>선택한 향미 노트</strong>
-                            <span data-selection-count>0개</span>
-                        </div>
-                        <p data-selection-empty>아직 선택한 향미 노트가 없습니다.</p>
-                        <div class="selected-tags" data-selection-list></div>
-                    </div>
-                    <div class="flavor-category-list">
-                        <section class="flavor-category" th:each="category : ${flavorCategories}">
-                            <header>
-                                <span class="flavor-swatch" th:style="'background:' + ${category.color}"></span>
-                                <div>
-                                    <h3 th:text="${category.displayName}">Citrus</h3>
-                                    <p th:text="${category.description}">상큼하고 밝은 산미</p>
-                                </div>
-                            </header>
-                            <div class="tag-options">
-                                <label class="tag-chip" th:each="note : ${flavorNotesByCategory.get(category)}">
-                                    <input type="checkbox" th:field="*{flavorNotes}" th:value="${note}">
-                                    <span th:style="'border-color:' + ${note.color} + '; background:' + ${note.color} + '22;'" th:text="${note.displayName}">레몬</span>
-                                </label>
+                    <div class="flavor-picker" data-flavor-picker aria-label="향미 노트 선택">
+                        <div class="flavor-category-wheel">
+                            <svg class="flavor-category-wheel__svg"
+                                 data-flavor-category-wheel-svg
+                                 viewBox="0 0 520 520"
+                                 role="img"
+                                 aria-label="향미 카테고리"></svg>
+                            <div class="flavor-category-wheel__center" aria-hidden="true">
+                                <span>선택된 향미</span>
+                                <strong data-wheel-selection-count>0</strong>
                             </div>
-                        </section>
+                        </div>
+                        <div class="flavor-picker__groups">
+                            <section class="flavor-picker__group"
+                                     th:each="category : ${flavorCategories}"
+                                     th:attr="data-category-name=${category.displayName}, data-category-color=${category.color}, data-category-description=${category.description}">
+                                <header>
+                                    <span class="flavor-picker__swatch"
+                                          th:style="'background:' + ${category.color}"
+                                          aria-hidden="true"></span>
+                                    <div>
+                                        <h3 th:text="${category.displayName}">Citrus</h3>
+                                        <p th:text="${category.description}">상큼하고 밝은 산미</p>
+                                    </div>
+                                </header>
+                                <div class="flavor-picker__notes">
+                                    <label class="tag-chip flavor-picker__note"
+                                           th:each="note : ${flavorNotesByCategory.get(category)}"
+                                           th:attr="data-note-label=${note.displayName}, data-note-color=${note.color}">
+                                        <input type="checkbox" th:field="*{flavorNotes}" th:value="${note}">
+                                        <span th:style="'--note-color:' + ${note.color} + '; border-color:' + ${note.color} + '; background:' + ${note.color} + '16;'" th:text="${note.displayName}">레몬</span>
+                                    </label>
+                                </div>
+                            </section>
+                        </div>
                     </div>
-                    <label>
+                    <label class="flavor-custom-note-field">
                         <span>직접 입력 향미 노트</span>
                         <input type="text" th:field="*{customFlavorNotesText}" placeholder="예: 라임 껍질, 청포도, 말린 오렌지">
                         <small th:if="${#fields.hasErrors('customFlavorNotesText')}" th:errors="*{customFlavorNotesText}"></small>
                     </label>
+                    <div class="selection-panel" data-selection-panel="flavorNotes">
+                        <div>
+                            <strong>선택한 향미 노트</strong>
+                            <span data-selection-count>0/8</span>
+                        </div>
+                        <p data-selection-empty>아직 선택한 향미 노트가 없습니다.</p>
+                        <div class="selected-tags" data-selection-list></div>
+                    </div>
                 </div>
 
                 <label>
@@ -194,6 +216,34 @@
                     <h3>구매처</h3>
                     <p class="section-help">기존 구매처를 고르거나, 새 구매처 이름과 장소 링크를 함께 저장할 수 있습니다.</p>
 
+                    <div class="kakao-place-search"
+                         data-kakao-place-search-box
+                         th:classappend="${!hasKakaoMapKey} ? ' is-disabled'">
+                        <div class="kakao-place-search__header">
+                            <div>
+                                <strong>카카오맵 주소 검색</strong>
+                                <p>카페나 구매처를 검색해서 이름, 주소, 지도 링크와 좌표를 한 번에 채웁니다.</p>
+                            </div>
+                            <span th:if="${!hasKakaoMapKey}">설정 필요</span>
+                        </div>
+                        <div class="kakao-place-search__controls">
+                            <input type="search"
+                                   data-kakao-place-query
+                                   placeholder="예: 프릳츠 원서점, 서울 카페">
+                            <button class="button button--secondary"
+                                    type="button"
+                                    data-kakao-place-search
+                                    th:disabled="${!hasKakaoMapKey}">
+                                검색
+                            </button>
+                        </div>
+                        <p class="kakao-place-search__message" data-kakao-place-message
+                           th:text="${hasKakaoMapKey} ? '검색 결과를 선택하면 아래 구매처 정보가 자동으로 입력됩니다.' : 'application-local.yml의 brewlog.kakao.javascript-key 설정이 필요합니다.'">
+                            검색 결과를 선택하면 아래 구매처 정보가 자동으로 입력됩니다.
+                        </p>
+                        <div class="kakao-place-results" data-kakao-place-results></div>
+                    </div>
+
                     <label>
                         <span>기존 구매처 선택</span>
                         <select th:field="*{purchasePlaceId}">
@@ -242,7 +292,155 @@
             </div>
         </form>
     </main>
+    <script th:if="${hasKakaoMapKey}"
+            th:src="@{'https://dapi.kakao.com/v2/maps/sdk.js'(appkey=${kakaoJavascriptKey},libraries='services')}"></script>
     <script>
+        document.querySelectorAll('[data-kakao-place-search-box]').forEach((box) => {
+            const queryInput = box.querySelector('[data-kakao-place-query]');
+            const searchButton = box.querySelector('[data-kakao-place-search]');
+            const results = box.querySelector('[data-kakao-place-results]');
+            const message = box.querySelector('[data-kakao-place-message]');
+            const form = box.closest('form');
+            const selectedPlaceInput = form.querySelector('#purchasePlaceId');
+            const nameInput = form.querySelector('#purchasePlaceName');
+            const typeInput = form.querySelector('#purchasePlaceType');
+            const addressInput = form.querySelector('#purchasePlaceAddress');
+            const urlInput = form.querySelector('#purchasePlaceUrl');
+            const latitudeInput = form.querySelector('#purchasePlaceLatitude');
+            const longitudeInput = form.querySelector('#purchasePlaceLongitude');
+            const statusInput = form.querySelector('#status');
+            const hasKakaoPlaces = window.kakao?.maps?.services?.Places;
+
+            if (!hasKakaoPlaces) {
+                if (message) {
+                    message.textContent = '카카오맵 스크립트를 불러오지 못했습니다. 키 설정과 도메인 등록을 확인해주세요.';
+                }
+                if (searchButton) {
+                    searchButton.disabled = true;
+                }
+                return;
+            }
+
+            const places = new kakao.maps.services.Places();
+
+            function setMessage(text) {
+                if (message) {
+                    message.textContent = text;
+                }
+            }
+
+            function clearResults() {
+                if (results) {
+                    results.innerHTML = '';
+                }
+            }
+
+            function placeAddress(place) {
+                return place.road_address_name || place.address_name || '';
+            }
+
+            function selectPlace(place) {
+                if (selectedPlaceInput) {
+                    selectedPlaceInput.value = '';
+                }
+                if (nameInput) {
+                    nameInput.value = place.place_name || '';
+                }
+                if (addressInput) {
+                    addressInput.value = placeAddress(place);
+                }
+                if (urlInput) {
+                    urlInput.value = place.place_url || '';
+                }
+                if (latitudeInput) {
+                    latitudeInput.value = place.y || '';
+                }
+                if (longitudeInput) {
+                    longitudeInput.value = place.x || '';
+                }
+                if (typeInput && (!typeInput.value || statusInput?.value === 'CAFE')) {
+                    typeInput.value = 'CAFE';
+                }
+                setMessage('선택한 장소가 구매처 정보에 입력되었습니다.');
+                clearResults();
+            }
+
+            function renderPlaces(placesData) {
+                clearResults();
+
+                placesData.slice(0, 5).forEach((place) => {
+                    const button = document.createElement('button');
+                    const name = document.createElement('strong');
+                    const address = document.createElement('span');
+                    const category = document.createElement('small');
+
+                    button.type = 'button';
+                    button.className = 'kakao-place-result';
+                    name.textContent = place.place_name || '이름 없음';
+                    address.textContent = placeAddress(place) || '주소 정보 없음';
+                    category.textContent = place.category_name || '카카오맵 장소';
+
+                    button.append(name, address, category);
+                    button.addEventListener('click', () => selectPlace(place));
+                    results.appendChild(button);
+                });
+            }
+
+            function searchPlaces() {
+                const keyword = queryInput.value.trim();
+
+                if (!keyword) {
+                    setMessage('검색할 카페나 구매처 이름을 입력해주세요.');
+                    clearResults();
+                    return;
+                }
+
+                setMessage('카카오맵에서 장소를 검색하는 중입니다.');
+                places.keywordSearch(keyword, (data, status) => {
+                    if (status !== kakao.maps.services.Status.OK || data.length === 0) {
+                        setMessage('검색 결과가 없습니다. 이름이나 지역을 조금 더 구체적으로 입력해주세요.');
+                        clearResults();
+                        return;
+                    }
+
+                    setMessage('검색 결과 중 등록할 장소를 선택해주세요.');
+                    renderPlaces(data);
+                });
+            }
+
+            searchButton.addEventListener('click', searchPlaces);
+            queryInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    searchPlaces();
+                }
+            });
+        });
+
+        function polarToCartesian(center, radius, angleInDegrees) {
+            const angleInRadians = (angleInDegrees - 90) * Math.PI / 180;
+            return {
+                x: center + radius * Math.cos(angleInRadians),
+                y: center + radius * Math.sin(angleInRadians)
+            };
+        }
+
+        function annularSectorPath(center, innerRadius, outerRadius, startAngle, endAngle) {
+            const outerStart = polarToCartesian(center, outerRadius, endAngle);
+            const outerEnd = polarToCartesian(center, outerRadius, startAngle);
+            const innerStart = polarToCartesian(center, innerRadius, startAngle);
+            const innerEnd = polarToCartesian(center, innerRadius, endAngle);
+            const largeArcFlag = endAngle - startAngle <= 180 ? 0 : 1;
+
+            return [
+                `M ${outerStart.x} ${outerStart.y}`,
+                `A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 0 ${outerEnd.x} ${outerEnd.y}`,
+                `L ${innerStart.x} ${innerStart.y}`,
+                `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 1 ${innerEnd.x} ${innerEnd.y}`,
+                'Z'
+            ].join(' ');
+        }
+
         document.querySelectorAll('[data-selection-panel]').forEach((panel) => {
             const fieldName = panel.dataset.selectionPanel;
             const form = panel.closest('form');
@@ -250,6 +448,13 @@
             const empty = panel.querySelector('[data-selection-empty]');
             const count = panel.querySelector('[data-selection-count]');
             const inputs = Array.from(form.querySelectorAll(`input[type="checkbox"][name="${fieldName}"]`));
+            const picker = form.querySelector('[data-flavor-picker]');
+            const groups = picker ? Array.from(picker.querySelectorAll('.flavor-picker__group')) : [];
+            const groupContainer = picker ? picker.querySelector('.flavor-picker__groups') : null;
+            const wheelSvg = picker ? picker.querySelector('[data-flavor-category-wheel-svg]') : null;
+            const wheelSelectionCount = picker ? picker.querySelector('[data-wheel-selection-count]') : null;
+            const selectionLimit = 8;
+            let activeCategory = groups.find((group) => group.classList.contains('is-active'))?.dataset.categoryName || '';
 
             function renderSelection() {
                 list.innerHTML = '';
@@ -257,7 +462,7 @@
 
                 inputs.forEach((input) => {
                     const chip = input.closest('.tag-chip');
-                    chip.hidden = input.checked;
+                    chip.classList.toggle('is-selected', input.checked);
 
                     if (!input.checked) {
                         return;
@@ -265,10 +470,12 @@
 
                     selectedCount += 1;
                     const labelText = chip.querySelector('span').textContent.trim();
+                    const noteColor = chip.dataset.noteColor || '#7a5038';
                     const button = document.createElement('button');
                     button.type = 'button';
                     button.className = 'selected-tag-button';
                     button.textContent = `${labelText} ×`;
+                    button.style.setProperty('--selected-note-color', noteColor);
                     button.addEventListener('click', () => {
                         input.checked = false;
                         input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -277,10 +484,111 @@
                 });
 
                 empty.hidden = selectedCount > 0;
-                count.textContent = `${selectedCount}개`;
+                count.textContent = `${selectedCount}/${selectionLimit}`;
+                if (wheelSelectionCount) {
+                    wheelSelectionCount.textContent = selectedCount;
+                }
+
+                inputs.forEach((input) => {
+                    input.disabled = !input.checked && selectedCount >= selectionLimit;
+                    input.closest('.tag-chip').classList.toggle('is-disabled', input.disabled);
+                });
+
+                renderCategoryWheel();
             }
 
-            inputs.forEach((input) => input.addEventListener('change', renderSelection));
+            function setActiveCategory(categoryName) {
+                if (!picker) {
+                    return;
+                }
+
+                activeCategory = categoryName;
+                if (groupContainer) {
+                    groupContainer.hidden = activeCategory === '';
+                }
+
+                groups.forEach((group) => {
+                    const isActive = activeCategory !== '' && group.dataset.categoryName === activeCategory;
+                    group.classList.toggle('is-active', isActive);
+                    group.hidden = !isActive;
+                });
+
+                renderCategoryWheel();
+            }
+
+            function renderCategoryWheel() {
+                if (!wheelSvg || groups.length === 0) {
+                    return;
+                }
+
+                const center = 260;
+                const namespace = 'http://www.w3.org/2000/svg';
+                const slice = 360 / groups.length;
+                wheelSvg.innerHTML = '';
+
+                function appendText(text, x, y, angle, className) {
+                    const label = document.createElementNS(namespace, 'text');
+                    label.setAttribute('x', x);
+                    label.setAttribute('y', y);
+                    label.setAttribute('class', className);
+                    label.setAttribute('text-anchor', 'middle');
+                    label.setAttribute('dominant-baseline', 'middle');
+                    label.setAttribute('transform', `rotate(${angle}, ${x}, ${y})`);
+                    label.textContent = text;
+                    wheelSvg.appendChild(label);
+                }
+
+                groups.forEach((group, index) => {
+                    const categoryName = group.dataset.categoryName || '';
+                    const categoryColor = group.dataset.categoryColor || '#b5895a';
+                    const start = index * slice;
+                    const end = start + slice;
+                    const mid = start + slice / 2;
+                    const path = document.createElementNS(namespace, 'path');
+                    const isActive = activeCategory !== '' && categoryName === activeCategory;
+                    const selectedCount = group.querySelectorAll('input[type="checkbox"]:checked').length;
+
+                    path.setAttribute('d', annularSectorPath(center, 70, isActive ? 238 : 230, start + 0.8, end - 0.8));
+                    path.setAttribute('class', isActive ? 'flavor-category-wheel__slice is-active' : 'flavor-category-wheel__slice');
+                    path.setAttribute('fill', categoryColor);
+                    path.setAttribute('tabindex', '0');
+                    path.setAttribute('role', 'button');
+                    path.setAttribute('aria-pressed', String(isActive));
+                    path.setAttribute('aria-label', categoryName);
+
+                    const activate = () => setActiveCategory(categoryName);
+                    path.addEventListener('click', activate);
+                    path.addEventListener('keydown', (event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            activate();
+                        }
+                    });
+                    wheelSvg.appendChild(path);
+
+                    const labelPoint = polarToCartesian(center, 154, mid);
+                    const labelAngle = mid > 90 && mid < 270 ? mid + 180 : mid;
+                    appendText(categoryName, labelPoint.x, labelPoint.y, labelAngle, 'flavor-category-wheel__label');
+
+                    if (selectedCount > 0) {
+                        const badgePoint = polarToCartesian(center, 202, mid);
+                        const badge = document.createElementNS(namespace, 'circle');
+                        badge.setAttribute('cx', badgePoint.x);
+                        badge.setAttribute('cy', badgePoint.y);
+                        badge.setAttribute('r', '13');
+                        badge.setAttribute('class', 'flavor-category-wheel__badge');
+                        wheelSvg.appendChild(badge);
+                        appendText(String(selectedCount), badgePoint.x, badgePoint.y + 0.5, 0, 'flavor-category-wheel__badge-text');
+                    }
+                });
+            }
+
+            inputs.forEach((input) => input.addEventListener('change', () => {
+                renderSelection();
+                renderCategoryWheel();
+            }));
+
+            setActiveCategory(activeCategory);
             renderSelection();
         });
     </script>

@@ -4,23 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>카페 지도 - BrewLog</title>
-    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='app-header-20260525')}">
     <link rel="stylesheet" th:href="@{/css/cafe-map.css(v=21)}">
 </head>
 <body class="cafe-map-page">
-    <header class="app-header">
-        <a class="app-header__brand" th:href="@{/}">
-            <span class="app-header__logo">B</span>
-            <strong>BrewLog</strong>
-        </a>
-        <nav class="app-header__nav" aria-label="주요 메뉴">
-            <a th:href="@{/}">Home</a>
-            <a th:href="@{/coffee-beans}">Beans</a>
-            <a th:href="@{/brew-records}">Brew Records</a>
-            <a class="is-active" th:href="@{/cafes/map}">Cafe Map</a>
-        </nav>
-        <a class="button button--primary" th:href="@{/coffee-beans/new}">새 원두 등록</a>
-    </header>
+    <header th:replace="~{fragments/app-header :: appHeader('cafes')}"></header>
 
     <main class="cafe-map-shell">
         <section class="cafe-map-hero">

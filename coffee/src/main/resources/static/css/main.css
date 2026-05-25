@@ -23,6 +23,77 @@ body {
         var(--bg);
 }
 
+.app-header {
+    position: relative;
+    top: 20px;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: minmax(170px, 1fr) auto minmax(210px, 1fr);
+    align-items: center;
+    gap: 22px;
+    width: min(1760px, calc(100% - 40px));
+    margin: 20px auto 0;
+    padding: 14px 18px;
+    border: 1px solid rgba(132, 105, 76, 0.22);
+    border-radius: 8px;
+    background: rgba(255, 252, 247, 0.92);
+    box-shadow: 0 16px 36px rgba(68, 48, 31, 0.09);
+    backdrop-filter: blur(14px);
+}
+
+.app-header__brand,
+.app-header__nav a {
+    color: var(--text);
+    text-decoration: none;
+}
+
+.app-header__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    width: fit-content;
+    font-size: 22px;
+}
+
+.app-header__logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    color: #fff;
+    background: #5c2e1f;
+    font-weight: 900;
+}
+
+.app-header__nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+}
+
+.app-header__nav a {
+    padding: 10px 0;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.app-header__nav a.is-active,
+.app-header__nav a:hover {
+    border-color: #8f6237;
+    color: var(--text);
+}
+
+.app-header__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
 .home {
     width: min(1080px, calc(100% - 40px));
     margin: 0 auto;
@@ -781,7 +852,13 @@ small {
 
 .flavor-editor {
     display: grid;
-    gap: 14px;
+    gap: 22px;
+}
+
+.flavor-editor > div:first-child > span {
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 700;
 }
 
 .pour-editor {
@@ -1040,6 +1117,306 @@ small {
     font-size: 14px;
 }
 
+.selection-panel .selected-tags {
+    margin: 0;
+}
+
+.flavor-editor .selection-panel {
+    width: min(100%, 680px);
+    justify-self: center;
+    padding: 22px 24px;
+    border: 0;
+    border-radius: 8px;
+    background: rgba(244, 238, 230, 0.78);
+    box-shadow: none;
+}
+
+.flavor-editor .selected-tag-button {
+    border-color: var(--selected-note-color, #7a5038);
+    background: var(--selected-note-color, #7a5038);
+}
+
+.flavor-picker {
+    display: grid;
+    justify-items: center;
+    gap: 24px;
+    padding: 6px 0 0;
+}
+
+.flavor-category-wheel {
+    position: relative;
+    width: min(100%, 500px);
+    aspect-ratio: 1;
+}
+
+.flavor-category-wheel__svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 12px 18px rgba(43, 37, 32, 0.08));
+}
+
+.flavor-category-wheel__slice {
+    cursor: pointer;
+    opacity: 0.94;
+    stroke: #fffaf3;
+    stroke-width: 5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: opacity 0.14s ease, filter 0.14s ease, stroke-width 0.14s ease, transform 0.14s ease;
+}
+
+.flavor-category-wheel__slice:hover,
+.flavor-category-wheel__slice:focus-visible {
+    opacity: 1;
+    filter: saturate(1.12);
+    outline: none;
+}
+
+.flavor-category-wheel__slice.is-active {
+    opacity: 1;
+    stroke-width: 6;
+    filter: saturate(1.18) drop-shadow(0 5px 7px rgba(43, 37, 32, 0.18));
+}
+
+.flavor-category-wheel__label {
+    fill: #fff;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0;
+    paint-order: stroke;
+    pointer-events: none;
+    stroke: rgba(43, 37, 32, 0.16);
+    stroke-width: 2px;
+    stroke-linejoin: round;
+    text-shadow: 0 1px 1px rgba(43, 37, 32, 0.18);
+    user-select: none;
+}
+
+.flavor-category-wheel__badge {
+    fill: #fffaf3;
+    stroke: rgba(43, 37, 32, 0.18);
+    stroke-width: 1.5;
+}
+
+.flavor-category-wheel__badge-text {
+    fill: var(--accent);
+    font-size: 13px;
+    font-weight: 900;
+    pointer-events: none;
+}
+
+.flavor-category-wheel__center {
+    position: absolute;
+    inset: 50%;
+    display: grid;
+    place-items: center;
+    width: 22%;
+    aspect-ratio: 1;
+    border: 6px solid rgba(222, 222, 222, 0.76);
+    border-radius: 999px;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.86), 0 8px 22px rgba(43, 37, 32, 0.1);
+    transform: translate(-50%, -50%);
+}
+
+.flavor-category-wheel__center span {
+    align-self: end;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.flavor-category-wheel__center strong {
+    align-self: start;
+    color: #8f5528;
+    font-size: 30px;
+    line-height: 1;
+}
+
+.flavor-picker__groups {
+    display: grid;
+    width: min(100%, 500px);
+    min-height: 0;
+}
+
+.flavor-picker__group {
+    display: grid;
+    gap: 18px;
+    padding: 22px 24px 24px;
+    border: 1px solid rgba(128, 83, 48, 0.42);
+    border-radius: 8px;
+    background: #fffdf8;
+    box-shadow: 0 12px 24px rgba(72, 52, 34, 0.08);
+}
+
+.flavor-picker__group:not(.is-active) {
+    display: none;
+}
+
+.flavor-picker__group header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.flavor-picker__group h3,
+.flavor-picker__group p {
+    margin: 0;
+}
+
+.flavor-picker__group h3 {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.flavor-picker__group p {
+    margin-top: 8px;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 400;
+}
+
+.flavor-picker__swatch {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    border: 1px solid rgba(43, 37, 32, 0.16);
+    border-radius: 999px;
+}
+
+.flavor-picker__notes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 12px;
+    padding-top: 6px;
+}
+
+.flavor-picker__note span {
+    min-height: 38px;
+    padding: 0 16px;
+    border-color: transparent !important;
+    color: var(--muted);
+    background: rgba(239, 232, 225, 0.9) !important;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.flavor-picker__note:hover span,
+.flavor-picker__note input:focus-visible + input + span,
+.flavor-picker__note input:focus-visible + span {
+    color: var(--text);
+    box-shadow: 0 0 0 3px rgba(53, 104, 89, 0.1);
+}
+
+.flavor-picker__note.is-disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.flavor-custom-note-field {
+    width: min(100%, 420px);
+    justify-self: center;
+}
+
+.flavor-custom-note-field input {
+    min-height: 42px;
+}
+
+.kakao-place-search {
+    display: grid;
+    gap: 14px;
+    padding: 18px;
+    border: 1px solid rgba(92, 46, 31, 0.28);
+    border-radius: 8px;
+    background: #fffdf8;
+    box-shadow: 0 10px 24px rgba(72, 52, 34, 0.06);
+}
+
+.kakao-place-search.is-disabled {
+    opacity: 0.68;
+}
+
+.kakao-place-search__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.kakao-place-search__header strong {
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.kakao-place-search__header p,
+.kakao-place-search__message {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.kakao-place-search__header > span {
+    flex: 0 0 auto;
+    padding: 5px 9px;
+    border-radius: 999px;
+    color: #6b3f26;
+    background: #f4e7d8;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.kakao-place-search__controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+}
+
+.kakao-place-search__controls input {
+    min-height: 42px;
+}
+
+.kakao-place-results {
+    display: grid;
+    gap: 8px;
+}
+
+.kakao-place-result {
+    display: grid;
+    gap: 4px;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid rgba(92, 46, 31, 0.18);
+    border-radius: 8px;
+    color: var(--text);
+    background: rgba(255, 250, 243, 0.86);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.kakao-place-result:hover,
+.kakao-place-result:focus-visible {
+    border-color: rgba(92, 46, 31, 0.42);
+    background: #fff8ee;
+    outline: none;
+}
+
+.kakao-place-result strong {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.kakao-place-result span,
+.kakao-place-result small {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
 .flavor-category {
     display: grid;
     gap: 12px;
@@ -1093,10 +1470,16 @@ small {
     font-weight: 700;
 }
 
-.tag-chip input:checked + span {
+.tag-chip input:checked + span,
+.tag-chip input:checked + input + span,
+.tag-chip.is-selected span {
     color: #fff;
     border-color: var(--accent) !important;
     background: var(--accent) !important;
+}
+
+.tag-chip input:disabled + span {
+    cursor: not-allowed;
 }
 
 .tag-chip--plain span,
@@ -1181,6 +1564,41 @@ small {
         grid-template-columns: 1fr;
     }
 
+    .app-header {
+        top: 12px;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        width: min(100% - 28px, 1080px);
+        margin-top: 12px;
+    }
+
+    .app-header__brand,
+    .app-header__actions {
+        justify-self: center;
+    }
+
+    .app-header__nav {
+        width: 100%;
+        justify-content: flex-start;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+
+    .app-header__nav a {
+        flex: 0 0 auto;
+        padding: 8px 6px;
+        white-space: nowrap;
+    }
+
+    .app-header__actions {
+        width: 100%;
+    }
+
+    .app-header__actions .button {
+        flex: 1;
+    }
+
     .record-grid {
         grid-template-columns: 1fr;
     }
@@ -1220,6 +1638,22 @@ small {
         grid-template-columns: 1fr;
     }
 
+    .flavor-category-wheel {
+        width: min(100%, 360px);
+    }
+
+    .flavor-category-wheel__label {
+        font-size: 11px;
+    }
+
+    .flavor-picker__group {
+        padding: 18px;
+    }
+
+    .kakao-place-search__controls {
+        grid-template-columns: 1fr;
+    }
+
     .taste-chart {
         justify-self: center;
     }
@@ -1236,5 +1670,19 @@ small {
     .taste-row label,
     .taste-row label span {
         width: 100%;
+    }
+}
+
+@media (max-width: 460px) {
+    .flavor-category-wheel__label {
+        font-size: 9px;
+    }
+
+    .flavor-category-wheel__center span {
+        font-size: 10px;
+    }
+
+    .flavor-category-wheel__center strong {
+        font-size: 22px;
     }
 }
