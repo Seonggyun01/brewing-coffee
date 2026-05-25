@@ -69,7 +69,8 @@ public class HuggingFaceBeanMappingService {
             return LlmParsingResponse.empty();
         }
 
-        if (apiKey == null || apiKey.isBlank() || modelUrl == null || modelUrl.isBlank() || modelId.isBlank()) {
+        if ((requiresApiKey() && (apiKey == null || apiKey.isBlank()))
+                || modelUrl == null || modelUrl.isBlank() || modelId.isBlank()) {
             log.warn("Hugging Face 설정이 비어 있어 LLM 매핑을 건너뜁니다.");
             return LlmParsingResponse.empty();
         }
@@ -114,7 +115,8 @@ public class HuggingFaceBeanMappingService {
             );
         }
 
-        if (apiKey == null || apiKey.isBlank() || modelUrl == null || modelUrl.isBlank() || modelId.isBlank()) {
+        if ((requiresApiKey() && (apiKey == null || apiKey.isBlank()))
+                || modelUrl == null || modelUrl.isBlank() || modelId.isBlank()) {
             return new LlmParsingDebugResponse(
                     modelUrl,
                     modelId,
@@ -204,16 +206,18 @@ public class HuggingFaceBeanMappingService {
 
         try {
             String requestBody = objectMapper.writeValueAsString(request);
-            HttpRequest httpRequest = HttpRequest.newBuilder()
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                     .uri(URI.create(modelUrl))
                     .version(HttpClient.Version.HTTP_1_1)
                     .timeout(Duration.ofSeconds(timeoutSeconds))
-                    .header("Authorization", "Bearer " + apiKey)
                     .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                    .build();
+                    .POST(HttpRequest.BodyPublishers.ofString(requestBody));
 
-            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            if (!isLocalModelUrl() && apiKey != null && !apiKey.isBlank()) {
+                requestBuilder.header("Authorization", "Bearer " + apiKey);
+            }
+
+            HttpResponse<String> response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 throw new HuggingFaceApiException(response.statusCode(), response.body());
             }
@@ -335,6 +339,21 @@ public class HuggingFaceBeanMappingService {
         }
 
         return response.substring(start, end + 1);
+    }
+
+    private boolean requiresApiKey() {
+        return !isLocalModelUrl();
+    }
+
+    private boolean isLocalModelUrl() {
+        if (modelUrl == null || modelUrl.isBlank()) {
+            return false;
+        }
+
+        String normalizedUrl = modelUrl.toLowerCase();
+        return normalizedUrl.contains("localhost")
+                || normalizedUrl.contains("127.0.0.1")
+                || normalizedUrl.contains("[::1]");
     }
 
     private String normalizeModelUrl(String configuredModelUrl) {
