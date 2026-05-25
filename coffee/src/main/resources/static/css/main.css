@@ -584,13 +584,110 @@ small {
     gap: 16px;
 }
 
-.coffee-bean-sections {
+.coffee-bean-carousel {
     display: grid;
-    gap: 22px;
+    gap: 16px;
+}
+
+.coffee-bean-carousel__nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.coffee-bean-carousel__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.coffee-bean-carousel__tabs button,
+.coffee-bean-carousel__controls button {
+    border: 1px solid #d4c2ad;
+    border-radius: 999px;
+    color: var(--muted);
+    background: rgba(255, 253, 248, 0.78);
+    font: inherit;
+    cursor: pointer;
+}
+
+.coffee-bean-carousel__tabs button {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 42px;
+    padding: 0 14px;
+    font-weight: 700;
+}
+
+.coffee-bean-carousel__tabs button.is-active {
+    border-color: rgba(92, 46, 31, 0.42);
+    color: var(--text);
+    background: #fff7eb;
+    box-shadow: 0 8px 18px rgba(72, 52, 34, 0.08);
+}
+
+.coffee-bean-carousel__tabs strong {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    min-height: 26px;
+    padding: 0 8px;
+    border-radius: 999px;
+    color: #8f6237;
+    background: rgba(216, 198, 178, 0.34);
+    font-size: 13px;
+}
+
+.coffee-bean-carousel__controls {
+    display: flex;
+    gap: 8px;
+}
+
+.coffee-bean-carousel__controls button {
+    display: inline-grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    color: #6f4d2f;
+    font-size: 28px;
+    line-height: 1;
+}
+
+.coffee-bean-carousel__controls button:disabled {
+    cursor: not-allowed;
+    opacity: 0.36;
+}
+
+.coffee-bean-sections {
+    display: flex;
+    align-items: flex-start;
+    height: max-content;
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+}
+
+.coffee-bean-sections.is-dragging {
+    transition: none;
+}
+
+.coffee-bean-carousel__viewport {
+    cursor: grab;
+    overflow: hidden;
+    transition: height 0.24s ease;
+    touch-action: pan-y;
+    user-select: none;
+}
+
+.coffee-bean-carousel__viewport:active {
+    cursor: grabbing;
 }
 
 .coffee-bean-section {
     display: grid;
+    flex: 0 0 100%;
     gap: 16px;
     padding: 22px;
     border: 1px solid #d4c2ad;
@@ -663,6 +760,7 @@ small {
     padding: 18px;
     color: inherit;
     text-decoration: none;
+    -webkit-user-drag: none;
 }
 
 .record-card strong {
@@ -1597,6 +1695,24 @@ small {
 
     .app-header__actions .button {
         flex: 1;
+    }
+
+    .coffee-bean-carousel__nav {
+        display: grid;
+    }
+
+    .coffee-bean-carousel__tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 2px;
+    }
+
+    .coffee-bean-carousel__tabs button {
+        flex: 0 0 auto;
+    }
+
+    .coffee-bean-carousel__controls {
+        justify-content: flex-end;
     }
 
     .record-grid {

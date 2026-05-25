@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>원두 관리 - BrewLog</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='app-header-20260525')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='bean-pager-20260526')}">
 </head>
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('beans')}"></header>
@@ -37,8 +37,31 @@
             <a class="button button--ghost" th:href="@{/coffee-beans(keyword=${keyword})}">국가 필터 해제</a>
         </section>
 
-        <div class="coffee-bean-sections" th:if="${!#lists.isEmpty(coffeeBeans)}">
-            <section class="coffee-bean-section">
+        <div class="coffee-bean-carousel" data-bean-carousel th:if="${!#lists.isEmpty(coffeeBeans)}">
+            <div class="coffee-bean-carousel__nav" aria-label="원두 상태 섹션 선택">
+                <div class="coffee-bean-carousel__tabs" role="tablist">
+                    <button class="is-active" type="button" data-bean-carousel-tab="0" role="tab" aria-selected="true">
+                        <span>보유중</span>
+                        <strong th:text="${#lists.size(currentCoffeeBeans)}">0</strong>
+                    </button>
+                    <button type="button" data-bean-carousel-tab="1" role="tab" aria-selected="false">
+                        <span>모두 소진</span>
+                        <strong th:text="${#lists.size(finishedCoffeeBeans)}">0</strong>
+                    </button>
+                    <button type="button" data-bean-carousel-tab="2" role="tab" aria-selected="false">
+                        <span>카페 시식</span>
+                        <strong th:text="${#lists.size(cafeCoffeeBeans)}">0</strong>
+                    </button>
+                </div>
+                <div class="coffee-bean-carousel__controls" aria-label="원두 상태 섹션 이동">
+                    <button type="button" data-bean-carousel-prev aria-label="이전 섹션">‹</button>
+                    <button type="button" data-bean-carousel-next aria-label="다음 섹션">›</button>
+                </div>
+            </div>
+
+            <div class="coffee-bean-carousel__viewport" data-bean-carousel-viewport>
+                <div class="coffee-bean-sections" data-bean-carousel-track>
+            <section class="coffee-bean-section" data-bean-carousel-slide>
                 <div class="coffee-bean-section__header">
                     <div>
                         <span class="coffee-bean-section__eyebrow">현재 가지고 있는 원두</span>
@@ -66,7 +89,7 @@
                 <p class="coffee-bean-section__empty" th:if="${#lists.isEmpty(currentCoffeeBeans)}">보유중인 원두가 없습니다.</p>
             </section>
 
-            <section class="coffee-bean-section">
+            <section class="coffee-bean-section" data-bean-carousel-slide>
                 <div class="coffee-bean-section__header">
                     <div>
                         <span class="coffee-bean-section__eyebrow">다 마시고 기록으로 남긴 원두</span>
@@ -94,7 +117,7 @@
                 <p class="coffee-bean-section__empty" th:if="${#lists.isEmpty(finishedCoffeeBeans)}">모두 소진된 원두가 없습니다.</p>
             </section>
 
-            <section class="coffee-bean-section">
+            <section class="coffee-bean-section" data-bean-carousel-slide>
                 <div class="coffee-bean-section__header">
                     <div>
                         <span class="coffee-bean-section__eyebrow">카페에서 마셔본 원두</span>
@@ -121,6 +144,8 @@
                 </section>
                 <p class="coffee-bean-section__empty" th:if="${#lists.isEmpty(cafeCoffeeBeans)}">카페에서 시식한 원두가 없습니다.</p>
             </section>
+                </div>
+            </div>
         </div>
 
         <section class="empty-panel" th:if="${#lists.isEmpty(coffeeBeans)}">
@@ -128,5 +153,124 @@
             <a class="button button--secondary" th:href="@{/coffee-beans/new}">첫 원두 등록하기</a>
         </section>
     </main>
+    <script>
+        document.querySelectorAll('[data-bean-carousel]').forEach((carousel) => {
+            const viewport = carousel.querySelector('[data-bean-carousel-viewport]');
+            const track = carousel.querySelector('[data-bean-carousel-track]');
+            const slides = Array.from(carousel.querySelectorAll('[data-bean-carousel-slide]'));
+            const tabs = Array.from(carousel.querySelectorAll('[data-bean-carousel-tab]'));
+            const prevButton = carousel.querySelector('[data-bean-carousel-prev]');
+            const nextButton = carousel.querySelector('[data-bean-carousel-next]');
+            let activeIndex = 0;
+            let dragStartX = 0;
+            let dragDeltaX = 0;
+            let isDragging = false;
+            let suppressLinkClick = false;
+
+            function updateViewportHeight() {
+                const activeSlide = slides[activeIndex];
+
+                if (activeSlide) {
+                    viewport.style.height = `${activeSlide.offsetHeight}px`;
+                }
+            }
+
+            function updateTrackPosition() {
+                track.style.transform = `translateX(calc(${-activeIndex * 100}% + ${dragDeltaX}px))`;
+            }
+
+            function setActive(index) {
+                activeIndex = Math.min(Math.max(index, 0), slides.length - 1);
+                dragDeltaX = 0;
+                track.classList.remove('is-dragging');
+                updateTrackPosition();
+                updateViewportHeight();
+
+                tabs.forEach((tab, tabIndex) => {
+                    const isActive = tabIndex === activeIndex;
+                    tab.classList.toggle('is-active', isActive);
+                    tab.setAttribute('aria-selected', String(isActive));
+                });
+
+                if (prevButton) {
+                    prevButton.disabled = activeIndex === 0;
+                }
+                if (nextButton) {
+                    nextButton.disabled = activeIndex === slides.length - 1;
+                }
+            }
+
+            function startDrag(event) {
+                if (event.button !== undefined && event.button !== 0) {
+                    return;
+                }
+
+                isDragging = true;
+                dragStartX = event.clientX;
+                dragDeltaX = 0;
+                track.classList.add('is-dragging');
+                viewport.setPointerCapture?.(event.pointerId);
+            }
+
+            function drag(event) {
+                if (!isDragging) {
+                    return;
+                }
+
+                dragDeltaX = event.clientX - dragStartX;
+                updateTrackPosition();
+            }
+
+            function endDrag(event) {
+                if (!isDragging) {
+                    return;
+                }
+
+                const finalDeltaX = event.clientX - dragStartX;
+                const isSwipe = Math.abs(finalDeltaX) > 8;
+                const threshold = Math.min(120, viewport.clientWidth * 0.18);
+                const nextIndex = finalDeltaX < -threshold ? activeIndex + 1
+                        : finalDeltaX > threshold ? activeIndex - 1
+                        : activeIndex;
+
+                isDragging = false;
+                viewport.releasePointerCapture?.(event.pointerId);
+                setActive(nextIndex);
+
+                if (isSwipe) {
+                    suppressLinkClick = true;
+                    window.setTimeout(() => {
+                        suppressLinkClick = false;
+                    }, 0);
+                    return;
+                }
+            }
+
+            tabs.forEach((tab, index) => {
+                tab.addEventListener('click', () => setActive(index));
+            });
+            prevButton?.addEventListener('click', () => setActive(activeIndex - 1));
+            nextButton?.addEventListener('click', () => setActive(activeIndex + 1));
+            viewport.addEventListener('pointerdown', startDrag);
+            viewport.addEventListener('pointermove', drag);
+            viewport.addEventListener('pointerup', endDrag);
+            viewport.addEventListener('pointercancel', endDrag);
+            viewport.addEventListener('click', (event) => {
+                if (suppressLinkClick && event.target.closest('.record-card__link')) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }, true);
+            viewport.addEventListener('lostpointercapture', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    setActive(activeIndex);
+                }
+            });
+            window.addEventListener('resize', updateViewportHeight);
+
+            setActive(0);
+        });
+    </script>
 </body>
 </html>
