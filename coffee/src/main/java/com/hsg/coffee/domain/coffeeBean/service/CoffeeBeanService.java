@@ -36,6 +36,8 @@ public class CoffeeBeanService {
                 form.getPurchasePlaceType(),
                 form.getPurchasePlaceAddress(),
                 form.getPurchasePlaceUrl(),
+                form.getPurchasePlaceLatitude(),
+                form.getPurchasePlaceLongitude(),
                 form.getPurchasePlaceMemo()
         );
         CountryInfo originCountry = CountryInfo.findByCode(form.getOriginCountryCode());
@@ -126,6 +128,8 @@ public class CoffeeBeanService {
                 form.getPurchasePlaceType(),
                 form.getPurchasePlaceAddress(),
                 form.getPurchasePlaceUrl(),
+                form.getPurchasePlaceLatitude(),
+                form.getPurchasePlaceLongitude(),
                 form.getPurchasePlaceMemo()
         );
         CountryInfo originCountry = CountryInfo.findByCode(form.getOriginCountryCode());

@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,6 +44,9 @@ public class CoffeeBeanController {
     private final CoffeeBeanService coffeeBeanService;
     private final CoffeeBeanCardExtractionService coffeeBeanCardExtractionService;
     private final PurchasePlaceService purchasePlaceService;
+
+    @Value("${brewlog.kakao.javascript-key:}")
+    private String kakaoJavascriptKey;
 
     @GetMapping
     public String list(
@@ -162,6 +167,8 @@ public class CoffeeBeanController {
         model.addAttribute("purchasePlaces", purchasePlaceService.getAll());
         model.addAttribute("flavorCategories", FlavorCategory.values());
         model.addAttribute("flavorNotesByCategory", flavorNotesByCategory);
+        model.addAttribute("kakaoJavascriptKey", kakaoJavascriptKey);
+        model.addAttribute("hasKakaoMapKey", StringUtils.hasText(kakaoJavascriptKey));
     }
 
     private List<CoffeeBeanResponse> filterByStatus(

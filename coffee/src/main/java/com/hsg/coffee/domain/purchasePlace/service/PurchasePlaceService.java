@@ -35,13 +35,15 @@ public class PurchasePlaceService {
             PurchasePlaceType type,
             String address,
             String placeUrl,
+            Double latitude,
+            Double longitude,
             String memo
     ) {
         if (selectedId != null) {
             return getEntity(selectedId);
         }
 
-        return createIfPresent(name, type, address, placeUrl, memo);
+        return createIfPresent(name, type, address, placeUrl, latitude, longitude, memo);
     }
 
     @Transactional
@@ -50,6 +52,8 @@ public class PurchasePlaceService {
             PurchasePlaceType type,
             String address,
             String placeUrl,
+            Double latitude,
+            Double longitude,
             String memo
     ) {
         if (!StringUtils.hasText(name)) {
@@ -61,8 +65,8 @@ public class PurchasePlaceService {
                 typeOrDefault(type),
                 clean(address),
                 clean(placeUrl),
-                null,
-                null,
+                latitude,
+                longitude,
                 clean(memo)
         ));
     }
