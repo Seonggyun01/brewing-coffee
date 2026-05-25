@@ -209,7 +209,6 @@
                 dragStartX = event.clientX;
                 dragDeltaX = 0;
                 track.classList.add('is-dragging');
-                viewport.setPointerCapture?.(event.pointerId);
             }
 
             function drag(event) {
@@ -234,14 +233,13 @@
                         : activeIndex;
 
                 isDragging = false;
-                viewport.releasePointerCapture?.(event.pointerId);
                 setActive(nextIndex);
 
                 if (isSwipe) {
                     suppressLinkClick = true;
                     window.setTimeout(() => {
                         suppressLinkClick = false;
-                    }, 0);
+                    }, 120);
                     return;
                 }
             }
@@ -255,6 +253,7 @@
             viewport.addEventListener('pointermove', drag);
             viewport.addEventListener('pointerup', endDrag);
             viewport.addEventListener('pointercancel', endDrag);
+            viewport.addEventListener('pointerleave', endDrag);
             viewport.addEventListener('click', (event) => {
                 if (suppressLinkClick && event.target.closest('.record-card__link')) {
                     event.preventDefault();

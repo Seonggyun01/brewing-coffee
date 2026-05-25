@@ -9,7 +9,7 @@
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('beans')}"></header>
     <main class="page page--narrow">
-        <header class="page__header">
+        <header class="page__header page__header--detail">
             <div>
                 <a class="text-link" th:href="@{/coffee-beans}">원두 목록</a>
                 <h1 th:text="${coffeeBean.name}">원두 이름</h1>

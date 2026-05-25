@@ -193,6 +193,24 @@ h1 {
     font-size: 42px;
 }
 
+.page__header--detail > div:first-child {
+    min-width: 0;
+}
+
+.page__header--detail h1 {
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+}
+
+.page__header--detail .button-group {
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
+}
+
+.page__header--detail .button-group form {
+    flex: 0 0 auto;
+}
+
 .text-link,
 .table-link {
     color: var(--accent);
@@ -1734,6 +1752,10 @@ small {
 
     .page__header h1 {
         font-size: 34px;
+    }
+
+    .page__header--detail .button-group {
+        flex-wrap: wrap;
     }
 
     .form__grid,
