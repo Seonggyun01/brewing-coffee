@@ -11,6 +11,7 @@ import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCreateForm;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanResponse;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanUpdateForm;
 import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBean;
+import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBeanStatus;
 import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
 import com.hsg.coffee.domain.purchasePlace.service.PurchasePlaceService;
@@ -73,6 +74,14 @@ public class CoffeeBeanService {
     public List<CoffeeBeanResponse> getAll() {
         return coffeeBeanRepository.findAllByOrderByIdDesc()
                 .stream()
+                .map(CoffeeBeanResponse::from)
+                .toList();
+    }
+
+    public List<CoffeeBeanResponse> getInventoryBeans() {
+        return coffeeBeanRepository.findAllByOrderByIdDesc()
+                .stream()
+                .filter(coffeeBean -> coffeeBean.getStatus() != CoffeeBeanStatus.CAFE)
                 .map(CoffeeBeanResponse::from)
                 .toList();
     }

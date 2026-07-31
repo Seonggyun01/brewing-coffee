@@ -99,7 +99,7 @@ public class BrewRecordController {
     private void addFormAttributes(Model model, String title, String actionUrl) {
         model.addAttribute("title", title);
         model.addAttribute("actionUrl", actionUrl);
-        model.addAttribute("coffeeBeans", coffeeBeanService.getAll());
+        model.addAttribute("coffeeBeans", coffeeBeanService.getInventoryBeans());
         model.addAttribute("brewMethods", BrewMethod.values());
         model.addAttribute("temperatureTypes", BrewTemperatureType.values());
         model.addAttribute("tasteScores", java.util.List.of(1, 2, 3, 4, 5));

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${cafeFilterCoffee.coffeeBeanName + ' - BrewLog'}">카페 필터커피 - BrewLog</title>
+    <link rel="stylesheet" th:href="@{/css/main.css(v='cafe-filter-20260731')}">
+</head>
+<body>
+    <header th:replace="~{fragments/app-header :: appHeader('cafe-filter')}"></header>
+    <main class="page page--narrow cafe-filter-page">
+        <header class="page__header">
+            <div>
+                <a class="text-link" th:href="@{/cafe-filter-coffees}">카페 필터커피</a>
+                <h1 th:text="${cafeFilterCoffee.coffeeBeanName}">에티오피아 구지</h1>
+            </div>
+            <form th:action="@{/cafe-filter-coffees/{id}/delete(id=${cafeFilterCoffee.id})}" method="post">
+                <button class="button button--danger" type="submit">삭제</button>
+            </form>
+        </header>
+
+        <section class="cafe-filter-detail">
+            <span class="flavor-gradient flavor-gradient--large" th:style="${cafeFilterCoffee.flavorGradientStyle}"></span>
+            <div class="cafe-filter-detail__summary">
+                <div>
+                    <span>마신 날</span>
+                    <strong th:text="${cafeFilterCoffee.brewedDate ?: '-'}">2026-07-31</strong>
+                </div>
+                <div>
+                    <span>타입</span>
+                    <strong th:text="${cafeFilterCoffee.temperatureType != null ? cafeFilterCoffee.temperatureType.displayName : '-'}">핫</strong>
+                </div>
+                <div>
+                    <span>만족도</span>
+                    <strong th:text="${cafeFilterCoffee.rating != null ? cafeFilterCoffee.rating + ' / 5' : '-'}">4 / 5</strong>
+                </div>
+            </div>
+
+            <section>
+                <h2>원두</h2>
+                <p th:text="${cafeFilterCoffee.roastery ?: '로스터리 미기록'}">로스터리</p>
+                <div class="selected-tags" th:if="${!#lists.isEmpty(cafeFilterCoffee.flavorNotes) || !#lists.isEmpty(cafeFilterCoffee.customFlavorNotes)}">
+                    <span th:each="note : ${cafeFilterCoffee.flavorNotes}"
+                          th:style="'border-color:' + ${note.color} + '; background:' + ${note.color} + '22;'"
+                          th:text="${note.displayName}">레몬</span>
+                    <span class="selected-tags__custom" th:each="note : ${cafeFilterCoffee.customFlavorNotes}" th:text="${note}">청포도</span>
+                </div>
+            </section>
+
+            <section>
+                <h2>느낌</h2>
+                <div class="selected-tags selected-tags--plain" th:if="${!#lists.isEmpty(cafeFilterCoffee.feelingTags) || !#lists.isEmpty(cafeFilterCoffee.customFeelingTags)}">
+                    <span th:each="tag : ${cafeFilterCoffee.feelingTags}" th:text="${tag.displayName}">깔끔함</span>
+                    <span th:each="tag : ${cafeFilterCoffee.customFeelingTags}" th:text="${tag}">맑은 여운</span>
+                </div>
+                <p th:if="${#lists.isEmpty(cafeFilterCoffee.feelingTags) && #lists.isEmpty(cafeFilterCoffee.customFeelingTags)}">느낌 태그가 없습니다.</p>
+                <p th:text="${cafeFilterCoffee.memo ?: '-'}">메모</p>
+            </section>
+
+            <section th:if="${cafeFilterCoffee.brewMethod != null || cafeFilterCoffee.beanAmount != null || cafeFilterCoffee.waterAmount != null || cafeFilterCoffee.waterTemperature != null || cafeFilterCoffee.grindSizeMicron != null || cafeFilterCoffee.brewTimeSec != null}">
+                <h2>브루잉 레시피</h2>
+                <dl class="cafe-filter-detail__recipe">
+                    <div>
+                        <dt>도구</dt>
+                        <dd th:text="${cafeFilterCoffee.brewMethod != null ? cafeFilterCoffee.brewMethod.displayName : '-'}">V60</dd>
+                    </div>
+                    <div>
+                        <dt>원두량</dt>
+                        <dd th:text="${cafeFilterCoffee.beanAmount != null ? cafeFilterCoffee.beanAmount + 'g' : '-'}">15g</dd>
+                    </div>
+                    <div>
+                        <dt>물량</dt>
+                        <dd th:text="${cafeFilterCoffee.waterAmount != null ? cafeFilterCoffee.waterAmount + 'g' : '-'}">240g</dd>
+                    </div>
+                    <div>
+                        <dt>물 온도</dt>
+                        <dd th:text="${cafeFilterCoffee.waterTemperature != null ? cafeFilterCoffee.waterTemperature + '°C' : '-'}">92°C</dd>
+                    </div>
+                    <div>
+                        <dt>분쇄도</dt>
+                        <dd th:text="${cafeFilterCoffee.grindSizeDisplay}">720 μm</dd>
+                    </div>
+                    <div>
+                        <dt>시간</dt>
+                        <dd th:text="${cafeFilterCoffee.brewTimeSec != null ? cafeFilterCoffee.brewTimeSec + '초' : '-'}">180초</dd>
+                    </div>
+                </dl>
+            </section>
+        </section>
+    </main>
+</body>
+</html>

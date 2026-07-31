@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>카페 필터커피 등록 - BrewLog</title>
+    <link rel="stylesheet" th:href="@{/css/main.css(v='title-cancel-20260731')}">
+</head>
+<body>
+    <header th:replace="~{fragments/app-header :: appHeader('cafe-filter')}"></header>
+    <main class="page page--narrow">
+        <header class="page__header">
+            <div>
+                <a class="text-link" th:href="@{/cafe-filter-coffees}">카페 필터커피</a>
+                <h1>카페 필터커피 등록</h1>
+            </div>
+            <a class="button button--ghost" th:href="@{/cafe-filter-coffees}">취소</a>
+        </header>
+
+        <section class="card-extraction-section">
+            <div class="card-extraction-section__header">
+                <div>
+                    <span>Photo Assist</span>
+                    <h2>원두 카드 사진으로 자동 입력</h2>
+                    <p>카페에서 본 원두 카드 이미지를 업로드하면 원두 정보를 먼저 채워드립니다.</p>
+                </div>
+            </div>
+            <form th:action="@{/cafe-filter-coffees/card-extraction}"
+                  method="post"
+                  enctype="multipart/form-data"
+                  class="card-extraction-form">
+                <label class="card-extraction-file">
+                    <span>원두 카드 이미지</span>
+                    <input type="file"
+                           name="image"
+                           accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif"
+                           required>
+                </label>
+                <button class="button button--secondary" type="submit">사진으로 채우기</button>
+            </form>
+        </section>
+
+        <section class="extraction-warning-box"
+                 th:if="${extractionWarnings != null and !extractionWarnings.isEmpty()}">
+            <strong>자동 입력 확인이 필요해요</strong>
+            <ul>
+                <li th:each="warning : ${extractionWarnings}" th:text="${warning}">일부 정보를 찾지 못했어요.</li>
+            </ul>
+        </section>
+
+        <section class="extracted-result-section" th:if="${extractedRawText != null}">
+            <div>
+                <span>OCR Raw Text</span>
+                <h2>추출된 텍스트</h2>
+                <p>아래 텍스트를 기준으로 원두 정보가 자동 입력되었습니다.</p>
+            </div>
+            <textarea class="extracted-raw-text" readonly th:text="${extractedRawText}"></textarea>
+        </section>
+
+        <form class="form" data-form-wizard th:action="@{/cafe-filter-coffees}" th:object="${cafeFilterCoffeeForm}" method="post">
+            <input type="hidden" th:field="*{cafeLatitude}">
+            <input type="hidden" th:field="*{cafeLongitude}">
+            <nav class="form-wizard" aria-label="카페 필터커피 등록 단계">
+                <ol class="form-wizard__steps">
+                    <li><button type="button" data-wizard-step-target><span>1</span>마신 커피</button></li>
+                    <li><button type="button" data-wizard-step-target><span>2</span>마신 카페</button></li>
+                    <li><button type="button" data-wizard-step-target><span>3</span>레시피</button></li>
+                    <li><button type="button" data-wizard-step-target><span>4</span>느낌</button></li>
+                </ol>
+            </nav>
+
+            <section class="form-section" data-wizard-step>
+                <h2>마신 커피</h2>
+                <div class="form__grid">
+                    <label>
+                        <span>원두 이름 *</span>
+                        <input type="text" th:field="*{name}" placeholder="예: 에티오피아 구지">
+                        <small th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></small>
+                    </label>
+
+                    <label class="field-full">
+                        <span>핫/아이스 *</span>
+                        <div class="choice-cards choice-cards--two">
+                            <label class="choice-card" th:each="temperatureType : ${temperatureTypes}">
+                                <input type="radio" th:field="*{temperatureType}" th:value="${temperatureType}">
+                                <span th:text="${temperatureType.displayName}">핫</span>
+                            </label>
+                        </div>
+                        <small th:if="${#fields.hasErrors('temperatureType')}" th:errors="*{temperatureType}"></small>
+                    </label>
+
+                    <label>
+                        <span>마신 날짜</span>
+                        <input type="date" th:field="*{visitedDate}">
+                    </label>
+
+                    <label>
+                        <span>로스터리</span>
+                        <input type="text" th:field="*{roastery}" placeholder="예: 브루잉 로스터스">
+                    </label>
+
+                    <label>
+                        <span>산지 국가</span>
+                        <select th:field="*{originCountryCode}">
+                            <option value="">선택 안 함</option>
+                            <option th:each="countryInfo : ${countryInfos}"
+                                    th:value="${countryInfo.code}"
+                                    th:text="${countryInfo.displayName}">에티오피아 (Ethiopia)</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        <span>지역</span>
+                        <input type="text" th:field="*{region}" placeholder="예: Guji">
+                    </label>
+
+                    <label>
+                        <span>품종</span>
+                        <input type="text" th:field="*{variety}" placeholder="예: Heirloom">
+                    </label>
+
+                    <label>
+                        <span>가공 방식</span>
+                        <select th:field="*{processType}">
+                            <option value="">선택 안 함</option>
+                            <option th:each="processType : ${processTypes}" th:value="${processType}" th:text="${processType}">WASHED</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="flavor-editor">
+                    <div>
+                        <span>향미 노트</span>
+                        <p class="section-help">가장 가까운 향미만 1~3개 정도 남겨도 충분합니다.</p>
+                    </div>
+                    <div class="compact-flavor-groups" aria-label="향미 노트 카테고리">
+                        <details class="compact-flavor-group"
+                                 th:each="category : ${flavorCategories}">
+                            <summary>
+                                <span class="compact-flavor-group__swatch"
+                                      th:style="'background:' + ${category.color}"
+                                      aria-hidden="true"></span>
+                                <span th:text="${category.displayName}">시트러스</span>
+                                <small th:text="${category.description}">상큼하고 밝은 산미</small>
+                            </summary>
+                            <div class="compact-flavor-group__body">
+                                <label class="tag-chip"
+                                       th:each="note : ${flavorNotesByCategory.get(category)}">
+                                    <input type="checkbox" th:field="*{flavorNotes}" th:value="${note}">
+                                    <span th:text="${note.displayName}">레몬</span>
+                                </label>
+                            </div>
+                        </details>
+                    </div>
+                    <label class="flavor-custom-note-field">
+                        <span>직접 입력 향미 노트</span>
+                        <input type="text" th:field="*{customFlavorNotesText}" placeholder="예: 라임, 복숭아, 꿀">
+                    </label>
+                </div>
+            </section>
+
+            <section class="form-section" data-wizard-step>
+                <details open>
+                    <summary>마신 카페</summary>
+                    <p class="section-help">카페 지도에 남길 위치 정보입니다. 이름만 입력해도 저장할 수 있습니다.</p>
+
+                    <div class="kakao-place-search"
+                         data-kakao-place-search-box
+                         th:classappend="${!hasKakaoMapKey} ? ' is-disabled'">
+                        <div class="kakao-place-search__header">
+                            <div>
+                                <strong>카카오맵 주소 검색</strong>
+                                <p>카페를 검색해서 이름, 주소, 지도 링크와 좌표를 채웁니다.</p>
+                            </div>
+                            <span th:if="${!hasKakaoMapKey}">설정 필요</span>
+                        </div>
+                        <div class="kakao-place-search__controls">
+                            <input type="search"
+                                   data-kakao-place-query
+                                   placeholder="예: 프릳츠 원서점, 서울 카페">
+                            <button class="button button--secondary"
+                                    type="button"
+                                    data-kakao-place-search
+                                    th:disabled="${!hasKakaoMapKey}">
+                                검색
+                            </button>
+                        </div>
+                        <p class="kakao-place-search__message" data-kakao-place-message
+                           th:text="${hasKakaoMapKey} ? '검색 결과를 선택하면 아래 카페 정보가 자동으로 입력됩니다.' : 'application-local.yml의 brewlog.kakao.javascript-key 설정이 필요합니다.'">
+                            검색 결과를 선택하면 아래 카페 정보가 자동으로 입력됩니다.
+                        </p>
+                        <div class="kakao-place-results" data-kakao-place-results></div>
+                    </div>
+
+                    <div class="form__grid">
+                        <label>
+                            <span>카페 이름</span>
+                            <input type="text" th:field="*{cafeName}" placeholder="예: 프릳츠 원서점">
+                        </label>
+
+                        <label>
+                            <span>주소</span>
+                            <input type="text" th:field="*{cafeAddress}" placeholder="예: 서울 종로구 율곡로 83">
+                        </label>
+
+                        <label>
+                            <span>장소 링크</span>
+                            <input type="url" th:field="*{cafeUrl}" placeholder="예: https://place.map.kakao.com/...">
+                        </label>
+                    </div>
+                </details>
+            </section>
+
+            <section class="form-section" data-wizard-step>
+                <details>
+                    <summary>브루잉 레시피</summary>
+                    <p class="section-help">카페에서 레시피를 알 수 있을 때만 기록하세요.</p>
+                    <label class="choice-card choice-card--wide">
+                        <input type="checkbox" th:field="*{recordRecipe}">
+                        <span>브루잉 레시피도 함께 기록</span>
+                    </label>
+
+                    <div class="form__grid">
+                        <label>
+                            <span>추출 도구</span>
+                            <select th:field="*{brewMethod}">
+                                <option value="">선택 안 함</option>
+                                <option th:each="brewMethod : ${brewMethods}"
+                                        th:value="${brewMethod}"
+                                        th:text="${brewMethod.displayName}">V60</option>
+                            </select>
+                        </label>
+
+                        <label>
+                            <span>원두량(g)</span>
+                            <input type="number" min="0" step="0.1" th:field="*{beanAmount}" placeholder="예: 15">
+                        </label>
+
+                        <label>
+                            <span>물량(g)</span>
+                            <input type="number" min="0" step="0.1" th:field="*{waterAmount}" placeholder="예: 240">
+                        </label>
+
+                        <label>
+                            <span>물 온도(°C)</span>
+                            <input type="number" min="0" step="0.1" th:field="*{waterTemperature}" placeholder="예: 92">
+                        </label>
+
+                        <label>
+                            <span>분쇄도(μm)</span>
+                            <input type="number" min="1" max="5000" step="1" th:field="*{grindSizeMicron}" placeholder="예: 720">
+                        </label>
+
+                        <label>
+                            <span>종료 시간(초)</span>
+                            <input type="number" min="5" step="5" th:field="*{brewTimeSec}" placeholder="예: 180">
+                        </label>
+                    </div>
+                </details>
+            </section>
+
+            <section class="form-section" data-wizard-step>
+                <h2>느낌</h2>
+                <div class="score-options">
+                    <label class="score-pill" th:each="score : ${tasteScores}">
+                        <input type="radio" th:field="*{rating}" th:value="${score}">
+                        <span th:text="${score}">1</span>
+                    </label>
+                </div>
+                <div class="tag-options">
+                    <label class="tag-chip tag-chip--plain" th:each="tag : ${feelingTags}">
+                        <input type="checkbox" th:field="*{feelingTags}" th:value="${tag}">
+                        <span th:text="${tag.displayName}">깔끔함</span>
+                    </label>
+                </div>
+                <label>
+                    <span>직접 입력 느낌 태그</span>
+                    <input type="text" th:field="*{customFeelingTagsText}" placeholder="예: 선명한 산미, 긴 여운">
+                </label>
+                <label>
+                    <span>메모</span>
+                    <textarea rows="4" th:field="*{memo}" placeholder="마신 인상, 같이 먹은 디저트, 다시 마시고 싶은지 등을 남겨보세요."></textarea>
+                </label>
+            </section>
+
+            <div class="form__actions">
+                <button class="button button--ghost form__arrow form__arrow--prev" type="button" data-wizard-prev aria-label="이전 단계">←</button>
+                <button class="button button--secondary form__arrow form__arrow--next" type="button" data-wizard-next aria-label="다음 단계">→</button>
+                <button class="button button--primary form__save" type="submit" data-wizard-submit>저장</button>
+            </div>
+        </form>
+    </main>
+    <script th:if="${hasKakaoMapKey}"
+            th:src="@{'https://dapi.kakao.com/v2/maps/sdk.js'(appkey=${kakaoJavascriptKey},libraries='services')}"></script>
+    <script>
+        document.querySelectorAll('[data-kakao-place-search-box]').forEach((box) => {
+            const queryInput = box.querySelector('[data-kakao-place-query]');
+            const searchButton = box.querySelector('[data-kakao-place-search]');
+            const results = box.querySelector('[data-kakao-place-results]');
+            const message = box.querySelector('[data-kakao-place-message]');
+            const form = box.closest('form');
+            const nameInput = form.querySelector('#cafeName');
+            const addressInput = form.querySelector('#cafeAddress');
+            const urlInput = form.querySelector('#cafeUrl');
+            const latitudeInput = form.querySelector('#cafeLatitude');
+            const longitudeInput = form.querySelector('#cafeLongitude');
+            const hasKakaoPlaces = window.kakao?.maps?.services?.Places;
+
+            if (!hasKakaoPlaces) {
+                if (message) {
+                    message.textContent = '카카오맵 스크립트를 불러오지 못했습니다. 키 설정과 도메인 등록을 확인해주세요.';
+                }
+                if (searchButton) {
+                    searchButton.disabled = true;
+                }
+                return;
+            }
+
+            const places = new kakao.maps.services.Places();
+
+            function setMessage(text) {
+                if (message) {
+                    message.textContent = text;
+                }
+            }
+
+            function applyPlace(place) {
+                nameInput.value = place.place_name || '';
+                addressInput.value = place.road_address_name || place.address_name || '';
+                urlInput.value = place.place_url || '';
+                latitudeInput.value = place.y || '';
+                longitudeInput.value = place.x || '';
+                setMessage(`${place.place_name} 정보를 입력했습니다.`);
+                results.innerHTML = '';
+            }
+
+            function renderPlaces(data) {
+                results.innerHTML = data.slice(0, 5).map((place, index) => `
+                    <button class="kakao-place-result" type="button" data-place-index="${index}">
+                        <strong>${place.place_name}</strong>
+                        <span>${place.road_address_name || place.address_name || '주소 정보 없음'}</span>
+                    </button>
+                `).join('');
+
+                results.querySelectorAll('[data-place-index]').forEach((button) => {
+                    button.addEventListener('click', () => applyPlace(data[Number(button.dataset.placeIndex)]));
+                });
+            }
+
+            searchButton.addEventListener('click', () => {
+                const keyword = queryInput.value.trim();
+                if (!keyword) {
+                    setMessage('검색할 카페 이름을 입력해주세요.');
+                    return;
+                }
+
+                setMessage('검색 중입니다...');
+                places.keywordSearch(keyword, (data, status) => {
+                    if (status !== kakao.maps.services.Status.OK || data.length === 0) {
+                        setMessage('검색 결과가 없습니다. 카페 정보를 직접 입력해주세요.');
+                        results.innerHTML = '';
+                        return;
+                    }
+
+                    setMessage('검색 결과를 선택해주세요.');
+                    renderPlaces(data);
+                });
+            });
+        });
+    </script>
+    <script th:src="@{/js/form-wizard.js(v='title-cancel-20260731')}"></script>
+</body>
+</html>

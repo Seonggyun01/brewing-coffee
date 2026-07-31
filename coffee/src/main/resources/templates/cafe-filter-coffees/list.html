@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>카페 필터커피 - BrewLog</title>
+    <link rel="stylesheet" th:href="@{/css/main.css(v='cafe-filter-cards-20260731')}">
+</head>
+<body>
+    <header th:replace="~{fragments/app-header :: appHeader('cafe-filter')}"></header>
+    <main class="page cafe-filter-page">
+        <header class="page__header">
+            <div>
+                <a class="text-link" th:href="@{/}">BrewLog</a>
+                <h1>카페 필터커피</h1>
+            </div>
+            <a class="button button--primary" th:href="@{/cafe-filter-coffees/new}">기록하기</a>
+        </header>
+
+        <p class="flash" th:if="${message}" th:text="${message}"></p>
+
+        <section class="cafe-filter-list" th:if="${!#lists.isEmpty(cafeFilterCoffees)}">
+            <article class="cafe-filter-card" th:each="record : ${cafeFilterCoffees}">
+                <a class="cafe-filter-card__link" th:href="@{/cafe-filter-coffees/{id}(id=${record.id})}">
+                    <span class="flavor-gradient" th:style="${record.flavorGradientStyle}"></span>
+                    <div class="cafe-filter-card__body">
+                        <span th:text="${record.brewedDate != null ? record.brewedDate : '날짜 미기록'}">2026-07-31</span>
+                        <strong th:text="${record.coffeeBeanName}">에티오피아 구지</strong>
+                        <p th:text="${record.roastery ?: '로스터리 미기록'}">로스터리</p>
+                        <div>
+                            <small th:text="${record.temperatureType != null ? record.temperatureType.displayName : '핫/아이스 미기록'}">핫</small>
+                            <small th:text="${record.rating != null ? record.rating + '점' : '평점 없음'}">4점</small>
+                        </div>
+                    </div>
+                </a>
+            </article>
+        </section>
+
+        <section class="empty-panel" th:if="${#lists.isEmpty(cafeFilterCoffees)}">
+            <p>카페에서 마신 필터커피 기록이 없습니다.</p>
+            <a class="button button--secondary" th:href="@{/cafe-filter-coffees/new}">첫 기록 남기기</a>
+        </section>
+    </main>
+</body>
+</html>

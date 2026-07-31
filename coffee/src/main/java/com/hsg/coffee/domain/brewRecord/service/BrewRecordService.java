@@ -15,6 +15,7 @@ import com.hsg.coffee.domain.brewRecord.entity.BrewPourStep;
 import com.hsg.coffee.domain.brewRecord.entity.BrewRecord;
 import com.hsg.coffee.domain.brewRecord.repository.BrewRecordRepository;
 import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBean;
+import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBeanStatus;
 import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -63,7 +64,7 @@ public class BrewRecordService {
     }
 
     public List<BrewRecordResponse> getAll() {
-        return brewRecordRepository.findAllByOrderByBrewedDateDescIdDesc()
+        return brewRecordRepository.findByCoffeeBeanStatusNotOrderByBrewedDateDescIdDesc(CoffeeBeanStatus.CAFE)
                 .stream()
                 .map(BrewRecordResponse::from)
                 .toList();
@@ -74,6 +75,21 @@ public class BrewRecordService {
                 .stream()
                 .map(BrewRecordResponse::from)
                 .toList();
+    }
+
+    public List<BrewRecordResponse> getCafeRecords() {
+        return brewRecordRepository.findByCoffeeBeanStatusOrderByBrewedDateDescIdDesc(CoffeeBeanStatus.CAFE)
+                .stream()
+                .map(BrewRecordResponse::from)
+                .toList();
+    }
+
+    public BrewRecordResponse getCafeRecord(Long id) {
+        BrewRecord brewRecord = findEntity(id);
+        if (brewRecord.getCoffeeBean().getStatus() != CoffeeBeanStatus.CAFE) {
+            throw new IllegalArgumentException("카페 필터커피 기록을 찾을 수 없습니다. id=" + id);
+        }
+        return BrewRecordResponse.from(brewRecord);
     }
 
     public BrewRecordForm getUpdateForm(Long id) {
@@ -147,7 +163,7 @@ public class BrewRecordService {
             return List.of();
         }
 
-        int timelineEndSec = brewTimeSec != null && brewTimeSec > 0 ? brewTimeSec : 180;
+        Integer timelineEndSec = brewTimeSec != null && brewTimeSec > 0 ? brewTimeSec : null;
         return pourStepForms.stream()
                 .filter(BrewPourStepForm::isFilled)
                 .filter(step -> step.getTimeSec() != null && step.getAmountMl() != null)
@@ -164,9 +180,12 @@ public class BrewRecordService {
         return Math.max(0, Math.round(timeSec / 5.0f) * 5);
     }
 
-    private Integer clampToTimelineEnd(Integer timeSec, int timelineEndSec) {
+    private Integer clampToTimelineEnd(Integer timeSec, Integer timelineEndSec) {
         if (timeSec == null) {
             return null;
+        }
+        if (timelineEndSec == null) {
+            return timeSec;
         }
         return Math.min(timeSec, timelineEndSec);
     }
