@@ -7,6 +7,13 @@
     --surface: #ffffff;
     --accent: #6f432a;
     --accent-soft: #f2ebe7;
+    --app-max-width: 1120px;
+    --app-narrow-width: 860px;
+    --app-gutter: 20px;
+    --app-header-height: 76px;
+    --app-bottom-safe: 24px;
+    --app-shell-padding-top: 48px;
+    --app-shell-padding-bottom: 56px;
 }
 
 * {
@@ -23,6 +30,12 @@ body {
     font-family: Arial, "Noto Sans KR", sans-serif;
     color: var(--text);
     background: var(--bg);
+}
+
+.app-screen {
+    width: min(var(--app-max-width), calc(100% - (var(--app-gutter) * 2)));
+    margin: 0 auto;
+    padding: var(--app-shell-padding-top) 0 calc(var(--app-shell-padding-bottom) + var(--app-bottom-safe));
 }
 
 .app-header {
@@ -97,9 +110,9 @@ body {
 }
 
 .home {
-    width: min(1080px, calc(100% - 40px));
+    width: min(var(--app-max-width), calc(100% - (var(--app-gutter) * 2)));
     margin: 0 auto;
-    padding: 72px 0;
+    padding: 72px 0 calc(var(--app-shell-padding-bottom) + var(--app-bottom-safe));
 }
 
 .home__hero {
@@ -173,13 +186,13 @@ h1 {
 }
 
 .page {
-    width: min(1120px, calc(100% - 40px));
+    width: min(var(--app-max-width), calc(100% - (var(--app-gutter) * 2)));
     margin: 0 auto;
-    padding: 48px 0;
+    padding: var(--app-shell-padding-top) 0 calc(var(--app-shell-padding-bottom) + var(--app-bottom-safe));
 }
 
 .page--narrow {
-    width: min(860px, calc(100% - 40px));
+    width: min(var(--app-narrow-width), calc(100% - (var(--app-gutter) * 2)));
 }
 
 .page__header {
@@ -2003,9 +2016,15 @@ small {
 }
 
 @media (max-width: 760px) {
+    :root {
+        --app-gutter: 14px;
+        --app-shell-padding-top: 32px;
+        --app-shell-padding-bottom: 40px;
+    }
+
     .home {
-        width: min(100% - 28px, 1080px);
-        padding: 48px 0;
+        width: min(100% - (var(--app-gutter) * 2), var(--app-max-width));
+        padding: 48px 0 calc(var(--app-shell-padding-bottom) + var(--app-bottom-safe));
     }
 
     h1 {
@@ -2024,7 +2043,7 @@ small {
         top: 12px;
         grid-template-columns: 1fr;
         gap: 14px;
-        width: min(100% - 28px, 1080px);
+        width: min(100% - (var(--app-gutter) * 2), var(--app-max-width));
         margin-top: 12px;
     }
 
@@ -2083,8 +2102,8 @@ small {
 
     .page,
     .page--narrow {
-        width: min(100% - 28px, 1080px);
-        padding: 36px 0;
+        width: min(100% - (var(--app-gutter) * 2), var(--app-max-width));
+        padding: var(--app-shell-padding-top) 0 calc(var(--app-shell-padding-bottom) + var(--app-bottom-safe));
     }
 
     .page__header,
