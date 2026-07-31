@@ -1,4 +1,6 @@
 document.querySelectorAll('[data-app-fab]').forEach((fab) => {
+    document.body.appendChild(fab);
+
     const path = window.location.pathname;
     const isFocusedFlow = path.endsWith('/new') || path.endsWith('/edit');
 
