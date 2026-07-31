@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${title + ' - BrewLog'}">원두 등록 - BrewLog</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='app-header-20260525')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='title-cancel-20260731')}">
 </head>
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('beans')}"></header>
@@ -14,6 +14,7 @@
                 <a class="text-link" th:href="@{/coffee-beans}">원두 목록</a>
                 <h1 th:text="${title}">원두 등록</h1>
             </div>
+            <a class="button button--ghost" th:href="@{/coffee-beans}">취소</a>
         </header>
 
         <section class="card-extraction-section" th:if="${actionUrl == '/coffee-beans'}">
@@ -56,11 +57,18 @@
             <textarea class="extracted-raw-text" readonly th:text="${extractedRawText}"></textarea>
         </section>
 
-        <form class="form" th:action="@{${actionUrl}}" th:object="${coffeeBeanForm}" method="post">
+        <form class="form" data-form-wizard th:action="@{${actionUrl}}" th:object="${coffeeBeanForm}" method="post">
             <input type="hidden" th:field="*{status}">
             <input type="hidden" th:field="*{purchasePlaceLatitude}">
             <input type="hidden" th:field="*{purchasePlaceLongitude}">
-            <section class="form-section">
+            <nav class="form-wizard" aria-label="원두 등록 단계">
+                <ol class="form-wizard__steps">
+                    <li><button type="button" data-wizard-step-target><span>1</span>기본 정보</button></li>
+                    <li><button type="button" data-wizard-step-target><span>2</span>상세 정보</button></li>
+                    <li><button type="button" data-wizard-step-target><span>3</span>부가 정보</button></li>
+                </ol>
+            </nav>
+            <section class="form-section" data-wizard-step>
                 <h2>기본 정보</h2>
                 <div class="form__grid">
                     <label>
@@ -157,7 +165,7 @@
                 </label>
             </section>
 
-            <section class="form-section">
+            <section class="form-section" data-wizard-step>
                 <details open>
                     <summary>상세 정보</summary>
                     <p class="section-help">로스터리, 산지 세부 정보, 로스팅일은 선택 입력입니다. OCR로 찾은 값만 가볍게 확인해도 괜찮습니다.</p>
@@ -191,7 +199,7 @@
                 </details>
             </section>
 
-            <section class="form-section">
+            <section class="form-section" data-wizard-step>
                 <details>
                     <summary>부가 정보</summary>
                     <p class="section-help">구매 또는 보유 중인 원두라면 용량, 가격, 구매처를 남길 수 있습니다. 카페에서 마신 원두라면 비워두어도 됩니다.</p>
@@ -287,8 +295,9 @@
             </section>
 
             <div class="form__actions">
-                <button class="button button--primary" type="submit">저장</button>
-                <a class="button button--ghost" th:href="@{/coffee-beans}">취소</a>
+                <button class="button button--ghost form__arrow form__arrow--prev" type="button" data-wizard-prev aria-label="이전 단계">←</button>
+                <button class="button button--secondary form__arrow form__arrow--next" type="button" data-wizard-next aria-label="다음 단계">→</button>
+                <button class="button button--primary form__save" type="submit" data-wizard-submit>저장</button>
             </div>
         </form>
     </main>
@@ -592,5 +601,6 @@
             renderSelection();
         });
     </script>
+    <script th:src="@{/js/form-wizard.js(v='title-cancel-20260731')}"></script>
 </body>
 </html>

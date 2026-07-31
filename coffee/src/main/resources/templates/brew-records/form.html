@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${title + ' - BrewLog'}">브루잉 기록 등록 - BrewLog</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='app-header-20260525')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='pour-cumulative-curve-20260801')}">
 </head>
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('records')}"></header>
@@ -14,10 +14,21 @@
                 <a class="text-link" th:href="@{/brew-records}">브루잉 기록</a>
                 <h1 th:text="${title}">브루잉 기록 등록</h1>
             </div>
+            <a class="button button--ghost" th:href="@{/brew-records}">취소</a>
         </header>
 
-        <form class="form brew-form" th:action="@{${actionUrl}}" th:object="${brewRecordForm}" method="post">
-            <section class="form-section">
+        <form class="form brew-form" data-form-wizard th:action="@{${actionUrl}}" th:object="${brewRecordForm}" method="post">
+            <nav class="form-wizard" aria-label="브루잉 기록 단계">
+                <ol class="form-wizard__steps">
+                    <li><button type="button" data-wizard-step-target><span>1</span>기본 정보</button></li>
+                    <li><button type="button" data-wizard-step-target><span>2</span>레시피</button></li>
+                    <li><button type="button" data-wizard-step-target><span>3</span>만족도</button></li>
+                    <li><button type="button" data-wizard-step-target><span>4</span>맛 프로파일</button></li>
+                    <li><button type="button" data-wizard-step-target><span>5</span>느낌</button></li>
+                    <li><button type="button" data-wizard-step-target><span>6</span>메모</button></li>
+                </ol>
+            </nav>
+            <section class="form-section" data-wizard-step>
                 <h2>기본 정보</h2>
                 <div class="form__grid">
                     <label>
@@ -57,7 +68,7 @@
                 </div>
             </section>
 
-            <section class="form-section">
+            <section class="form-section" data-wizard-step>
                 <h2>레시피 정보</h2>
                 <div class="form__grid">
                     <label>
@@ -87,15 +98,15 @@
                     </label>
                 </div>
 
-                <div class="pour-editor" data-pour-editor>
-                    <div class="pour-editor__header">
-                        <div>
-                            <strong>푸어링 타임라인</strong>
-                            <span>드래그하면 5초 단위로 시간이 조정됩니다.</span>
+                    <div class="pour-editor" data-pour-editor>
+                        <div class="pour-editor__header">
+                            <div>
+                            <strong>푸어링 그래프</strong>
+                            <span>x축은 시간, y축은 누적 푸어링량입니다.</span>
                         </div>
                         <button class="button button--ghost" type="button" data-pour-add>단계 추가</button>
                     </div>
-                    <div class="pour-track" data-pour-track aria-label="푸어링 타임라인"></div>
+                    <div class="pour-track" data-pour-track aria-label="푸어링 그래프"></div>
                     <div class="pour-step-list" data-pour-list>
                         <div class="pour-step-row" th:each="step, status : *{pourSteps}" data-pour-step draggable="true">
                             <button class="pour-step-row__handle" type="button" data-pour-drag-handle aria-label="푸어링 단계 이동">↕</button>
@@ -105,7 +116,7 @@
                                 <input type="number" min="0" max="3600" step="5" th:value="${step.timeSec}" data-pour-time-display>
                             </label>
                             <label>
-                                <span>푸어링량(ml)</span>
+                                <span>단계 푸어링량(ml)</span>
                                 <input type="number" min="1" max="3000" step="1" th:field="*{pourSteps[__${status.index}__].amountMl}" data-pour-amount placeholder="예: 80">
                             </label>
                             <button class="button button--ghost" type="button" data-pour-remove>삭제</button>
@@ -120,7 +131,7 @@
                                 <input type="number" min="0" max="3600" step="5" data-pour-time-display>
                             </label>
                             <label>
-                                <span>푸어링량(ml)</span>
+                                <span>단계 푸어링량(ml)</span>
                                 <input type="number" min="1" max="3000" step="1" data-pour-amount placeholder="예: 80">
                             </label>
                             <button class="button button--ghost" type="button" data-pour-remove>삭제</button>
@@ -129,7 +140,7 @@
                 </div>
             </section>
 
-            <section class="form-section">
+            <section class="form-section" data-wizard-step>
                 <h2>전체 만족도</h2>
                 <div class="score-options">
                     <label class="score-pill" th:each="score : ${tasteScores}">
@@ -140,7 +151,7 @@
                 <small th:if="${#fields.hasErrors('rating')}" th:errors="*{rating}"></small>
             </section>
 
-            <section class="form-section">
+            <section class="form-section" data-wizard-step>
                 <h2>맛 프로파일</h2>
                 <div class="taste-profile-layout">
                     <div class="taste-chart" data-taste-chart data-input-mode="true">
@@ -198,7 +209,7 @@
                 </div>
             </section>
 
-            <section class="form-section">
+            <section class="form-section" data-wizard-step>
                 <h2>추출 느낌 태그</h2>
                 <div class="selection-panel" data-selection-panel="feelingTags">
                     <div>
@@ -221,7 +232,7 @@
                 </label>
             </section>
 
-            <section class="form-section">
+            <section class="form-section" data-wizard-step>
                 <h2>메모</h2>
                 <label>
                     <span>자유 메모</span>
@@ -230,8 +241,9 @@
             </section>
 
             <div class="form__actions">
-                <button class="button button--primary" type="submit">저장</button>
-                <a class="button button--ghost" th:href="@{/brew-records}">취소</a>
+                <button class="button button--ghost form__arrow form__arrow--prev" type="button" data-wizard-prev aria-label="이전 단계">←</button>
+                <button class="button button--secondary form__arrow form__arrow--next" type="button" data-wizard-next aria-label="다음 단계">→</button>
+                <button class="button button--primary form__save" type="submit" data-wizard-submit>저장</button>
             </div>
         </form>
     </main>
@@ -327,12 +339,17 @@
             const addButton = editor.querySelector('[data-pour-add]');
             const form = editor.closest('form');
             const brewTimeInput = form.querySelector('[name="brewTimeSec"]');
+            let selectedPourRow = null;
 
             const snapTime = (timeSec) => Math.max(0, Math.round(timeSec / 5) * 5);
             const getRows = () => Array.from(list.querySelectorAll('[data-pour-step]'));
-            const readDuration = () => {
-                const brewTimeSec = Number(brewTimeInput?.value || 180);
-                return Math.max(5, brewTimeSec);
+            const parseNumber = (value) => {
+                const number = Number(value);
+                return Number.isFinite(number) ? number : 0;
+            };
+            const readBrewTime = () => {
+                const brewTimeSec = parseNumber(brewTimeInput?.value);
+                return brewTimeSec > 0 ? snapTime(brewTimeSec) : null;
             };
 
             function syncNames() {
@@ -343,7 +360,8 @@
             }
 
             function setRowTime(row, timeSec) {
-                const snappedTime = Math.min(snapTime(timeSec), readDuration());
+                const brewTimeSec = readBrewTime();
+                const snappedTime = brewTimeSec == null ? snapTime(timeSec) : Math.min(snapTime(timeSec), brewTimeSec);
                 row.querySelector('[data-pour-time]').value = snappedTime;
                 row.querySelector('[data-pour-time-display]').value = snappedTime;
                 renderTimeline();
@@ -378,68 +396,321 @@
                 });
             }
 
-            function createMarker(row, index, duration) {
-                const timeInput = row.querySelector('[data-pour-time]');
-                const amountInput = row.querySelector('[data-pour-amount]');
-                const timeSec = Math.min(Number(timeInput.value || 0), duration);
-                const amountMl = amountInput.value || '-';
-                const marker = document.createElement('button');
-                marker.type = 'button';
-                marker.className = 'pour-marker';
-                marker.style.top = `${Math.min(100, timeSec * 100 / duration)}%`;
-                marker.innerHTML = `<strong>${amountMl}ml</strong><span>${timeSec}초</span>`;
-                marker.setAttribute('aria-label', `${index + 1}번째 푸어링 ${timeSec}초 ${amountMl}ml`);
-
-                let dragging = false;
-                const moveToPointer = (event) => {
-                    if (!dragging) {
-                        return;
-                    }
-                    const rect = track.getBoundingClientRect();
-                    const ratio = Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height));
-                    setRowTime(row, ratio * duration);
-                };
-
-                marker.addEventListener('pointerdown', (event) => {
-                    dragging = true;
-                    marker.setPointerCapture(event.pointerId);
-                    marker.classList.add('is-dragging');
-                });
-                marker.addEventListener('pointermove', moveToPointer);
-                marker.addEventListener('pointerup', (event) => {
-                    dragging = false;
-                    marker.releasePointerCapture(event.pointerId);
-                    marker.classList.remove('is-dragging');
-                });
-                marker.addEventListener('pointercancel', () => {
-                    dragging = false;
-                    marker.classList.remove('is-dragging');
-                });
-
-                return marker;
-            }
-
             function renderTimeline() {
                 syncNames();
-                const duration = readDuration();
                 track.innerHTML = '';
 
-                const axis = document.createElement('div');
-                axis.className = 'pour-track__axis';
-                track.appendChild(axis);
+                const rawSteps = getRows().map((row, index) => ({
+                    row,
+                    index,
+                    timeSec: parseNumber(row.querySelector('[data-pour-time]').value),
+                    amountMl: parseNumber(row.querySelector('[data-pour-amount]').value)
+                }));
+                const steps = rawSteps
+                    .filter((step) => step.timeSec >= 0 && step.amountMl > 0)
+                    .sort((a, b) => a.timeSec - b.timeSec || a.index - b.index);
 
-                getRows().forEach((row, index) => {
-                    track.appendChild(createMarker(row, index, duration));
+                const brewTimeSec = readBrewTime();
+                const maxStepTime = Math.max(0, ...rawSteps.map((step) => step.timeSec));
+                const cumulativeSteps = [];
+                let runningAmount = 0;
+                steps.forEach((step) => {
+                    runningAmount += step.amountMl;
+                    cumulativeSteps.push({ ...step, cumulativeMl: runningAmount });
+                });
+                const xMax = brewTimeSec ?? Math.max(5, maxStepTime || 5);
+                const yMax = Math.max(10, Math.ceil((runningAmount || 10) / 10) * 10);
+                const width = 720;
+                const height = 320;
+                const padding = { top: 42, right: 32, bottom: 48, left: 64 };
+                const plotWidth = width - padding.left - padding.right;
+                const plotHeight = height - padding.top - padding.bottom;
+                const toX = (timeSec) => padding.left + (Math.min(timeSec, xMax) / xMax) * plotWidth;
+                const toY = (amountMl) => padding.top + plotHeight - (Math.min(amountMl, yMax) / yMax) * plotHeight;
+                const svgNS = 'http://www.w3.org/2000/svg';
+                const svg = document.createElementNS(svgNS, 'svg');
+                svg.classList.add('pour-chart-svg');
+                svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+                svg.setAttribute('role', 'img');
+                svg.setAttribute('aria-label', '푸어링 그래프');
+
+                const appendSvg = (tagName, attributes, parent = svg) => {
+                    const element = document.createElementNS(svgNS, tagName);
+                    Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value));
+                    parent.appendChild(element);
+                    return element;
+                };
+
+                const gradientId = `pour-fill-${Math.random().toString(36).slice(2)}`;
+                const defs = appendSvg('defs', {});
+                const areaGradient = appendSvg('linearGradient', {
+                    id: gradientId,
+                    x1: '0',
+                    y1: '0',
+                    x2: '0',
+                    y2: '1'
+                }, defs);
+                appendSvg('stop', {
+                    offset: '0%',
+                    'stop-color': '#7a4a2f',
+                    'stop-opacity': '0.34'
+                }, areaGradient);
+                appendSvg('stop', {
+                    offset: '58%',
+                    'stop-color': '#b9855f',
+                    'stop-opacity': '0.14'
+                }, areaGradient);
+                appendSvg('stop', {
+                    offset: '100%',
+                    'stop-color': '#ffffff',
+                    'stop-opacity': '0'
+                }, areaGradient);
+
+                const grid = appendSvg('g', { class: 'pour-chart__grid' });
+                const xTicks = brewTimeSec == null
+                    ? Array.from(new Set([0, xMax]))
+                    : [0, Math.round(xMax / 4), Math.round(xMax / 2), Math.round(xMax * 3 / 4), xMax];
+                xTicks.forEach((tick) => {
+                    const snappedTick = snapTime(tick);
+                    const x = toX(snappedTick);
+                    appendSvg('line', {
+                        x1: x,
+                        y1: padding.top,
+                        x2: x,
+                        y2: padding.top + plotHeight,
+                        class: 'pour-chart__grid-line pour-chart__grid-line--vertical'
+                    }, grid);
+                    appendSvg('text', {
+                        x,
+                        y: height - 16,
+                        'text-anchor': 'middle',
+                        class: 'pour-chart__axis-text'
+                    }, grid).textContent = `${snappedTick}초`;
+                });
+
+                [0, yMax / 2, yMax].forEach((tick) => {
+                    const y = toY(tick);
+                    appendSvg('line', {
+                        x1: padding.left,
+                        y1: y,
+                        x2: padding.left + plotWidth,
+                        y2: y,
+                        class: 'pour-chart__grid-line'
+                    }, grid);
+                    appendSvg('text', {
+                        x: padding.left - 12,
+                        y: y + 4,
+                        'text-anchor': 'end',
+                        class: 'pour-chart__axis-text'
+                    }, grid).textContent = `${Math.round(tick)}ml`;
+                });
+
+                appendSvg('line', {
+                    x1: padding.left,
+                    y1: padding.top + plotHeight,
+                    x2: padding.left + plotWidth,
+                    y2: padding.top + plotHeight,
+                    class: 'pour-chart__axis-line'
+                });
+                appendSvg('line', {
+                    x1: padding.left,
+                    y1: padding.top,
+                    x2: padding.left,
+                    y2: padding.top + plotHeight,
+                    class: 'pour-chart__axis-line'
+                });
+                appendSvg('text', {
+                    x: padding.left + plotWidth,
+                    y: height - 2,
+                    'text-anchor': 'end',
+                    class: 'pour-chart__axis-title'
+                }).textContent = '시간(초)';
+                appendSvg('text', {
+                    x: 18,
+                    y: 20,
+                    'text-anchor': 'start',
+                    class: 'pour-chart__axis-title'
+                }).textContent = '누적량(ml)';
+
+                if (cumulativeSteps.length === 0) {
+                    appendSvg('text', {
+                        x: padding.left + plotWidth / 2,
+                        y: padding.top + plotHeight / 2,
+                        'text-anchor': 'middle',
+                        class: 'pour-chart__empty'
+                    }).textContent = '단계를 추가하면 그래프가 그려집니다.';
+                    track.appendChild(svg);
+                    return;
+                }
+
+                const points = cumulativeSteps.map((step) => ({
+                    ...step,
+                    x: toX(step.timeSec),
+                    y: toY(step.cumulativeMl)
+                }));
+                const lastPourPoint = points.at(-1);
+                const drawPoints = lastPourPoint.x < padding.left + plotWidth
+                    ? [
+                        ...points,
+                        {
+                            ...lastPourPoint,
+                            timeSec: xMax,
+                            x: padding.left + plotWidth
+                        }
+                    ]
+                    : points;
+                const linePath = drawPoints.map((point, index) => {
+                    if (index === 0) {
+                        return `M ${point.x} ${point.y}`;
+                    }
+                    const previous = drawPoints[index - 1];
+                    const controlOffset = Math.max(0, (point.x - previous.x) * 0.45);
+                    const c1x = previous.x + controlOffset;
+                    const c2x = point.x - controlOffset;
+                    return `C ${c1x} ${previous.y} ${c2x} ${point.y} ${point.x} ${point.y}`;
+                }).join(' ');
+                const firstPoint = drawPoints[0];
+                const lastPoint = drawPoints.at(-1);
+                const baselineY = padding.top + plotHeight;
+                const areaPath = `${linePath} L ${lastPoint.x} ${baselineY} L ${firstPoint.x} ${baselineY} Z`;
+                appendSvg('path', { d: areaPath, class: 'pour-chart__area', fill: `url(#${gradientId})` });
+                appendSvg('path', { d: linePath, class: 'pour-chart__line' });
+
+                track.appendChild(svg);
+
+                function positionMarker(marker, timeSec, cumulativeMl) {
+                    marker.style.left = `${toX(timeSec) * 100 / width}%`;
+                    marker.style.top = `${toY(cumulativeMl) * 100 / height}%`;
+                    marker.textContent = `${cumulativeMl}ml / ${timeSec}초`;
+                }
+
+                function moveRowToPointer(row, event) {
+                    const rect = track.getBoundingClientRect();
+                    if (rect.width <= 0 || rect.height <= 0) {
+                        return null;
+                    }
+                    const svgX = Math.min(padding.left + plotWidth, Math.max(padding.left, ((event.clientX - rect.left) / rect.width) * width));
+                    const svgY = Math.min(padding.top + plotHeight, Math.max(padding.top, ((event.clientY - rect.top) / rect.height) * height));
+                    const rawTime = ((svgX - padding.left) / plotWidth) * xMax;
+                    const rawCumulativeAmount = (1 - ((svgY - padding.top) / plotHeight)) * yMax;
+                    const brewTimeSec = readBrewTime();
+                    const snappedTime = brewTimeSec == null
+                        ? snapTime(Math.max(0, rawTime))
+                        : Math.min(snapTime(Math.max(0, rawTime)), brewTimeSec);
+                    const cumulativeBefore = getRows()
+                        .filter((candidateRow) => candidateRow !== row)
+                        .map((candidateRow, index) => ({
+                            index,
+                            timeSec: parseNumber(candidateRow.querySelector('[data-pour-time]').value),
+                            amountMl: parseNumber(candidateRow.querySelector('[data-pour-amount]').value)
+                        }))
+                        .filter((step) => step.timeSec <= snappedTime && step.amountMl > 0)
+                        .sort((a, b) => a.timeSec - b.timeSec || a.index - b.index)
+                        .reduce((sum, step) => sum + step.amountMl, 0);
+                    const roundedCumulativeAmount = Math.max(cumulativeBefore + 1, Math.min(yMax, Math.round(rawCumulativeAmount)));
+                    const roundedAmount = roundedCumulativeAmount - cumulativeBefore;
+                    row.querySelector('[data-pour-time]').value = snappedTime;
+                    row.querySelector('[data-pour-time-display]').value = snappedTime;
+                    row.querySelector('[data-pour-amount]').value = roundedAmount;
+                    return { timeSec: snappedTime, amountMl: roundedAmount, cumulativeMl: roundedCumulativeAmount };
+                }
+
+                track.onclick = (event) => {
+                    if (!selectedPourRow || event.target.closest('.pour-chart-marker')) {
+                        return;
+                    }
+                    moveRowToPointer(selectedPourRow, event);
+                    renderTimeline();
+                };
+
+                points.forEach((point) => {
+                    const marker = document.createElement('button');
+                    marker.type = 'button';
+                    marker.className = 'pour-chart-marker';
+                    marker.classList.toggle('is-selected', point.row === selectedPourRow);
+                    marker.style.left = `${point.x * 100 / width}%`;
+                    marker.style.top = `${point.y * 100 / height}%`;
+                    marker.textContent = `${point.cumulativeMl}ml / ${point.timeSec}초`;
+                    marker.setAttribute('aria-label', `${point.index + 1}번째 푸어링 ${point.timeSec}초 누적 ${point.cumulativeMl}ml, 단계 ${point.amountMl}ml`);
+
+                    let dragging = false;
+                    const updateMarkerFromEvent = (event) => {
+                        const nextPoint = moveRowToPointer(point.row, event);
+                        if (nextPoint) {
+                            positionMarker(marker, nextPoint.timeSec, nextPoint.cumulativeMl);
+                            marker.setAttribute('aria-label', `${point.index + 1}번째 푸어링 ${nextPoint.timeSec}초 누적 ${nextPoint.cumulativeMl}ml, 단계 ${nextPoint.amountMl}ml`);
+                        }
+                    };
+                    const startDragging = () => {
+                        dragging = true;
+                        selectedPourRow = point.row;
+                        marker.classList.add('is-dragging', 'is-selected');
+                    };
+                    const finishDragging = (event) => {
+                        if (!dragging) {
+                            return;
+                        }
+                        dragging = false;
+                        marker.classList.remove('is-dragging');
+                        moveRowToPointer(point.row, event);
+                        renderTimeline();
+                    };
+
+                    marker.addEventListener('pointerdown', (event) => {
+                        event.preventDefault();
+                        startDragging();
+                        marker.setPointerCapture(event.pointerId);
+                    });
+                    marker.addEventListener('pointermove', (event) => {
+                        if (!dragging) {
+                            return;
+                        }
+                        updateMarkerFromEvent(event);
+                    });
+                    marker.addEventListener('pointerup', (event) => {
+                        marker.releasePointerCapture(event.pointerId);
+                        finishDragging(event);
+                    });
+                    marker.addEventListener('pointercancel', () => {
+                        dragging = false;
+                        marker.classList.remove('is-dragging');
+                    });
+                    marker.addEventListener('mousedown', (event) => {
+                        if (dragging) {
+                            return;
+                        }
+                        event.preventDefault();
+                        startDragging();
+
+                        const onMouseMove = (moveEvent) => updateMarkerFromEvent(moveEvent);
+                        const onMouseUp = (upEvent) => {
+                            document.removeEventListener('mousemove', onMouseMove);
+                            finishDragging(upEvent);
+                        };
+                        document.addEventListener('mousemove', onMouseMove);
+                        document.addEventListener('mouseup', onMouseUp, { once: true });
+                    });
+                    marker.addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        selectedPourRow = point.row;
+                        renderTimeline();
+                    });
+
+                    track.appendChild(marker);
                 });
             }
 
-            function addStep(timeSec = null, amountMl = '') {
+            function addStep(timeSec = null, amountMl = null) {
                 const row = template.content.firstElementChild.cloneNode(true);
                 const existingRows = getRows();
-                const nextTime = Math.min(timeSec ?? snapTime(existingRows.length ? Number(existingRows.at(-1).querySelector('[data-pour-time]').value || 0) + 30 : 0), readDuration());
+                const brewTimeSec = readBrewTime();
+                const nextRawTime = timeSec ?? snapTime(existingRows.length ? Number(existingRows.at(-1).querySelector('[data-pour-time]').value || 0) + 30 : 0);
+                const nextTime = brewTimeSec == null ? nextRawTime : Math.min(nextRawTime, brewTimeSec);
+                const previousAmount = existingRows.length ? Number(existingRows.at(-1).querySelector('[data-pour-amount]').value || 40) : 40;
+                const nextAmount = amountMl ?? previousAmount;
                 row.querySelector('[data-pour-time]').value = nextTime;
                 row.querySelector('[data-pour-time-display]').value = nextTime;
-                row.querySelector('[data-pour-amount]').value = amountMl;
+                row.querySelector('[data-pour-amount]').value = nextAmount;
                 list.appendChild(row);
                 bindRow(row);
                 syncNames();
@@ -508,5 +779,6 @@
             renderSelection();
         });
     </script>
+    <script th:src="@{/js/form-wizard.js(v='title-cancel-20260731')}"></script>
 </body>
 </html>

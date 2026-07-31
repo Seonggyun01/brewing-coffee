@@ -126,6 +126,13 @@ public class BrewRecordResponse {
     }
 
     public Integer getPourTimelineDurationSec() {
-        return brewTimeSec != null && brewTimeSec > 0 ? brewTimeSec : 180;
+        if (brewTimeSec != null && brewTimeSec > 0) {
+            return brewTimeSec;
+        }
+        return pourSteps.stream()
+                .map(BrewPourStepForm::getTimeSec)
+                .filter(timeSec -> timeSec != null && timeSec > 0)
+                .max(Integer::compareTo)
+                .orElse(5);
     }
 }
