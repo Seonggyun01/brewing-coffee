@@ -116,6 +116,10 @@ body {
     min-height: 38px;
 }
 
+.app-bottom-nav {
+    display: none;
+}
+
 .home {
     width: min(var(--app-max-width), calc(100% - (var(--app-gutter) * 2)));
     margin: 0 auto;
@@ -2027,6 +2031,7 @@ small {
         --app-gutter: 14px;
         --app-shell-padding-top: 32px;
         --app-shell-padding-bottom: 40px;
+        --app-bottom-safe: 92px;
     }
 
     .home {
@@ -2080,6 +2085,42 @@ small {
 
     .app-header__actions {
         display: none;
+    }
+
+    .app-bottom-nav {
+        position: fixed;
+        right: 14px;
+        bottom: max(12px, env(safe-area-inset-bottom));
+        left: 14px;
+        z-index: 30;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 4px;
+        min-height: 64px;
+        padding: 8px;
+        border: 1px solid rgba(232, 226, 222, 0.92);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 14px 34px rgba(68, 48, 31, 0.14);
+        backdrop-filter: blur(18px);
+    }
+
+    .app-bottom-nav a {
+        display: inline-flex;
+        min-width: 0;
+        min-height: 48px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 850;
+        text-decoration: none;
+    }
+
+    .app-bottom-nav a.is-active {
+        color: var(--accent);
+        background: var(--accent-soft);
     }
 
     .coffee-bean-carousel__nav {
