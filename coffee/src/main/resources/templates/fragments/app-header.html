@@ -34,6 +34,15 @@
             <span>지도</span>
         </a>
     </nav>
+    <details class="app-fab" data-app-fab>
+        <summary aria-label="빠른 추가 메뉴">+</summary>
+        <div class="app-fab__menu" role="menu">
+            <a th:href="@{/brew-records/new}" role="menuitem">브루잉 기록</a>
+            <a th:href="@{/cafe-filter-coffees/new}" role="menuitem">카페 필터 기록</a>
+            <a th:href="@{/coffee-beans/new}" role="menuitem">새 원두</a>
+        </div>
+    </details>
+    <script th:src="@{/js/app-actions.js(v='app-fab-20260801')}"></script>
 </header>
 </body>
 </html>
