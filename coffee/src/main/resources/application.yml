@@ -32,3 +32,11 @@ brewlog:
     enabled: ${BREWLOG_DUMMY_DATA_ENABLED:false}
   ocr:
     provider: google-vision
+  llm:
+    provider: ${BREWLOG_LLM_PROVIDER:ollama}
+    ollama:
+      model-url: ${BREWLOG_OLLAMA_MODEL_URL:http://127.0.0.1:11434/api/generate}
+      model-id: ${BREWLOG_OLLAMA_MODEL_ID:gemma3:12b}
+      timeout-seconds: ${BREWLOG_OLLAMA_TIMEOUT_SECONDS:120}
+      num-predict: ${BREWLOG_OLLAMA_NUM_PREDICT:700}
+      temperature: ${BREWLOG_OLLAMA_TEMPERATURE:0.0}

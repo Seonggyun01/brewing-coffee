@@ -28,20 +28,20 @@ public class CoffeeBeanCardImageBatchLlmService {
     private static final long LLM_RETRY_DELAY_MILLIS = 1500;
 
     private final CoffeeBeanCardOcrService ocrService;
-    private final HuggingFaceBeanMappingService huggingFaceBeanMappingService;
+    private final BeanMappingService beanMappingService;
     private final ObjectMapper objectMapper;
     private final Path imageDirectory;
     private final Path outputDirectory;
 
     public CoffeeBeanCardImageBatchLlmService(
             CoffeeBeanCardOcrService ocrService,
-            HuggingFaceBeanMappingService huggingFaceBeanMappingService,
+            BeanMappingService beanMappingService,
             ObjectMapper objectMapper,
             @Value("${brewlog.dev.image-directory:../docs/image}") String imageDirectory,
             @Value("${brewlog.dev.llm-output-directory:../docs/image/ocr-llm-results}") String outputDirectory
     ) {
         this.ocrService = ocrService;
-        this.huggingFaceBeanMappingService = huggingFaceBeanMappingService;
+        this.beanMappingService = beanMappingService;
         this.objectMapper = objectMapper;
         this.imageDirectory = Path.of(imageDirectory).toAbsolutePath().normalize();
         this.outputDirectory = Path.of(outputDirectory).toAbsolutePath().normalize();
@@ -125,7 +125,7 @@ public class CoffeeBeanCardImageBatchLlmService {
     private LlmParsingDebugResponse debugParseWithRetry(String ocrText) throws InterruptedException {
         LlmParsingDebugResponse response = null;
         for (int attempt = 1; attempt <= MAX_LLM_ATTEMPTS; attempt++) {
-            response = huggingFaceBeanMappingService.debugParseOcrText(ocrText);
+            response = beanMappingService.debugParseOcrText(ocrText);
             if (!isTransientLlmFailure(response) || attempt == MAX_LLM_ATTEMPTS) {
                 return response;
             }

@@ -134,7 +134,7 @@ public class BeanOcrMappingValidator {
                 region,
                 farmOrStation,
                 clean(response.variety()),
-                clean(response.altitude()),
+                cleanAltitude(response.altitude()),
                 process,
                 clean(response.beanStatus()),
                 cleanDate(response.roastedAt()),
@@ -160,6 +160,27 @@ public class BeanOcrMappingValidator {
             default -> process;
         };
         return ALLOWED_PROCESS_VALUES.contains(process) ? process : "";
+    }
+
+    private String cleanAltitude(String value) {
+        String altitude = clean(value);
+        if (altitude.isBlank()) {
+            return "";
+        }
+
+        String normalized = altitude.toLowerCase(Locale.ROOT);
+        boolean hasAltitudeUnit = normalized.contains("m")
+                || normalized.contains("masl")
+                || normalized.contains("meter")
+                || normalized.contains("metre")
+                || altitude.contains("고도")
+                || altitude.contains("해발");
+        boolean looksLikeEthiopianVarietyCodes = altitude.matches(".*\\b74\\d{3}\\b.*");
+        if (!hasAltitudeUnit && looksLikeEthiopianVarietyCodes) {
+            return "";
+        }
+
+        return altitude;
     }
 
     private String cleanCountry(String value) {

@@ -18,7 +18,7 @@ import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCardTextParseResult;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCreateForm;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.llmparsing.dto.LlmParsingResponse;
-import com.hsg.coffee.domain.llmparsing.service.HuggingFaceBeanMappingService;
+import com.hsg.coffee.domain.llmparsing.service.BeanMappingService;
 import com.hsg.coffee.global.country.CountryInfo;
 
 import lombok.RequiredArgsConstructor;
@@ -45,14 +45,14 @@ public class CoffeeBeanCardExtractionService {
     );
     private final CoffeeBeanCardOcrService ocrService;
     private final CoffeeBeanCardTextParser textParser;
-    private final HuggingFaceBeanMappingService huggingFaceBeanMappingService;
+    private final BeanMappingService beanMappingService;
 
     public CoffeeBeanCardExtractResult extract(MultipartFile image) {
         validateImage(image);
 
         String rawText = ocrService.extractText(image);
         CoffeeBeanCardTextParseResult parseResult = textParser.parse(rawText);
-        LlmParsingResponse llmResult = huggingFaceBeanMappingService.parseOcrText(rawText);
+        LlmParsingResponse llmResult = beanMappingService.parseOcrText(rawText);
 
         return new CoffeeBeanCardExtractResult(
                 rawText,

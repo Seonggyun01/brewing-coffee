@@ -12,6 +12,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import com.hsg.coffee.domain.llmparsing.dto.LlmParsingDebugResponse;
@@ -22,7 +23,8 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 @Service
-public class HuggingFaceBeanMappingService {
+@ConditionalOnProperty(name = "brewlog.llm.provider", havingValue = "huggingface")
+public class HuggingFaceBeanMappingService implements BeanMappingService {
 
     private static final Logger log = LoggerFactory.getLogger(HuggingFaceBeanMappingService.class);
     private static final String DEFAULT_MODEL_URL = "https://router.huggingface.co/v1/chat/completions";
@@ -36,7 +38,7 @@ public class HuggingFaceBeanMappingService {
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
     private final BeanOcrMappingValidator validator;
-    private final OcrTextPreprocessor preprocessor;
+    private final BeanMappingPromptFactory promptFactory;
 
     public HuggingFaceBeanMappingService(
             @Value("${huggingface.api-key:${brewlog.llm.huggingface.api-key:}}") String apiKey,
@@ -47,7 +49,7 @@ public class HuggingFaceBeanMappingService {
             @Value("${huggingface.temperature:${brewlog.llm.huggingface.temperature:0.1}}") double temperature,
             ObjectMapper objectMapper,
             BeanOcrMappingValidator validator,
-            OcrTextPreprocessor preprocessor
+            BeanMappingPromptFactory promptFactory
     ) {
         this.apiKey = apiKey;
         this.modelUrl = normalizeModelUrl(modelUrl);
@@ -61,9 +63,10 @@ public class HuggingFaceBeanMappingService {
                 .build();
         this.objectMapper = objectMapper;
         this.validator = validator;
-        this.preprocessor = preprocessor;
+        this.promptFactory = promptFactory;
     }
 
+    @Override
     public LlmParsingResponse parseOcrText(String ocrText) {
         if (ocrText == null || ocrText.isBlank()) {
             return LlmParsingResponse.empty();
@@ -76,7 +79,7 @@ public class HuggingFaceBeanMappingService {
         }
 
         try {
-            OcrPreprocessResult preprocessResult = preprocessor.preprocess(ocrText);
+            OcrPreprocessResult preprocessResult = promptFactory.preprocess(ocrText);
             String response = callHuggingFace(preprocessResult);
             String generatedText = extractGeneratedText(response);
             String json = extractJson(generatedText);
@@ -101,6 +104,7 @@ public class HuggingFaceBeanMappingService {
         }
     }
 
+    @Override
     public LlmParsingDebugResponse debugParseOcrText(String ocrText) {
         if (ocrText == null || ocrText.isBlank()) {
             return new LlmParsingDebugResponse(
@@ -130,7 +134,7 @@ public class HuggingFaceBeanMappingService {
         }
 
         try {
-            OcrPreprocessResult preprocessResult = preprocessor.preprocess(ocrText);
+            OcrPreprocessResult preprocessResult = promptFactory.preprocess(ocrText);
             String response = callHuggingFace(preprocessResult);
             String generatedText = extractGeneratedText(response);
             String json = extractJson(generatedText);
@@ -187,7 +191,7 @@ public class HuggingFaceBeanMappingService {
     }
 
     private String callHuggingFace(OcrPreprocessResult preprocessResult) {
-        return callHuggingFace(modelId, createPrompt(preprocessResult));
+        return callHuggingFace(modelId, promptFactory.createPrompt(preprocessResult));
     }
 
     private String callHuggingFace(String targetModelId, Object content) {
@@ -243,58 +247,8 @@ public class HuggingFaceBeanMappingService {
         return validator.sanitize(parsed, preprocessResult);
     }
 
-    private String createPrompt(OcrPreprocessResult preprocessResult) {
-        return """
-                너는 커피 원두 카드 OCR 텍스트를 원두 등록 폼 JSON으로 변환하는 도우미다.
-                후보는 참고용이며 틀릴 수 있다. OCR 원문을 우선 보고 판단한다.
-                근거 없는 값은 만들지 말고 빈 문자열 "" 또는 []로 둔다.
-                JSON 외 설명은 출력하지 않는다.
-                process는 NATURAL, WASHED, HONEY, ANAEROBIC, DECAF, OTHER, "" 중 하나만 쓴다.
-                remainingWeightGram은 숫자만 쓴다.
-                roastery는 브랜드/카페명이고, name은 원두 상품명이다. 둘은 같으면 안 된다.
-                originCountry는 다음 목록 중 하나로 매핑한다: %s.
-                region은 국가명이 아니라 Guji, Yirgacheffe, Huila, Boquete 같은 산지/지역명만 쓴다.
-                flavorNotes는 원문 표현을 유지하되 향미 단위로 쪼개서 배열로 쓴다.
-
-                후보:
-                roastery=%s
-                name=%s
-                keyValue=%s
-                flavorNotes=%s
-
-                반환 JSON 형식:
-                {"name":"","roastery":"","originCountry":"","region":"","farmOrStation":"","variety":"","altitude":"","process":"","beanStatus":"","roastedAt":"","purchasedAt":"","price":"","remainingWeightGram":"","flavorNotes":[]}
-
-                OCR 텍스트:
-                ---
-                %s
-                ---
-                """.formatted(
-                allowedCountryNames(),
-                String.join(", ", preprocessResult.roasteryCandidates()),
-                String.join(", ", preprocessResult.productNameCandidates()),
-                formatKeyValueCandidates(preprocessResult),
-                String.join(", ", preprocessResult.tastingNoteCandidates()),
-                preprocessResult.rawText()
-        );
-    }
-
-    private String allowedCountryNames() {
-        return java.util.Arrays.stream(com.hsg.coffee.global.country.CountryInfo.values())
-                .map(com.hsg.coffee.global.country.CountryInfo::getKoreanName)
-                .toList()
-                .toString();
-    }
-
-    private String formatKeyValueCandidates(OcrPreprocessResult preprocessResult) {
-        return preprocessResult.keyValueCandidates().stream()
-                .map(candidate -> candidate.key() + " -> " + candidate.value())
-                .toList()
-                .toString();
-    }
-
     private String createPrompt(String ocrText) {
-        return createPrompt(preprocessor.preprocess(ocrText));
+        return promptFactory.createPrompt(ocrText);
     }
 
     private String extractGeneratedText(String response) {
