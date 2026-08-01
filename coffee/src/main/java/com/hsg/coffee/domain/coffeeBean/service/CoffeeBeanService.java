@@ -69,20 +69,24 @@ public class CoffeeBeanService {
         return coffeeBean.getId();
     }
 
+    @Transactional
     public CoffeeBeanResponse get(Long id) {
-        return toResponse(findEntity(id));
+        CoffeeBean coffeeBean = findEntity(id);
+        coffeeBean.syncStatusWithWeight();
+        return toResponse(coffeeBean);
     }
 
+    @Transactional
     public List<CoffeeBeanResponse> getAll() {
-        return coffeeBeanRepository.findAllByOrderByIdDesc()
-                .stream()
-                .map(this::toResponse)
-                .toList();
+        return toResponsesWithSyncedStatus(coffeeBeanRepository.findAllByOrderByIdDesc());
     }
 
+    @Transactional
     public List<CoffeeBeanResponse> getInventoryBeans() {
-        return coffeeBeanRepository.findAllByOrderByIdDesc()
-                .stream()
+        List<CoffeeBean> coffeeBeans = coffeeBeanRepository.findAllByOrderByIdDesc();
+        syncStatusesWithWeight(coffeeBeans);
+
+        return coffeeBeans.stream()
                 .filter(coffeeBean -> coffeeBean.getStatus() != CoffeeBeanStatus.CAFE)
                 .map(this::toResponse)
                 .toList();
@@ -92,6 +96,7 @@ public class CoffeeBeanService {
         return findCoffeeBeans(keyword, null);
     }
 
+    @Transactional
     public List<CoffeeBeanResponse> findCoffeeBeans(String keyword, String countryCode) {
         String trimmedKeyword = StringUtils.hasText(keyword) ? keyword.trim() : null;
         String normalizedCountryCode = normalizeCountryCode(countryCode);
@@ -110,24 +115,25 @@ public class CoffeeBeanService {
             coffeeBeans = coffeeBeanRepository.findAllByOrderByIdDesc();
         }
 
-        return coffeeBeans.stream()
-                .map(this::toResponse)
-                .toList();
+        return toResponsesWithSyncedStatus(coffeeBeans);
     }
 
+    @Transactional
     public List<CoffeeBeanResponse> searchByRoastery(String keyword) {
         if (!StringUtils.hasText(keyword)) {
             return getAll();
         }
 
-        return coffeeBeanRepository.findByRoasteryContainingIgnoreCaseOrderByIdDesc(keyword.trim())
-                .stream()
-                .map(this::toResponse)
-                .toList();
+        return toResponsesWithSyncedStatus(
+                coffeeBeanRepository.findByRoasteryContainingIgnoreCaseOrderByIdDesc(keyword.trim())
+        );
     }
 
+    @Transactional
     public CoffeeBeanUpdateForm getUpdateForm(Long id) {
-        return CoffeeBeanUpdateForm.from(findEntity(id));
+        CoffeeBean coffeeBean = findEntity(id);
+        coffeeBean.syncStatusWithWeight();
+        return CoffeeBeanUpdateForm.from(coffeeBean);
     }
 
     @Transactional
@@ -189,6 +195,17 @@ public class CoffeeBeanService {
                 coffeeBean,
                 customFlavorNoteService.findDetails(coffeeBean.getCustomFlavorNotes())
         );
+    }
+
+    private List<CoffeeBeanResponse> toResponsesWithSyncedStatus(List<CoffeeBean> coffeeBeans) {
+        syncStatusesWithWeight(coffeeBeans);
+        return coffeeBeans.stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    private void syncStatusesWithWeight(List<CoffeeBean> coffeeBeans) {
+        coffeeBeans.forEach(CoffeeBean::syncStatusWithWeight);
     }
 
     private List<String> parseTags(String tagsText) {

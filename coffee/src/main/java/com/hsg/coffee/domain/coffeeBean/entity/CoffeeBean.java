@@ -487,6 +487,10 @@ public class CoffeeBean extends BaseTimeEntity {
         }
     }
 
+    public void syncStatusWithWeight() {
+        this.status = normalizeStatus(status, weight);
+    }
+
     private static String normalizeCountryCode(String originCountryCode) {
         if (originCountryCode == null || originCountryCode.isBlank()) {
             return null;

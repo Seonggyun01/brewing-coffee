@@ -26,6 +26,8 @@ import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
 import com.hsg.coffee.domain.purchasePlace.repository.PurchasePlaceRepository;
 
+import jakarta.persistence.EntityManager;
+
 @Transactional
 @SpringBootTest
 class CoffeeBeanServiceTest {
@@ -38,6 +40,9 @@ class CoffeeBeanServiceTest {
 
     @Autowired
     private PurchasePlaceRepository purchasePlaceRepository;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @BeforeEach
     void setUp() {
@@ -187,6 +192,31 @@ class CoffeeBeanServiceTest {
         System.out.println("남은 무게: " + response.getWeight());
         assertEquals(CoffeeBeanStatus.CURRENT, response.getStatus());
         assertEquals(80, response.getWeight());
+    }
+
+    @Test
+    void getRepairsFinishedStatusWhenWeightRemains() {
+        Long id = coffeeBeanService.create(createForm("에티오피아 구지", "브루잉 로스터스"));
+        entityManager.flush();
+        entityManager.clear();
+
+        entityManager.createNativeQuery("update coffee_beans set status = 'FINISHED' where id = :id")
+                .setParameter("id", id)
+                .executeUpdate();
+        entityManager.flush();
+        entityManager.clear();
+
+        CoffeeBeanResponse response = coffeeBeanService.get(id);
+        entityManager.flush();
+        entityManager.clear();
+
+        CoffeeBeanStatus persistedStatus = coffeeBeanRepository.findById(id).orElseThrow().getStatus();
+
+        System.out.println("=== CoffeeBeanService 기존 상태 보정 테스트 결과 ===");
+        System.out.println("응답 상태: " + response.getStatus());
+        System.out.println("DB 상태: " + persistedStatus);
+        assertEquals(CoffeeBeanStatus.CURRENT, response.getStatus());
+        assertEquals(CoffeeBeanStatus.CURRENT, persistedStatus);
     }
 
     @Test
