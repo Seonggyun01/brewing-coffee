@@ -31,7 +31,14 @@ brewlog:
   dummy-data:
     enabled: ${BREWLOG_DUMMY_DATA_ENABLED:false}
   ocr:
-    provider: google-vision
+    provider: ${BREWLOG_OCR_PROVIDER:paddleocr}
+    paddle:
+      python-executable: ${BREWLOG_PADDLE_OCR_PYTHON:python3}
+      script-path: ${BREWLOG_PADDLE_OCR_SCRIPT:scripts/paddle_ocr.py}
+      cache-directory: ${BREWLOG_PADDLE_OCR_CACHE:${user.home}}
+      timeout-seconds: ${BREWLOG_PADDLE_OCR_TIMEOUT_SECONDS:90}
+      minimum-text-length: ${BREWLOG_PADDLE_OCR_MIN_TEXT_LENGTH:20}
+      fallback-enabled: ${BREWLOG_PADDLE_OCR_FALLBACK_ENABLED:true}
   llm:
     provider: ${BREWLOG_LLM_PROVIDER:ollama}
     ollama:
