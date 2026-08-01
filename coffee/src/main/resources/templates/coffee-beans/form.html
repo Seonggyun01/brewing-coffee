@@ -251,6 +251,13 @@
                             검색 결과를 선택하면 아래 구매처 정보가 자동으로 입력됩니다.
                         </p>
                         <div class="kakao-place-results" data-kakao-place-results></div>
+                        <div class="kakao-place-map"
+                             data-kakao-place-map
+                             th:if="${hasKakaoMapKey}"
+                             aria-label="구매처 위치 선택 지도"></div>
+                        <p class="kakao-place-search__map-help" th:if="${hasKakaoMapKey}">
+                            지도에서 위치를 클릭하면 좌표와 주소가 입력됩니다. 장소 링크는 검색 결과를 선택할 때 채워집니다.
+                        </p>
                     </div>
 
                     <label>
@@ -311,6 +318,8 @@
             const searchButton = box.querySelector('[data-kakao-place-search]');
             const results = box.querySelector('[data-kakao-place-results]');
             const message = box.querySelector('[data-kakao-place-message]');
+            const mapCanvas = box.querySelector('[data-kakao-place-map]');
+            const wizardStep = box.closest('[data-wizard-step]');
             const form = box.closest('form');
             const selectedPlaceInput = form.querySelector('#purchasePlaceId');
             const nameInput = form.querySelector('#purchasePlaceName');
@@ -321,8 +330,9 @@
             const longitudeInput = form.querySelector('#purchasePlaceLongitude');
             const statusInput = form.querySelector('#status');
             const hasKakaoPlaces = window.kakao?.maps?.services?.Places;
+            const hasKakaoMap = window.kakao?.maps?.Map;
 
-            if (!hasKakaoPlaces) {
+            if (!hasKakaoPlaces || !hasKakaoMap) {
                 if (message) {
                     message.textContent = '카카오맵 스크립트를 불러오지 못했습니다. 키 설정과 도메인 등록을 확인해주세요.';
                 }
@@ -333,6 +343,26 @@
             }
 
             const places = new kakao.maps.services.Places();
+            const geocoder = new kakao.maps.services.Geocoder();
+            const defaultPosition = new kakao.maps.LatLng(37.566826, 126.9786567);
+            const initialLatitude = latitudeInput?.value ? Number(latitudeInput.value) : NaN;
+            const initialLongitude = longitudeInput?.value ? Number(longitudeInput.value) : NaN;
+            const hasInitialPosition = Number.isFinite(initialLatitude) && Number.isFinite(initialLongitude);
+            const initialPosition = hasInitialPosition
+                ? new kakao.maps.LatLng(initialLatitude, initialLongitude)
+                : defaultPosition;
+            const map = mapCanvas
+                ? new kakao.maps.Map(mapCanvas, {
+                    center: initialPosition,
+                    level: hasInitialPosition ? 4 : 7
+                })
+                : null;
+            const marker = map
+                ? new kakao.maps.Marker({
+                    position: initialPosition,
+                    map: hasInitialPosition ? map : null
+                })
+                : null;
 
             function setMessage(text) {
                 if (message) {
@@ -350,7 +380,43 @@
                 return place.road_address_name || place.address_name || '';
             }
 
+            function relayoutMap() {
+                if (!map) {
+                    return;
+                }
+
+                window.setTimeout(() => {
+                    const position = marker?.getMap() ? marker.getPosition() : map.getCenter();
+                    map.relayout();
+                    map.setCenter(position);
+                }, 0);
+            }
+
+            function setMapPosition(position, level = 4) {
+                if (!map || !marker) {
+                    return;
+                }
+
+                marker.setPosition(position);
+                marker.setMap(map);
+                map.setLevel(level);
+                map.setCenter(position);
+                relayoutMap();
+            }
+
+            function applyPosition(position) {
+                if (latitudeInput) {
+                    latitudeInput.value = position.getLat().toFixed(12);
+                }
+                if (longitudeInput) {
+                    longitudeInput.value = position.getLng().toFixed(12);
+                }
+                setMapPosition(position);
+            }
+
             function selectPlace(place) {
+                const latitude = Number(place.y);
+                const longitude = Number(place.x);
                 if (selectedPlaceInput) {
                     selectedPlaceInput.value = '';
                 }
@@ -369,11 +435,36 @@
                 if (longitudeInput) {
                     longitudeInput.value = place.x || '';
                 }
+                if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+                    applyPosition(new kakao.maps.LatLng(latitude, longitude));
+                }
                 if (typeInput && (!typeInput.value || statusInput?.value === 'CAFE')) {
                     typeInput.value = 'CAFE';
                 }
                 setMessage('선택한 장소가 구매처 정보에 입력되었습니다.');
                 clearResults();
+            }
+
+            function selectMapPosition(position) {
+                if (selectedPlaceInput) {
+                    selectedPlaceInput.value = '';
+                }
+                applyPosition(position);
+                if (urlInput) {
+                    urlInput.value = '';
+                }
+                geocoder.coord2Address(position.getLng(), position.getLat(), (data, status) => {
+                    if (status === kakao.maps.services.Status.OK && data.length > 0) {
+                        const address = data[0].road_address?.address_name || data[0].address?.address_name || '';
+                        if (addressInput) {
+                            addressInput.value = address;
+                        }
+                        setMessage('지도에서 선택한 위치의 좌표와 주소를 입력했습니다.');
+                        return;
+                    }
+
+                    setMessage('지도에서 선택한 위치의 좌표를 입력했습니다. 주소는 직접 확인해주세요.');
+                });
             }
 
             function renderPlaces(placesData) {
@@ -426,6 +517,19 @@
                     searchPlaces();
                 }
             });
+
+            if (map) {
+                kakao.maps.event.addListener(map, 'click', (event) => selectMapPosition(event.latLng));
+                relayoutMap();
+            }
+
+            if (wizardStep) {
+                new MutationObserver(() => {
+                    if (!wizardStep.hidden) {
+                        relayoutMap();
+                    }
+                }).observe(wizardStep, { attributes: true, attributeFilter: ['hidden'] });
+            }
         });
         }
 
