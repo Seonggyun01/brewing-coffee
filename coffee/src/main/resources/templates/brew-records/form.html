@@ -94,7 +94,7 @@
 
                     <label>
                         <span>종료 시간(초)</span>
-                        <input type="number" min="5" step="5" th:field="*{brewTimeSec}" placeholder="예: 180">
+                        <input type="number" min="1" step="1" th:field="*{brewTimeSec}" placeholder="예: 142">
                     </label>
                 </div>
 
@@ -113,7 +113,7 @@
                             <input type="hidden" th:field="*{pourSteps[__${status.index}__].timeSec}" data-pour-time>
                             <label>
                                 <span>시간(초)</span>
-                                <input type="number" min="0" max="3600" step="5" th:value="${step.timeSec}" data-pour-time-display>
+                                <input type="number" min="0" max="3600" step="1" th:value="${step.timeSec}" data-pour-time-display>
                             </label>
                             <label>
                                 <span>단계 푸어링량(ml)</span>
@@ -128,7 +128,7 @@
                             <input type="hidden" data-pour-time>
                             <label>
                                 <span>시간(초)</span>
-                                <input type="number" min="0" max="3600" step="5" data-pour-time-display>
+                                <input type="number" min="0" max="3600" step="1" data-pour-time-display>
                             </label>
                             <label>
                                 <span>단계 푸어링량(ml)</span>
@@ -341,7 +341,7 @@
             const brewTimeInput = form.querySelector('[name="brewTimeSec"]');
             let selectedPourRow = null;
 
-            const snapTime = (timeSec) => Math.max(0, Math.round(timeSec / 5) * 5);
+            const snapTime = (timeSec) => Math.max(0, Math.round(timeSec));
             const getRows = () => Array.from(list.querySelectorAll('[data-pour-step]'));
             const parseNumber = (value) => {
                 const number = Number(value);

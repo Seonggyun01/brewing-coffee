@@ -47,7 +47,7 @@ public class BrewRecordForm {
     @Max(value = 5000, message = "분쇄도는 5000μm 이하로 입력해주세요.")
     private Integer grindSizeMicron;
 
-    @Min(value = 5, message = "종료 시간은 5초 이상이어야 합니다.")
+    @Min(value = 1, message = "종료 시간은 1초 이상이어야 합니다.")
     private Integer brewTimeSec;
 
     @Valid
