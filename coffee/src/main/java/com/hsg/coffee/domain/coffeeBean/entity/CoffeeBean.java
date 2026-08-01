@@ -215,7 +215,7 @@ public class CoffeeBean extends BaseTimeEntity {
         coffeeBean.purchasedDate = purchasedDate;
         coffeeBean.price = price;
         coffeeBean.weight = weight;
-        coffeeBean.status = status != null ? status : CoffeeBeanStatus.CURRENT;
+        coffeeBean.status = normalizeStatus(status, weight);
         coffeeBean.purchasePlace = purchasePlace;
         return coffeeBean;
     }
@@ -420,7 +420,7 @@ public class CoffeeBean extends BaseTimeEntity {
         this.purchasedDate = purchasedDate;
         this.price = price;
         this.weight = weight;
-        this.status = status != null ? status : CoffeeBeanStatus.CURRENT;
+        this.status = normalizeStatus(status, weight);
         this.purchasePlace = purchasePlace;
     }
 
@@ -492,5 +492,18 @@ public class CoffeeBean extends BaseTimeEntity {
             return null;
         }
         return originCountryCode.trim().toUpperCase();
+    }
+
+    private static CoffeeBeanStatus normalizeStatus(CoffeeBeanStatus status, Integer weight) {
+        if (status == CoffeeBeanStatus.CAFE) {
+            return CoffeeBeanStatus.CAFE;
+        }
+        if (weight != null && weight > 0) {
+            return CoffeeBeanStatus.CURRENT;
+        }
+        if (weight != null && weight == 0) {
+            return CoffeeBeanStatus.FINISHED;
+        }
+        return status != null ? status : CoffeeBeanStatus.CURRENT;
     }
 }

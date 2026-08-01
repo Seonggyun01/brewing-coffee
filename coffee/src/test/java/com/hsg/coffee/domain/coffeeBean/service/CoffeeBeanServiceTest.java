@@ -154,6 +154,7 @@ class CoffeeBeanServiceTest {
         updateForm.setProcessType(ProcessType.NATURAL);
         updateForm.setStatus(CoffeeBeanStatus.FINISHED);
         updateForm.setPrice(21000);
+        updateForm.setWeight(0);
         coffeeBeanService.update(id, updateForm);
 
         CoffeeBeanResponse response = coffeeBeanService.get(id);
@@ -163,6 +164,29 @@ class CoffeeBeanServiceTest {
         assertEquals(ProcessType.NATURAL, response.getProcessType());
         assertEquals(CoffeeBeanStatus.FINISHED, response.getStatus());
         assertEquals(21000, response.getPrice());
+        assertEquals(0, response.getWeight());
+    }
+
+    @Test
+    void updateFinishedBeanWeightToCurrent() {
+        Long id = coffeeBeanService.create(createForm("에티오피아 구지", "브루잉 로스터스"));
+
+        CoffeeBeanUpdateForm finishForm = coffeeBeanService.getUpdateForm(id);
+        finishForm.setStatus(CoffeeBeanStatus.FINISHED);
+        finishForm.setWeight(0);
+        coffeeBeanService.update(id, finishForm);
+
+        CoffeeBeanUpdateForm refillForm = coffeeBeanService.getUpdateForm(id);
+        refillForm.setWeight(80);
+        coffeeBeanService.update(id, refillForm);
+
+        CoffeeBeanResponse response = coffeeBeanService.get(id);
+
+        System.out.println("=== CoffeeBeanService 소진 원두 무게 수정 테스트 결과 ===");
+        System.out.println("상태: " + response.getStatus());
+        System.out.println("남은 무게: " + response.getWeight());
+        assertEquals(CoffeeBeanStatus.CURRENT, response.getStatus());
+        assertEquals(80, response.getWeight());
     }
 
     @Test
