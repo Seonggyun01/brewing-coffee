@@ -1763,6 +1763,12 @@ small {
     font-weight: 700;
 }
 
+.pour-chart__point-time-label {
+    fill: #7a4a2f;
+    font-size: 12px;
+    font-weight: 800;
+}
+
 .pour-chart__axis-text {
     color: var(--muted);
     fill: var(--muted);

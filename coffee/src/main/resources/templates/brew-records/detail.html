@@ -328,8 +328,10 @@
                 labelGroup.lastChild.textContent = amount;
             });
 
+            const pointTimeLabels = new Set(actualPoints.map((point) => Math.round(point.time)));
             [0, duration / 2, duration].forEach((time) => {
                 const x = xScale(time);
+                const roundedTime = Math.round(time);
                 grid.appendChild(createSvgElement('line', {
                     x1: x,
                     y1: padding.top,
@@ -337,13 +339,16 @@
                     y2: height - padding.bottom,
                     class: 'pour-chart__grid-line pour-chart__grid-line--vertical'
                 }));
+                if (pointTimeLabels.has(roundedTime)) {
+                    return;
+                }
                 labelGroup.appendChild(createSvgElement('text', {
                     x,
-                    y: height - padding.bottom + 24,
+                    y: height - padding.bottom + 34,
                     class: 'pour-chart__axis-text',
                     'text-anchor': 'middle'
                 }));
-                labelGroup.lastChild.textContent = `${Math.round(time)}초`;
+                labelGroup.lastChild.textContent = `${roundedTime}초`;
             });
 
             const smoothPath = createSmoothPath(points);
@@ -365,6 +370,15 @@
                 });
                 label.textContent = `${point.cumulativeAmount}ml`;
                 pointGroup.appendChild(label);
+
+                const timeLabel = createSvgElement('text', {
+                    x: point.x,
+                    y: height - padding.bottom + 18,
+                    class: 'pour-chart__point-time-label',
+                    'text-anchor': 'middle'
+                });
+                timeLabel.textContent = `${Math.round(point.time)}초`;
+                labelGroup.appendChild(timeLabel);
             });
         }
 
