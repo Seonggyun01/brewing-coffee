@@ -28,7 +28,8 @@
             <form th:action="@{/coffee-beans/card-extraction}"
                   method="post"
                   enctype="multipart/form-data"
-                  class="card-extraction-form">
+                  class="card-extraction-form"
+                  data-card-extraction-form>
                 <label class="card-extraction-file">
                     <span>원두 카드 이미지</span>
                     <input type="file"
@@ -601,6 +602,13 @@
             renderSelection();
         });
     </script>
+    <div class="model-wait-overlay" data-model-wait-overlay hidden role="status" aria-live="polite">
+        <div class="model-wait-overlay__panel">
+            <span class="model-wait-overlay__spinner" aria-hidden="true"></span>
+            <strong>응답 대기 중입니다</strong>
+            <p>이미지를 읽고 원두 정보를 정리하고 있어요.</p>
+        </div>
+    </div>
     <script th:src="@{/js/form-wizard.js(v='title-cancel-20260731')}"></script>
 </body>
 </html>

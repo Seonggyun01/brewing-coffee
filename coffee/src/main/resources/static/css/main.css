@@ -597,6 +597,63 @@ tr:last-child td {
     line-height: 1.6;
 }
 
+.model-wait-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.84);
+    backdrop-filter: blur(8px);
+}
+
+.model-wait-overlay[hidden] {
+    display: none;
+}
+
+.model-wait-overlay__panel {
+    width: min(360px, 100%);
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    padding: 28px 24px;
+    border: 1px solid #e2d8d1;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 24px 60px rgba(72, 52, 34, 0.18);
+    text-align: center;
+}
+
+.model-wait-overlay__panel strong {
+    font-size: 20px;
+}
+
+.model-wait-overlay__panel p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+.model-wait-overlay__spinner {
+    width: 42px;
+    height: 42px;
+    border: 3px solid #eadfd8;
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: model-wait-spin 0.85s linear infinite;
+}
+
+.is-model-waiting {
+    cursor: progress;
+}
+
+@keyframes model-wait-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .form-section {
     display: grid;
     gap: 18px;

@@ -46,3 +46,21 @@ document.querySelectorAll('[data-form-wizard]').forEach((form) => {
 
     setActiveStep(0, false);
 });
+
+document.querySelectorAll('[data-card-extraction-form]').forEach((form) => {
+    const overlay = document.querySelector('[data-model-wait-overlay]');
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    form.addEventListener('submit', () => {
+        form.setAttribute('aria-busy', 'true');
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.dataset.originalText = submitButton.textContent || '';
+            submitButton.textContent = '분석 중...';
+        }
+        if (overlay) {
+            overlay.hidden = false;
+            document.body.classList.add('is-model-waiting');
+        }
+    });
+});
