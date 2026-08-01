@@ -14,6 +14,7 @@ import com.hsg.coffee.domain.brewRecord.entity.BrewRecord;
 import com.hsg.coffee.domain.brewRecord.entity.BrewTemperatureType;
 import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 import com.hsg.coffee.domain.coffeeBean.dto.CustomFlavorNoteResponse;
+import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
 
 import lombok.Getter;
 
@@ -24,6 +25,8 @@ public class BrewRecordResponse {
     private final Long coffeeBeanId;
     private final String coffeeBeanName;
     private final String roastery;
+    private final Long purchasePlaceId;
+    private final String purchasePlaceName;
     private final LocalDate brewedDate;
     private final BrewMethod brewMethod;
     private final BrewTemperatureType temperatureType;
@@ -54,6 +57,9 @@ public class BrewRecordResponse {
         this.coffeeBeanId = brewRecord.getCoffeeBean().getId();
         this.coffeeBeanName = brewRecord.getCoffeeBean().getName();
         this.roastery = brewRecord.getCoffeeBean().getRoastery();
+        PurchasePlace purchasePlace = brewRecord.getCoffeeBean().getPurchasePlace();
+        this.purchasePlaceId = purchasePlace != null ? purchasePlace.getId() : null;
+        this.purchasePlaceName = purchasePlace != null ? purchasePlace.getName() : null;
         this.brewedDate = brewRecord.getBrewedDate();
         this.brewMethod = brewRecord.getBrewMethod();
         this.temperatureType = brewRecord.getTemperatureType();

@@ -18,6 +18,11 @@ public interface BrewRecordRepository extends JpaRepository<BrewRecord, Long> {
 
     List<BrewRecord> findByCoffeeBeanStatusOrderByBrewedDateDescIdDesc(CoffeeBeanStatus status);
 
+    List<BrewRecord> findByCoffeeBeanStatusAndCoffeeBeanPurchasePlaceIdInOrderByBrewedDateDescIdDesc(
+            CoffeeBeanStatus status,
+            List<Long> purchasePlaceIds
+    );
+
     @Query("select br.coffeeBean.originCountryCode, count(br) from BrewRecord br "
             + "where br.coffeeBean.originCountryCode is not null group by br.coffeeBean.originCountryCode")
     List<Object[]> countBrewRecordsGroupByOriginCountryCode();

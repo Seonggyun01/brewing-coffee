@@ -46,8 +46,13 @@ public class CafeFilterCoffeeController {
     private String kakaoJavascriptKey;
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("cafeFilterCoffees", cafeFilterCoffeeService.getAll());
+    public String list(
+            @RequestParam(required = false) Long cafeId,
+            Model model
+    ) {
+        model.addAttribute("cafeFilterCoffees", cafeFilterCoffeeService.getByCafe(cafeId));
+        model.addAttribute("filterCafes", cafeFilterCoffeeService.getFilterCafes());
+        model.addAttribute("selectedCafeId", cafeId);
         return "cafe-filter-coffees/list";
     }
 

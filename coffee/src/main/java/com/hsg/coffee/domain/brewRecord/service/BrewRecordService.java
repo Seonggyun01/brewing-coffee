@@ -86,6 +86,20 @@ public class BrewRecordService {
                 .toList();
     }
 
+    public List<BrewRecordResponse> getCafeRecordsByPurchasePlaces(List<Long> purchasePlaceIds) {
+        if (purchasePlaceIds == null || purchasePlaceIds.isEmpty()) {
+            return List.of();
+        }
+
+        return brewRecordRepository.findByCoffeeBeanStatusAndCoffeeBeanPurchasePlaceIdInOrderByBrewedDateDescIdDesc(
+                        CoffeeBeanStatus.CAFE,
+                        purchasePlaceIds
+                )
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     public BrewRecordResponse getCafeRecord(Long id) {
         BrewRecord brewRecord = findEntity(id);
         if (brewRecord.getCoffeeBean().getStatus() != CoffeeBeanStatus.CAFE) {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>카페 필터커피 - BrewLog</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='cafe-filter-cards-20260731')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='cafe-filter-cafe-filter-20260801')}">
 </head>
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('cafe-filter')}"></header>
@@ -19,6 +19,19 @@
 
         <p class="flash" th:if="${message}" th:text="${message}"></p>
 
+        <section class="cafe-filter-toolbar" th:if="${!#lists.isEmpty(filterCafes)}" aria-label="카페 필터">
+            <a th:href="@{/cafe-filter-coffees}"
+               th:classappend="${selectedCafeId == null} ? ' is-active'">
+                전체
+            </a>
+            <a th:each="cafe : ${filterCafes}"
+               th:href="@{/cafe-filter-coffees(cafeId=${cafe.id})}"
+               th:classappend="${selectedCafeId != null && selectedCafeId == cafe.id} ? ' is-active'"
+               th:text="${cafe.name}">
+                카페
+            </a>
+        </section>
+
         <section class="cafe-filter-list" th:if="${!#lists.isEmpty(cafeFilterCoffees)}">
             <article class="cafe-filter-card" th:each="record : ${cafeFilterCoffees}">
                 <a class="cafe-filter-card__link" th:href="@{/cafe-filter-coffees/{id}(id=${record.id})}">
@@ -26,6 +39,7 @@
                     <div class="cafe-filter-card__body">
                         <span th:text="${record.brewedDate != null ? record.brewedDate : '날짜 미기록'}">2026-07-31</span>
                         <strong th:text="${record.coffeeBeanName}">에티오피아 구지</strong>
+                        <p th:text="${record.purchasePlaceName ?: '카페 미기록'}">카페</p>
                         <p th:text="${record.roastery ?: '로스터리 미기록'}">로스터리</p>
                         <div>
                             <small th:text="${record.temperatureType != null ? record.temperatureType.displayName : '핫/아이스 미기록'}">핫</small>
@@ -37,7 +51,7 @@
         </section>
 
         <section class="empty-panel" th:if="${#lists.isEmpty(cafeFilterCoffees)}">
-            <p>카페에서 마신 필터커피 기록이 없습니다.</p>
+            <p th:text="${selectedCafeId != null ? '선택한 카페의 필터커피 기록이 없습니다.' : '카페에서 마신 필터커피 기록이 없습니다.'}">카페에서 마신 필터커피 기록이 없습니다.</p>
             <a class="button button--secondary" th:href="@{/cafe-filter-coffees/new}">첫 기록 남기기</a>
         </section>
     </main>

@@ -12,7 +12,9 @@ import com.hsg.coffee.domain.cafeFilterCoffee.dto.CafeFilterCoffeeForm;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCreateForm;
 import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBeanStatus;
 import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanService;
+import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
+import com.hsg.coffee.domain.purchasePlace.service.PurchasePlaceService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,9 +25,22 @@ public class CafeFilterCoffeeService {
 
     private final CoffeeBeanService coffeeBeanService;
     private final BrewRecordService brewRecordService;
+    private final PurchasePlaceService purchasePlaceService;
 
     public List<BrewRecordResponse> getAll() {
         return brewRecordService.getCafeRecords();
+    }
+
+    public List<BrewRecordResponse> getByCafe(Long cafeId) {
+        if (cafeId == null) {
+            return getAll();
+        }
+
+        return brewRecordService.getCafeRecordsByPurchasePlaces(purchasePlaceService.getEquivalentCafePlaceIds(cafeId));
+    }
+
+    public List<PurchasePlace> getFilterCafes() {
+        return purchasePlaceService.getCafePlacesWithFilterRecords();
     }
 
     public BrewRecordResponse get(Long id) {

@@ -1084,6 +1084,41 @@ small {
     align-items: stretch;
 }
 
+.cafe-filter-toolbar {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 4px 0 14px;
+    scrollbar-width: none;
+}
+
+.cafe-filter-toolbar::-webkit-scrollbar {
+    display: none;
+}
+
+.cafe-filter-toolbar a {
+    display: inline-flex;
+    flex: 0 0 auto;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--muted);
+    background: #ffffff;
+    font-size: 14px;
+    font-weight: 850;
+    text-decoration: none;
+    box-shadow: 0 8px 20px rgba(68, 48, 31, 0.05);
+}
+
+.cafe-filter-toolbar a.is-active {
+    border-color: var(--accent);
+    color: #ffffff;
+    background: var(--accent);
+}
+
 .cafe-filter-card {
     min-width: 0;
     border: 1px solid var(--line);
