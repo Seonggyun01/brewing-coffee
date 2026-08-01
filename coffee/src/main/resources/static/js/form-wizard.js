@@ -10,6 +10,29 @@ document.querySelectorAll('[data-form-wizard]').forEach((form) => {
         return;
     }
 
+    function findInvalidControl() {
+        return Array.from(form.querySelectorAll('input:not([type="hidden"]), select, textarea'))
+            .find((control) => !control.disabled && typeof control.checkValidity === 'function' && !control.checkValidity());
+    }
+
+    function showControlStep(control) {
+        const controlStep = control.closest('[data-wizard-step]');
+        const controlStepIndex = steps.indexOf(controlStep);
+
+        if (controlStepIndex !== -1) {
+            setActiveStep(controlStepIndex);
+        }
+
+        window.requestAnimationFrame(() => {
+            if (typeof control.reportValidity === 'function') {
+                control.reportValidity();
+            }
+            if (typeof control.focus === 'function') {
+                control.focus({ preventScroll: true });
+            }
+        });
+    }
+
     function setActiveStep(index, shouldScroll = true) {
         activeIndex = Math.min(Math.max(index, 0), steps.length - 1);
 
@@ -43,6 +66,21 @@ document.querySelectorAll('[data-form-wizard]').forEach((form) => {
     });
     prevButton?.addEventListener('click', () => setActiveStep(activeIndex - 1));
     nextButton?.addEventListener('click', () => setActiveStep(activeIndex + 1));
+    submitButton?.addEventListener('click', (event) => {
+        const invalidControl = findInvalidControl();
+
+        if (!invalidControl) {
+            return;
+        }
+
+        event.preventDefault();
+        showControlStep(invalidControl);
+    });
+    form.addEventListener('invalid', (event) => {
+        if (event.target instanceof HTMLElement) {
+            showControlStep(event.target);
+        }
+    }, true);
 
     setActiveStep(0, false);
 });
