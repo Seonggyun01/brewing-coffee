@@ -2088,6 +2088,21 @@ small {
     gap: 8px;
 }
 
+.kakao-place-map {
+    min-height: 260px;
+    border: 1px solid rgba(92, 46, 31, 0.16);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f8f5f2;
+}
+
+.kakao-place-search__map-help {
+    margin: -4px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
 .kakao-place-result {
     display: grid;
     gap: 4px;

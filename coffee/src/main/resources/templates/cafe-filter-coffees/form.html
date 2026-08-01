@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>카페 필터커피 등록 - BrewLog</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='title-cancel-20260731')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='kakao-map-picker-20260801')}">
 </head>
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('cafe-filter')}"></header>
@@ -191,6 +191,13 @@
                             검색 결과를 선택하면 아래 카페 정보가 자동으로 입력됩니다.
                         </p>
                         <div class="kakao-place-results" data-kakao-place-results></div>
+                        <div class="kakao-place-map"
+                             data-kakao-place-map
+                             th:if="${hasKakaoMapKey}"
+                             aria-label="카페 위치 선택 지도"></div>
+                        <p class="kakao-place-search__map-help" th:if="${hasKakaoMapKey}">
+                            지도에서 위치를 클릭하면 좌표와 주소가 입력됩니다. 장소 링크는 검색 결과를 선택할 때 채워집니다.
+                        </p>
                     </div>
 
                     <div class="form__grid">
@@ -300,6 +307,8 @@
             const searchButton = box.querySelector('[data-kakao-place-search]');
             const results = box.querySelector('[data-kakao-place-results]');
             const message = box.querySelector('[data-kakao-place-message]');
+            const mapCanvas = box.querySelector('[data-kakao-place-map]');
+            const wizardStep = box.closest('[data-wizard-step]');
             const form = box.closest('form');
             const nameInput = form.querySelector('#cafeName');
             const addressInput = form.querySelector('#cafeAddress');
@@ -307,8 +316,9 @@
             const latitudeInput = form.querySelector('#cafeLatitude');
             const longitudeInput = form.querySelector('#cafeLongitude');
             const hasKakaoPlaces = window.kakao?.maps?.services?.Places;
+            const hasKakaoMap = window.kakao?.maps?.Map;
 
-            if (!hasKakaoPlaces) {
+            if (!hasKakaoPlaces || !hasKakaoMap) {
                 if (message) {
                     message.textContent = '카카오맵 스크립트를 불러오지 못했습니다. 키 설정과 도메인 등록을 확인해주세요.';
                 }
@@ -319,6 +329,26 @@
             }
 
             const places = new kakao.maps.services.Places();
+            const geocoder = new kakao.maps.services.Geocoder();
+            const defaultPosition = new kakao.maps.LatLng(37.566826, 126.9786567);
+            const initialLatitude = Number(latitudeInput.value);
+            const initialLongitude = Number(longitudeInput.value);
+            const hasInitialPosition = Number.isFinite(initialLatitude) && Number.isFinite(initialLongitude);
+            const initialPosition = hasInitialPosition
+                ? new kakao.maps.LatLng(initialLatitude, initialLongitude)
+                : defaultPosition;
+            const map = mapCanvas
+                ? new kakao.maps.Map(mapCanvas, {
+                    center: initialPosition,
+                    level: hasInitialPosition ? 4 : 7
+                })
+                : null;
+            const marker = map
+                ? new kakao.maps.Marker({
+                    position: initialPosition,
+                    map: hasInitialPosition ? map : null
+                })
+                : null;
 
             function setMessage(text) {
                 if (message) {
@@ -326,21 +356,78 @@
                 }
             }
 
+            function escapeHtml(value) {
+                return String(value || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function relayoutMap() {
+                if (!map) {
+                    return;
+                }
+
+                window.setTimeout(() => {
+                    const position = marker?.getMap() ? marker.getPosition() : map.getCenter();
+                    map.relayout();
+                    map.setCenter(position);
+                }, 0);
+            }
+
+            function setMapPosition(position, level = 4) {
+                if (!map || !marker) {
+                    return;
+                }
+
+                marker.setPosition(position);
+                marker.setMap(map);
+                map.setLevel(level);
+                map.setCenter(position);
+                relayoutMap();
+            }
+
+            function applyPosition(position) {
+                latitudeInput.value = position.getLat().toFixed(12);
+                longitudeInput.value = position.getLng().toFixed(12);
+                setMapPosition(position);
+            }
+
             function applyPlace(place) {
+                const latitude = Number(place.y);
+                const longitude = Number(place.x);
                 nameInput.value = place.place_name || '';
                 addressInput.value = place.road_address_name || place.address_name || '';
                 urlInput.value = place.place_url || '';
-                latitudeInput.value = place.y || '';
-                longitudeInput.value = place.x || '';
+                if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+                    applyPosition(new kakao.maps.LatLng(latitude, longitude));
+                }
                 setMessage(`${place.place_name} 정보를 입력했습니다.`);
                 results.innerHTML = '';
+            }
+
+            function applyMapClick(position) {
+                applyPosition(position);
+                urlInput.value = '';
+                geocoder.coord2Address(position.getLng(), position.getLat(), (data, status) => {
+                    if (status === kakao.maps.services.Status.OK && data.length > 0) {
+                        const address = data[0].road_address?.address_name || data[0].address?.address_name || '';
+                        addressInput.value = address;
+                        setMessage('지도에서 선택한 위치의 좌표와 주소를 입력했습니다.');
+                        return;
+                    }
+
+                    setMessage('지도에서 선택한 위치의 좌표를 입력했습니다. 주소는 직접 확인해주세요.');
+                });
             }
 
             function renderPlaces(data) {
                 results.innerHTML = data.slice(0, 5).map((place, index) => `
                     <button class="kakao-place-result" type="button" data-place-index="${index}">
-                        <strong>${place.place_name}</strong>
-                        <span>${place.road_address_name || place.address_name || '주소 정보 없음'}</span>
+                        <strong>${escapeHtml(place.place_name)}</strong>
+                        <span>${escapeHtml(place.road_address_name || place.address_name || '주소 정보 없음')}</span>
                     </button>
                 `).join('');
 
@@ -368,6 +455,26 @@
                     renderPlaces(data);
                 });
             });
+
+            queryInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    searchButton.click();
+                }
+            });
+
+            if (map) {
+                kakao.maps.event.addListener(map, 'click', (event) => applyMapClick(event.latLng));
+                relayoutMap();
+            }
+
+            if (wizardStep) {
+                new MutationObserver(() => {
+                    if (!wizardStep.hidden) {
+                        relayoutMap();
+                    }
+                }).observe(wizardStep, { attributes: true, attributeFilter: ['hidden'] });
+            }
         });
         }
 
