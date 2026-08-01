@@ -31,7 +31,7 @@ brewlog:
   dummy-data:
     enabled: ${BREWLOG_DUMMY_DATA_ENABLED:false}
   ocr:
-    provider: ${BREWLOG_OCR_PROVIDER:paddleocr}
+    provider: ${BREWLOG_OCR_PROVIDER:local-best}
     paddle:
       python-executable: ${BREWLOG_PADDLE_OCR_PYTHON:python3}
       script-path: ${BREWLOG_PADDLE_OCR_SCRIPT:scripts/paddle_ocr.py}
@@ -39,6 +39,9 @@ brewlog:
       timeout-seconds: ${BREWLOG_PADDLE_OCR_TIMEOUT_SECONDS:90}
       minimum-text-length: ${BREWLOG_PADDLE_OCR_MIN_TEXT_LENGTH:20}
       fallback-enabled: ${BREWLOG_PADDLE_OCR_FALLBACK_ENABLED:true}
+      language: ${BREWLOG_PADDLE_OCR_LANG:korean}
+      detection-model: ${BREWLOG_PADDLE_OCR_DETECTION_MODEL:PP-OCRv5_server_det}
+      recognition-model: ${BREWLOG_PADDLE_OCR_RECOGNITION_MODEL:korean_PP-OCRv5_mobile_rec}
   llm:
     provider: ${BREWLOG_LLM_PROVIDER:ollama}
     ollama:

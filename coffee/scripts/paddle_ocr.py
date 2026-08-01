@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -22,9 +23,14 @@ def main() -> int:
         return 3
 
     started_at = time.time()
+    language = os.environ.get("BREWLOG_PADDLE_OCR_LANG", "korean")
+    detection_model = os.environ.get("BREWLOG_PADDLE_OCR_DETECTION_MODEL", "PP-OCRv5_server_det")
+    recognition_model = os.environ.get("BREWLOG_PADDLE_OCR_RECOGNITION_MODEL", "korean_PP-OCRv5_mobile_rec")
     try:
         ocr = PaddleOCR(
-            lang="korean",
+            lang=language,
+            text_detection_model_name=detection_model,
+            text_recognition_model_name=recognition_model,
             use_doc_orientation_classify=False,
             use_doc_unwarping=False,
             use_textline_orientation=False,
@@ -52,6 +58,10 @@ def main() -> int:
     print(json.dumps({
         "text": "\n".join(item["text"] for item in items),
         "items": items,
+        "engine": "paddleocr",
+        "language": language,
+        "detectionModel": detection_model,
+        "recognitionModel": recognition_model,
         "seconds": round(time.time() - started_at, 3),
     }, ensure_ascii=False))
     return 0

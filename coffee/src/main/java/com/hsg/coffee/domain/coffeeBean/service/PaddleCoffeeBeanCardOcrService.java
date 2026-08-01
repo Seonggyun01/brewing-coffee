@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,7 +21,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 @Service
-@ConditionalOnProperty(name = "brewlog.ocr.provider", havingValue = "paddleocr")
+@ConditionalOnExpression("'${brewlog.ocr.provider:local-best}' == 'local-best' || '${brewlog.ocr.provider:local-best}' == 'paddleocr'")
 public class PaddleCoffeeBeanCardOcrService implements CoffeeBeanCardOcrService {
 
     private static final Logger log = LoggerFactory.getLogger(PaddleCoffeeBeanCardOcrService.class);
@@ -35,6 +35,9 @@ public class PaddleCoffeeBeanCardOcrService implements CoffeeBeanCardOcrService 
     private final int timeoutSeconds;
     private final int minimumTextLength;
     private final boolean fallbackEnabled;
+    private final String language;
+    private final String detectionModel;
+    private final String recognitionModel;
 
     public PaddleCoffeeBeanCardOcrService(
             CoffeeBeanCardImagePreprocessor imagePreprocessor,
@@ -45,7 +48,10 @@ public class PaddleCoffeeBeanCardOcrService implements CoffeeBeanCardOcrService 
             @Value("${brewlog.ocr.paddle.cache-directory:${user.home}}") String cacheDirectory,
             @Value("${brewlog.ocr.paddle.timeout-seconds:90}") int timeoutSeconds,
             @Value("${brewlog.ocr.paddle.minimum-text-length:20}") int minimumTextLength,
-            @Value("${brewlog.ocr.paddle.fallback-enabled:true}") boolean fallbackEnabled
+            @Value("${brewlog.ocr.paddle.fallback-enabled:true}") boolean fallbackEnabled,
+            @Value("${brewlog.ocr.paddle.language:korean}") String language,
+            @Value("${brewlog.ocr.paddle.detection-model:PP-OCRv5_server_det}") String detectionModel,
+            @Value("${brewlog.ocr.paddle.recognition-model:korean_PP-OCRv5_mobile_rec}") String recognitionModel
     ) {
         this.imagePreprocessor = imagePreprocessor;
         this.googleVisionClient = googleVisionClient;
@@ -56,6 +62,9 @@ public class PaddleCoffeeBeanCardOcrService implements CoffeeBeanCardOcrService 
         this.timeoutSeconds = timeoutSeconds;
         this.minimumTextLength = minimumTextLength;
         this.fallbackEnabled = fallbackEnabled;
+        this.language = language;
+        this.detectionModel = detectionModel;
+        this.recognitionModel = recognitionModel;
     }
 
     @Override
@@ -88,9 +97,18 @@ public class PaddleCoffeeBeanCardOcrService implements CoffeeBeanCardOcrService 
             ProcessBuilder processBuilder = new ProcessBuilder(command(tempImage));
             processBuilder.environment().put("HOME", cacheDirectory.toString());
             processBuilder.environment().put("XDG_CACHE_HOME", cacheDirectory.toString());
+            processBuilder.environment().put("BREWLOG_PADDLE_OCR_LANG", language);
+            processBuilder.environment().put("BREWLOG_PADDLE_OCR_DETECTION_MODEL", detectionModel);
+            processBuilder.environment().put("BREWLOG_PADDLE_OCR_RECOGNITION_MODEL", recognitionModel);
             processBuilder.redirectErrorStream(false);
 
-            log.info("PaddleOCR request started. filename={}, script={}", preparedImage.filename(), scriptPath);
+            log.info(
+                    "PaddleOCR request started. filename={}, script={}, detectionModel={}, recognitionModel={}",
+                    preparedImage.filename(),
+                    scriptPath,
+                    detectionModel,
+                    recognitionModel
+            );
             Process process = processBuilder.start();
             boolean finished = process.waitFor(timeoutSeconds, TimeUnit.SECONDS);
             String stdout = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
