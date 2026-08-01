@@ -102,7 +102,10 @@
                     <span th:each="note : ${brewRecord.flavorNotes}"
                           th:style="'border-color:' + ${note.color} + '; background:' + ${note.color} + '22;'"
                           th:text="${note.displayName}">레몬</span>
-                    <span class="selected-tags__custom" th:each="note : ${brewRecord.customFlavorNotes}" th:text="${note}">청포도</span>
+                    <span class="selected-tags__custom"
+                          th:each="note : ${brewRecord.customFlavorNoteDetails}"
+                          th:style="'border-color:' + ${note.color()} + '; background:' + ${note.color()} + '22;'"
+                          th:text="${note.name()}">청포도</span>
                 </div>
                 <p th:if="${#lists.isEmpty(brewRecord.flavorNotes) && #lists.isEmpty(brewRecord.customFlavorNotes)}">선택한 향미 노트가 없습니다.</p>
 

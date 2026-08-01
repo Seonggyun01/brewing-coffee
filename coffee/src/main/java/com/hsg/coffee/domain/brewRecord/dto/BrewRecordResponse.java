@@ -3,6 +3,7 @@ package com.hsg.coffee.domain.brewRecord.dto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,6 +13,7 @@ import com.hsg.coffee.domain.brewRecord.entity.BrewMethod;
 import com.hsg.coffee.domain.brewRecord.entity.BrewRecord;
 import com.hsg.coffee.domain.brewRecord.entity.BrewTemperatureType;
 import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
+import com.hsg.coffee.domain.coffeeBean.dto.CustomFlavorNoteResponse;
 
 import lombok.Getter;
 
@@ -41,12 +43,13 @@ public class BrewRecordResponse {
     private final List<FlavorNote> flavorNotes;
     private final List<BrewFeelingTag> feelingTags;
     private final List<String> customFlavorNotes;
+    private final List<CustomFlavorNoteResponse> customFlavorNoteDetails;
     private final List<String> customFeelingTags;
     private final String memo;
     private final LocalDateTime createdAt;
     private final LocalDateTime updatedAt;
 
-    private BrewRecordResponse(BrewRecord brewRecord) {
+    private BrewRecordResponse(BrewRecord brewRecord, List<CustomFlavorNoteResponse> customFlavorNoteDetails) {
         this.id = brewRecord.getId();
         this.coffeeBeanId = brewRecord.getCoffeeBean().getId();
         this.coffeeBeanName = brewRecord.getCoffeeBean().getName();
@@ -72,6 +75,7 @@ public class BrewRecordResponse {
         this.flavorNotes = List.copyOf(brewRecord.getCoffeeBean().getFlavorNotes());
         this.feelingTags = List.copyOf(brewRecord.getFeelingTags());
         this.customFlavorNotes = List.copyOf(brewRecord.getCoffeeBean().getCustomFlavorNotes());
+        this.customFlavorNoteDetails = customFlavorNoteDetails == null ? List.of() : List.copyOf(customFlavorNoteDetails);
         this.customFeelingTags = List.copyOf(brewRecord.getCustomFeelingTags());
         this.memo = brewRecord.getMemo();
         this.createdAt = brewRecord.getCreatedAt();
@@ -79,18 +83,26 @@ public class BrewRecordResponse {
     }
 
     public static BrewRecordResponse from(BrewRecord brewRecord) {
-        return new BrewRecordResponse(brewRecord);
+        return new BrewRecordResponse(brewRecord, List.of());
+    }
+
+    public static BrewRecordResponse from(BrewRecord brewRecord, List<CustomFlavorNoteResponse> customFlavorNoteDetails) {
+        return new BrewRecordResponse(brewRecord, customFlavorNoteDetails);
     }
 
     public String getFlavorGradientStyle() {
-        if (flavorNotes.isEmpty()) {
+        if (flavorNotes.isEmpty() && customFlavorNoteDetails.isEmpty()) {
             return "background: #ded4c8;";
         }
 
-        String colors = flavorNotes.stream()
+        List<String> colors = new ArrayList<>();
+        colors.addAll(flavorNotes.stream()
                 .map(FlavorNote::getColor)
-                .collect(Collectors.joining(", "));
-        return "background: linear-gradient(90deg, " + colors + ");";
+                .toList());
+        colors.addAll(customFlavorNoteDetails.stream()
+                .map(CustomFlavorNoteResponse::color)
+                .toList());
+        return "background: linear-gradient(90deg, " + String.join(", ", colors) + ");";
     }
 
     public String getFlavorNoteSummary() {

@@ -17,6 +17,7 @@ import com.hsg.coffee.domain.brewRecord.repository.BrewRecordRepository;
 import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBean;
 import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBeanStatus;
 import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
+import com.hsg.coffee.domain.coffeeBean.service.CustomFlavorNoteService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,6 +30,7 @@ public class BrewRecordService {
 
     private final BrewRecordRepository brewRecordRepository;
     private final CoffeeBeanRepository coffeeBeanRepository;
+    private final CustomFlavorNoteService customFlavorNoteService;
 
     @Transactional
     public Long create(BrewRecordForm form) {
@@ -60,27 +62,27 @@ public class BrewRecordService {
     }
 
     public BrewRecordResponse get(Long id) {
-        return BrewRecordResponse.from(findEntity(id));
+        return toResponse(findEntity(id));
     }
 
     public List<BrewRecordResponse> getAll() {
         return brewRecordRepository.findByCoffeeBeanStatusNotOrderByBrewedDateDescIdDesc(CoffeeBeanStatus.CAFE)
                 .stream()
-                .map(BrewRecordResponse::from)
+                .map(this::toResponse)
                 .toList();
     }
 
     public List<BrewRecordResponse> getByCoffeeBean(Long coffeeBeanId) {
         return brewRecordRepository.findByCoffeeBeanIdOrderByBrewedDateDescIdDesc(coffeeBeanId)
                 .stream()
-                .map(BrewRecordResponse::from)
+                .map(this::toResponse)
                 .toList();
     }
 
     public List<BrewRecordResponse> getCafeRecords() {
         return brewRecordRepository.findByCoffeeBeanStatusOrderByBrewedDateDescIdDesc(CoffeeBeanStatus.CAFE)
                 .stream()
-                .map(BrewRecordResponse::from)
+                .map(this::toResponse)
                 .toList();
     }
 
@@ -89,7 +91,7 @@ public class BrewRecordService {
         if (brewRecord.getCoffeeBean().getStatus() != CoffeeBeanStatus.CAFE) {
             throw new IllegalArgumentException("카페 필터커피 기록을 찾을 수 없습니다. id=" + id);
         }
-        return BrewRecordResponse.from(brewRecord);
+        return toResponse(brewRecord);
     }
 
     public BrewRecordForm getUpdateForm(Long id) {
@@ -143,6 +145,13 @@ public class BrewRecordService {
     private CoffeeBean findCoffeeBean(Long id) {
         return coffeeBeanRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("원두를 찾을 수 없습니다. id=" + id));
+    }
+
+    private BrewRecordResponse toResponse(BrewRecord brewRecord) {
+        return BrewRecordResponse.from(
+                brewRecord,
+                customFlavorNoteService.findDetails(brewRecord.getCoffeeBean().getCustomFlavorNotes())
+        );
     }
 
     private List<String> parseTags(String tagsText) {

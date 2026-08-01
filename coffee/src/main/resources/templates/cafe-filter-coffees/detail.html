@@ -43,7 +43,10 @@
                     <span th:each="note : ${cafeFilterCoffee.flavorNotes}"
                           th:style="'border-color:' + ${note.color} + '; background:' + ${note.color} + '22;'"
                           th:text="${note.displayName}">레몬</span>
-                    <span class="selected-tags__custom" th:each="note : ${cafeFilterCoffee.customFlavorNotes}" th:text="${note}">청포도</span>
+                    <span class="selected-tags__custom"
+                          th:each="note : ${cafeFilterCoffee.customFlavorNoteDetails}"
+                          th:style="'border-color:' + ${note.color()} + '; background:' + ${note.color()} + '22;'"
+                          th:text="${note.name()}">청포도</span>
                 </div>
             </section>
 

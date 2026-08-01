@@ -28,6 +28,7 @@ public class CoffeeBeanService {
 
     private final CoffeeBeanRepository coffeeBeanRepository;
     private final PurchasePlaceService purchasePlaceService;
+    private final CustomFlavorNoteService customFlavorNoteService;
 
     @Transactional
     public Long create(CoffeeBeanCreateForm form) {
@@ -43,6 +44,7 @@ public class CoffeeBeanService {
         );
         CountryInfo originCountry = CountryInfo.findByCode(form.getOriginCountryCode());
         String country = originCountry != null ? originCountry.getEnglishName() : clean(form.getCountry());
+        List<String> customFlavorNotes = customFlavorNoteService.ensureAll(parseTags(form.getCustomFlavorNotesText()));
 
         CoffeeBean coffeeBean = coffeeBeanRepository.save(CoffeeBean.create(
                 clean(form.getName()),
@@ -55,7 +57,7 @@ public class CoffeeBeanService {
                 clean(form.getAltitude()),
                 form.getProcessType(),
                 form.getFlavorNotes(),
-                parseTags(form.getCustomFlavorNotesText()),
+                customFlavorNotes,
                 clean(form.getMemo()),
                 form.getRoastedDate(),
                 form.getPurchasedDate(),
@@ -68,13 +70,13 @@ public class CoffeeBeanService {
     }
 
     public CoffeeBeanResponse get(Long id) {
-        return CoffeeBeanResponse.from(findEntity(id));
+        return toResponse(findEntity(id));
     }
 
     public List<CoffeeBeanResponse> getAll() {
         return coffeeBeanRepository.findAllByOrderByIdDesc()
                 .stream()
-                .map(CoffeeBeanResponse::from)
+                .map(this::toResponse)
                 .toList();
     }
 
@@ -82,7 +84,7 @@ public class CoffeeBeanService {
         return coffeeBeanRepository.findAllByOrderByIdDesc()
                 .stream()
                 .filter(coffeeBean -> coffeeBean.getStatus() != CoffeeBeanStatus.CAFE)
-                .map(CoffeeBeanResponse::from)
+                .map(this::toResponse)
                 .toList();
     }
 
@@ -109,7 +111,7 @@ public class CoffeeBeanService {
         }
 
         return coffeeBeans.stream()
-                .map(CoffeeBeanResponse::from)
+                .map(this::toResponse)
                 .toList();
     }
 
@@ -120,7 +122,7 @@ public class CoffeeBeanService {
 
         return coffeeBeanRepository.findByRoasteryContainingIgnoreCaseOrderByIdDesc(keyword.trim())
                 .stream()
-                .map(CoffeeBeanResponse::from)
+                .map(this::toResponse)
                 .toList();
     }
 
@@ -143,6 +145,7 @@ public class CoffeeBeanService {
         );
         CountryInfo originCountry = CountryInfo.findByCode(form.getOriginCountryCode());
         String country = originCountry != null ? originCountry.getEnglishName() : clean(form.getCountry());
+        List<String> customFlavorNotes = customFlavorNoteService.ensureAll(parseTags(form.getCustomFlavorNotesText()));
 
         coffeeBean.update(
                 clean(form.getName()),
@@ -155,7 +158,7 @@ public class CoffeeBeanService {
                 clean(form.getAltitude()),
                 form.getProcessType(),
                 form.getFlavorNotes(),
-                parseTags(form.getCustomFlavorNotesText()),
+                customFlavorNotes,
                 clean(form.getMemo()),
                 form.getRoastedDate(),
                 form.getPurchasedDate(),
@@ -179,6 +182,13 @@ public class CoffeeBeanService {
     private CoffeeBean findEntity(Long id) {
         return coffeeBeanRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("원두를 찾을 수 없습니다. id=" + id));
+    }
+
+    private CoffeeBeanResponse toResponse(CoffeeBean coffeeBean) {
+        return CoffeeBeanResponse.from(
+                coffeeBean,
+                customFlavorNoteService.findDetails(coffeeBean.getCustomFlavorNotes())
+        );
     }
 
     private List<String> parseTags(String tagsText) {
