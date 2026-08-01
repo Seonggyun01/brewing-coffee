@@ -88,6 +88,9 @@ const ADDRESS_REGION_RULES = [
 ];
 
 const ADDRESS_SUBREGION_RULES = [
+    { keyword: '광산구', region: 'Gwangju', subregion: 'Gwangsan' },
+    { keyword: '북구', region: 'Gwangju', subregion: 'Buk' },
+    { keyword: '동구', region: 'Gwangju', subregion: 'Dong' },
     { keyword: '강남구', region: 'Seoul', subregion: 'Gangnam' },
     { keyword: '강동구', region: 'Seoul', subregion: 'Gandong' },
     { keyword: '강북구', region: 'Seoul', subregion: 'Gangbuk' },
@@ -438,18 +441,29 @@ const setActiveCafe = (cafe) => {
     });
 };
 
+const clampPointToGeometry = (point, topology, geometry) => {
+    const bounds = boundsForGeometry(topology, geometry);
+    const inset = Math.min(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY) * 0.04;
+
+    return {
+        x: clamp(point.x, bounds.minX + inset, bounds.maxX - inset),
+        y: clamp(point.y, bounds.minY + inset, bounds.maxY - inset)
+    };
+};
+
 const markerPositionForCafe = (cafe, subregions) => {
     const coordinate = [cafe.longitude, cafe.latitude];
     const regionName = resolveRegionName(cafe);
     const addressSubregionName = resolveSubregionName(cafe, regionName);
     const addressSubregion = subregions.find((geometry) => geometry.properties.NAME_2 === addressSubregionName);
+    const [x, y] = projectCoordinate(coordinate);
+    const point = { x, y };
 
     if (addressSubregion && !pointInGeometry(municipalityTopology, addressSubregion, coordinate)) {
-        return centerForGeometry(municipalityTopology, addressSubregion);
+        return clampPointToGeometry(point, municipalityTopology, addressSubregion);
     }
 
-    const [x, y] = projectCoordinate(coordinate);
-    return { x, y };
+    return point;
 };
 
 const renderCafeMarker = (cafe, viewBoxSize, subregions = []) => {
