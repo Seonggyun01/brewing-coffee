@@ -42,3 +42,6 @@ application-local.yml
 *credentials*.json
 *credential*.json
 coffee-brew-*.json
+
+### Local runtimes ###
+.venv-ocr/

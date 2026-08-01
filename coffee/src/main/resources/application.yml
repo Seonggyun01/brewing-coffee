@@ -33,7 +33,7 @@ brewlog:
   ocr:
     provider: ${BREWLOG_OCR_PROVIDER:local-best}
     paddle:
-      python-executable: ${BREWLOG_PADDLE_OCR_PYTHON:python3}
+      python-executable: ${BREWLOG_PADDLE_OCR_PYTHON:auto}
       script-path: ${BREWLOG_PADDLE_OCR_SCRIPT:scripts/paddle_ocr.py}
       cache-directory: ${BREWLOG_PADDLE_OCR_CACHE:${user.home}}
       timeout-seconds: ${BREWLOG_PADDLE_OCR_TIMEOUT_SECONDS:90}

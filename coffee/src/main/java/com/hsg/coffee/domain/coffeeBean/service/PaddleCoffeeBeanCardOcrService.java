@@ -43,7 +43,7 @@ public class PaddleCoffeeBeanCardOcrService implements CoffeeBeanCardOcrService 
             CoffeeBeanCardImagePreprocessor imagePreprocessor,
             GoogleVisionCoffeeBeanCardOcrClient googleVisionClient,
             ObjectMapper objectMapper,
-            @Value("${brewlog.ocr.paddle.python-executable:python3}") String pythonExecutable,
+            @Value("${brewlog.ocr.paddle.python-executable:auto}") String pythonExecutable,
             @Value("${brewlog.ocr.paddle.script-path:scripts/paddle_ocr.py}") String scriptPath,
             @Value("${brewlog.ocr.paddle.cache-directory:${user.home}}") String cacheDirectory,
             @Value("${brewlog.ocr.paddle.timeout-seconds:90}") int timeoutSeconds,
@@ -56,7 +56,7 @@ public class PaddleCoffeeBeanCardOcrService implements CoffeeBeanCardOcrService 
         this.imagePreprocessor = imagePreprocessor;
         this.googleVisionClient = googleVisionClient;
         this.objectMapper = objectMapper;
-        this.pythonExecutable = pythonExecutable;
+        this.pythonExecutable = resolvePythonExecutable(pythonExecutable);
         this.scriptPath = Path.of(scriptPath).toAbsolutePath().normalize();
         this.cacheDirectory = Path.of(cacheDirectory).toAbsolutePath().normalize();
         this.timeoutSeconds = timeoutSeconds;
@@ -150,6 +150,27 @@ public class PaddleCoffeeBeanCardOcrService implements CoffeeBeanCardOcrService 
         command.add(scriptPath.toString());
         command.add(imagePath.toString());
         return command;
+    }
+
+    private String resolvePythonExecutable(String configuredPythonExecutable) {
+        if (StringUtils.hasText(configuredPythonExecutable) && !"auto".equalsIgnoreCase(configuredPythonExecutable.trim())) {
+            return configuredPythonExecutable;
+        }
+
+        List<Path> candidates = List.of(
+                Path.of(".venv-ocr/bin/python"),
+                Path.of("coffee/.venv-ocr/bin/python")
+        );
+        for (Path candidate : candidates) {
+            Path absoluteCandidate = candidate.toAbsolutePath().normalize();
+            if (Files.isExecutable(absoluteCandidate)) {
+                log.info("PaddleOCR python executable auto-detected: {}", absoluteCandidate);
+                return absoluteCandidate.toString();
+            }
+        }
+
+        log.warn("PaddleOCR python executable was not auto-detected. fallback=python3");
+        return "python3";
     }
 
     private String parseText(String stdout) {
