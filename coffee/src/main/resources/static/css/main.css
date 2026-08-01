@@ -868,6 +868,69 @@ small {
     font-size: 16px;
 }
 
+.purchase-place-map-card {
+    display: grid;
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.purchase-place-map {
+    width: 100%;
+    height: clamp(260px, 36vw, 360px);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #f5f0ea;
+}
+
+.purchase-place-map__info {
+    display: grid;
+    gap: 6px;
+    padding: 14px 16px;
+    border: 1px solid rgba(92, 46, 31, 0.16);
+    border-radius: 8px;
+    color: var(--muted);
+    background: #fbfaf8;
+}
+
+.purchase-place-map__info.is-active {
+    border-color: rgba(92, 46, 31, 0.3);
+    color: var(--text);
+    background: #ffffff;
+}
+
+.purchase-place-map__info strong,
+.purchase-place-map-window strong {
+    color: var(--text);
+    font-weight: 800;
+}
+
+.purchase-place-map__info span,
+.purchase-place-map-window span {
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.purchase-place-map__info a,
+.purchase-place-map-window a {
+    color: var(--accent);
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.purchase-place-map-window {
+    display: grid;
+    gap: 5px;
+    min-width: 190px;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.purchase-place-map__fallback {
+    margin-top: 12px !important;
+}
+
 .record-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1253,6 +1316,11 @@ small {
 
 .flavor-gradient--large {
     height: 18px;
+}
+
+.detail__memo .flavor-gradient--large,
+.cafe-filter-detail .flavor-gradient--large {
+    margin: 8px 0 18px;
 }
 
 .empty-panel {
@@ -2156,6 +2224,11 @@ small {
     flex-wrap: wrap;
     gap: 8px;
     margin: 0 0 22px;
+}
+
+.detail__memo .selected-tags,
+.cafe-filter-detail .selected-tags {
+    margin: 4px 0 26px;
 }
 
 .taste-summary span {

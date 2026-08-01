@@ -303,9 +303,10 @@
         </form>
     </main>
     <script th:if="${hasKakaoMapKey}"
-            th:src="@{'https://dapi.kakao.com/v2/maps/sdk.js'(appkey=${kakaoJavascriptKey},libraries='services')}"></script>
-    <script>
-        document.querySelectorAll('[data-kakao-place-search-box]').forEach((box) => {
+            th:src="@{'https://dapi.kakao.com/v2/maps/sdk.js'(appkey=${kakaoJavascriptKey},libraries='services',autoload='false')}"></script>
+    <script th:if="${hasKakaoMapKey}">
+        function initializeKakaoPlaceSearch() {
+            document.querySelectorAll('[data-kakao-place-search-box]').forEach((box) => {
             const queryInput = box.querySelector('[data-kakao-place-query]');
             const searchButton = box.querySelector('[data-kakao-place-search]');
             const results = box.querySelector('[data-kakao-place-results]');
@@ -426,6 +427,13 @@
                 }
             });
         });
+        }
+
+        if (window.kakao?.maps?.load) {
+            kakao.maps.load(initializeKakaoPlaceSearch);
+        } else {
+            initializeKakaoPlaceSearch();
+        }
 
         function polarToCartesian(center, radius, angleInDegrees) {
             const angleInRadians = (angleInDegrees - 90) * Math.PI / 180;

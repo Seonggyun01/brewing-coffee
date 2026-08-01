@@ -119,6 +119,7 @@ public class CoffeeBeanController {
     @GetMapping("/{id}")
     public String detail(@PathVariable Long id, Model model) {
         model.addAttribute("coffeeBean", coffeeBeanService.get(id));
+        addKakaoAttributes(model);
         return "coffee-beans/detail";
     }
 
@@ -167,6 +168,10 @@ public class CoffeeBeanController {
         model.addAttribute("purchasePlaces", purchasePlaceService.getAll());
         model.addAttribute("flavorCategories", FlavorCategory.values());
         model.addAttribute("flavorNotesByCategory", flavorNotesByCategory);
+        addKakaoAttributes(model);
+    }
+
+    private void addKakaoAttributes(Model model) {
         model.addAttribute("kakaoJavascriptKey", kakaoJavascriptKey);
         model.addAttribute("hasKakaoMapKey", StringUtils.hasText(kakaoJavascriptKey));
     }

@@ -6,16 +6,16 @@
 }
 
 .cafe-map-shell {
-    width: min(1760px, calc(100% - 40px));
-    margin: 34px auto 0;
-    padding-bottom: 40px;
+    width: min(var(--app-max-width), calc(100% - (var(--app-gutter) * 2)));
+    margin: clamp(24px, 4vw, 34px) auto 0;
+    padding-bottom: var(--app-shell-padding-bottom);
 }
 
 .cafe-map-hero {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    gap: 24px;
+    gap: clamp(16px, 3vw, 24px);
     margin: 0 0 22px;
 }
 
@@ -39,12 +39,11 @@
 .cafe-map-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 20px;
-    min-height: calc(100vh - 220px);
+    gap: clamp(14px, 2.4vw, 20px);
 }
 
 .cafe-map-page.has-region-detail .cafe-map-layout {
-    grid-template-columns: minmax(0, 1fr) 380px;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
 }
 
 .cafe-map-card,
@@ -64,8 +63,9 @@
     display: grid;
     place-items: center;
     width: 100%;
-    height: 100%;
-    min-height: 640px;
+    aspect-ratio: 560 / 690;
+    height: auto;
+    min-height: 0;
     overflow: hidden;
     background:
         radial-gradient(circle at 52% 46%, rgba(255, 250, 243, 0.96), transparent 36%),
@@ -74,9 +74,10 @@
 
 .cafe-map__svg {
     position: absolute;
-    inset: 34px 16% 34px 18%;
-    width: 66%;
-    height: calc(100% - 68px);
+    top: clamp(22px, 3.5vw, 42px);
+    left: 6%;
+    width: 88%;
+    height: auto;
     filter: drop-shadow(0 18px 28px rgba(68, 48, 31, 0.08));
     z-index: 2;
     transform-origin: 50% 50%;
@@ -169,7 +170,10 @@
 
 .cafe-map__marker-layer {
     position: absolute;
-    inset: 34px 16% 34px 18%;
+    top: clamp(22px, 3.5vw, 42px);
+    left: 6%;
+    width: 88%;
+    aspect-ratio: 560 / 720;
     z-index: 3;
     pointer-events: none;
 }
@@ -268,25 +272,51 @@
 }
 
 @media (max-width: 920px) {
-    .cafe-map-hero {
-        display: grid;
+    .cafe-map-shell {
+        padding-bottom: calc(var(--app-shell-padding-bottom) + var(--app-bottom-safe));
     }
 
-    .cafe-map-layout {
+    .cafe-map-hero {
+        display: grid;
+        align-items: start;
+    }
+
+    .cafe-map-layout,
+    .cafe-map-page.has-region-detail .cafe-map-layout {
         grid-template-columns: 1fr;
     }
 
     .cafe-map {
-        min-height: 420px;
+        aspect-ratio: 560 / 720;
     }
 
     .cafe-map__svg {
-        inset: 18px 8% 18px 8%;
-        width: 84%;
-        height: calc(100% - 36px);
+        top: 18px;
+        left: 4%;
+        width: 92%;
     }
 
     .cafe-map__marker-layer {
-        inset: 18px 8% 18px 8%;
+        top: 18px;
+        left: 4%;
+        width: 92%;
+    }
+}
+
+@media (max-width: 640px) {
+    .cafe-map-hero h1 {
+        font-size: 40px;
+    }
+
+    .cafe-map-hero p:last-child {
+        font-size: 16px;
+    }
+
+    .cafe-map-hero .button {
+        justify-self: stretch;
+    }
+
+    .cafe-map {
+        aspect-ratio: 560 / 740;
     }
 }

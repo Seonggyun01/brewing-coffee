@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${coffeeBean.name + ' - BrewLog'}">원두 상세 - BrewLog</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='app-header-20260525')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='purchase-place-map-20260801')}">
 </head>
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('beans')}"></header>
@@ -23,6 +23,21 @@
         </header>
 
         <p class="flash" th:if="${message}" th:text="${message}"></p>
+
+        <section class="detail__memo">
+            <h2>향미 노트</h2>
+            <span class="flavor-gradient flavor-gradient--large" th:style="${coffeeBean.flavorGradientStyle}"></span>
+            <div class="selected-tags" th:if="${!#lists.isEmpty(coffeeBean.flavorNotes) || !#lists.isEmpty(coffeeBean.customFlavorNotes)}">
+                <span th:each="note : ${coffeeBean.flavorNotes}"
+                      th:style="'border-color:' + ${note.color} + '; background:' + ${note.color} + '22;'"
+                      th:text="${note.displayName}">레몬</span>
+                <span class="selected-tags__custom"
+                      th:each="note : ${coffeeBean.customFlavorNoteDetails}"
+                      th:style="'border-color:' + ${note.color()} + '; background:' + ${note.color()} + '22;'"
+                      th:text="${note.name()}">청포도</span>
+            </div>
+            <p th:if="${#lists.isEmpty(coffeeBean.flavorNotes) && #lists.isEmpty(coffeeBean.customFlavorNotes)}">선택한 향미 노트가 없습니다.</p>
+        </section>
 
         <section class="detail">
             <dl>
@@ -88,46 +103,95 @@
                         <dt>유형</dt>
                         <dd th:text="${coffeeBean.purchasePlaceType}">ROASTERY</dd>
                     </div>
-                    <div>
-                        <dt>주소</dt>
-                        <dd th:text="${coffeeBean.purchasePlaceAddress ?: '-'}">서울 종로구</dd>
-                    </div>
-                    <div>
-                        <dt>장소 링크</dt>
-                        <dd>
-                            <a th:if="${coffeeBean.purchasePlaceUrl != null}"
-                               th:href="${coffeeBean.purchasePlaceUrl}"
-                               target="_blank"
-                               rel="noopener"
-                               th:text="${coffeeBean.purchasePlaceUrl}">https://place.map.kakao.com/...</a>
-                            <span th:if="${coffeeBean.purchasePlaceUrl == null}">-</span>
-                        </dd>
-                    </div>
-                    <div>
-                        <dt>좌표</dt>
-                        <dd th:text="${coffeeBean.purchasePlaceLatitude != null && coffeeBean.purchasePlaceLongitude != null ? coffeeBean.purchasePlaceLatitude + ', ' + coffeeBean.purchasePlaceLongitude : '지도 연동 후 자동 저장 예정'}">지도 연동 후 자동 저장 예정</dd>
-                    </div>
                 </dl>
                 <p th:if="${coffeeBean.purchasePlaceMemo}" th:text="${coffeeBean.purchasePlaceMemo}">구매처 메모</p>
+
+                <div class="purchase-place-map-card"
+                     th:if="${hasKakaoMapKey && coffeeBean.purchasePlaceLatitude != null && coffeeBean.purchasePlaceLongitude != null}"
+                     data-purchase-place-map
+                     th:data-place-name="${coffeeBean.purchasePlaceName}"
+                     th:data-place-type="${coffeeBean.purchasePlaceType}"
+                     th:data-place-latitude="${coffeeBean.purchasePlaceLatitude}"
+                     th:data-place-longitude="${coffeeBean.purchasePlaceLongitude}">
+                    <div class="purchase-place-map" data-purchase-place-map-canvas aria-label="구매처 지도"></div>
+                    <div class="purchase-place-map__info" data-purchase-place-map-info>
+                        <strong>지도 핀을 눌러 구매처 정보를 확인하세요.</strong>
+                        <span th:text="${coffeeBean.purchasePlaceName}">프릳츠 원서점</span>
+                    </div>
+                </div>
+
+                <p class="purchase-place-map__fallback"
+                   th:if="${coffeeBean.purchasePlaceName != null && (!hasKakaoMapKey || coffeeBean.purchasePlaceLatitude == null || coffeeBean.purchasePlaceLongitude == null)}">
+                    지도 표시는 카카오맵 키와 구매처 좌표가 있을 때 사용할 수 있습니다.
+                </p>
             </section>
 
             <div class="detail__memo">
-                <h2>향미 노트</h2>
-                <span class="flavor-gradient flavor-gradient--large" th:style="${coffeeBean.flavorGradientStyle}"></span>
-                <div class="selected-tags" th:if="${!#lists.isEmpty(coffeeBean.flavorNotes) || !#lists.isEmpty(coffeeBean.customFlavorNotes)}">
-                    <span th:each="note : ${coffeeBean.flavorNotes}"
-                          th:style="'border-color:' + ${note.color} + '; background:' + ${note.color} + '22;'"
-                          th:text="${note.displayName}">레몬</span>
-                    <span class="selected-tags__custom"
-                          th:each="note : ${coffeeBean.customFlavorNoteDetails}"
-                          th:style="'border-color:' + ${note.color()} + '; background:' + ${note.color()} + '22;'"
-                          th:text="${note.name()}">청포도</span>
-                </div>
-                <p th:if="${#lists.isEmpty(coffeeBean.flavorNotes) && #lists.isEmpty(coffeeBean.customFlavorNotes)}">선택한 향미 노트가 없습니다.</p>
                 <h2>메모</h2>
                 <p th:text="${coffeeBean.memo ?: '-'}">메모</p>
             </div>
         </section>
     </main>
+    <script th:if="${hasKakaoMapKey}"
+            th:src="@{'https://dapi.kakao.com/v2/maps/sdk.js'(appkey=${kakaoJavascriptKey},autoload='false')}"></script>
+    <script th:if="${hasKakaoMapKey}">
+        function initializePurchasePlaceMap() {
+            document.querySelectorAll('[data-purchase-place-map]').forEach((mapCard) => {
+                const canvas = mapCard.querySelector('[data-purchase-place-map-canvas]');
+                const infoPanel = mapCard.querySelector('[data-purchase-place-map-info]');
+                const latitude = Number(mapCard.dataset.placeLatitude);
+                const longitude = Number(mapCard.dataset.placeLongitude);
+
+                if (!canvas || Number.isNaN(latitude) || Number.isNaN(longitude) || !window.kakao?.maps?.Map) {
+                    return;
+                }
+
+                const position = new kakao.maps.LatLng(latitude, longitude);
+                const map = new kakao.maps.Map(canvas, {
+                    center: position,
+                    level: 3
+                });
+                const marker = new kakao.maps.Marker({
+                    map,
+                    position
+                });
+
+                const name = mapCard.dataset.placeName || '구매처';
+                const type = mapCard.dataset.placeType || '유형 미기록';
+                const infoContent = document.createElement('div');
+                infoContent.className = 'purchase-place-map-window';
+                infoContent.innerHTML = `
+                    <strong></strong>
+                    <span></span>
+                `;
+                infoContent.querySelector('strong').textContent = name;
+                infoContent.querySelector('span').textContent = type;
+
+                const infoWindow = new kakao.maps.InfoWindow({
+                    content: infoContent
+                });
+
+                function showPlaceInfo() {
+                    map.setCenter(position);
+                    infoWindow.open(map, marker);
+                    if (infoPanel) {
+                        infoPanel.classList.add('is-active');
+                        infoPanel.innerHTML = `
+                            <strong></strong>
+                            <span></span>
+                        `;
+                        infoPanel.querySelector('strong').textContent = name;
+                        infoPanel.querySelector('span').textContent = type;
+                    }
+                }
+
+                kakao.maps.event.addListener(marker, 'click', showPlaceInfo);
+            });
+        }
+
+        if (window.kakao?.maps?.load) {
+            kakao.maps.load(initializePurchasePlaceMap);
+        }
+    </script>
 </body>
 </html>
