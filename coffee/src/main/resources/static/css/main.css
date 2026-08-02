@@ -2432,9 +2432,12 @@ small {
 
     .coffee-bean-carousel__nav {
         display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        align-items: center;
     }
 
     .coffee-bean-carousel__tabs {
+        min-width: 0;
         flex-wrap: nowrap;
         overflow-x: auto;
         padding-bottom: 2px;
@@ -2445,7 +2448,7 @@ small {
     }
 
     .coffee-bean-carousel__controls {
-        justify-content: flex-end;
+        display: none;
     }
 
     .record-grid {
@@ -2744,54 +2747,124 @@ small {
     }
 
     .coffee-bean-carousel {
-        gap: 12px;
+        gap: 9px;
     }
 
     .coffee-bean-carousel__tabs button {
-        min-height: 38px;
-        padding: 0 12px;
-        font-size: 14px;
+        min-height: 34px;
+        padding: 0 10px;
+        font-size: 13px;
     }
 
     .coffee-bean-carousel__tabs strong {
-        min-width: 24px;
-        min-height: 24px;
+        min-width: 22px;
+        min-height: 22px;
         font-size: 12px;
     }
 
     .coffee-bean-carousel__controls button {
-        width: 38px;
-        height: 38px;
-        font-size: 24px;
+        width: 34px;
+        height: 34px;
+        font-size: 22px;
     }
 
     .coffee-bean-section {
-        gap: 12px;
-        padding: 16px 14px;
+        gap: 9px;
+        padding: 13px 12px;
     }
 
     .coffee-bean-section__header {
-        gap: 12px;
-        padding-bottom: 12px;
+        gap: 10px;
+        padding-bottom: 9px;
     }
 
     .coffee-bean-section__header h2 {
-        font-size: 21px;
+        margin-top: 2px;
+        font-size: 19px;
+    }
+
+    .coffee-bean-section__header > span {
+        min-width: 38px;
+        padding: 5px 8px;
+        font-size: 13px;
+    }
+
+    .coffee-bean-section__eyebrow {
+        font-size: 12px;
+    }
+
+    .coffee-bean-section .record-grid {
+        gap: 9px;
     }
 
     .coffee-bean-section .record-card__link,
     .record-card__link {
-        min-height: 168px;
-        padding: 14px;
+        min-height: 122px;
+        padding: 11px;
+    }
+
+    .coffee-bean-section .record-card__link {
+        gap: 4px;
     }
 
     .record-card strong {
         font-size: 18px;
     }
 
+    .coffee-bean-section .record-card strong {
+        display: -webkit-box;
+        overflow: hidden;
+        font-size: 15px;
+        line-height: 1.22;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
     .record-card__date,
     .record-card span {
         font-size: 13px;
+    }
+
+    .coffee-bean-section .record-card__date,
+    .coffee-bean-section .record-card span {
+        font-size: 12px;
+        line-height: 1.25;
+    }
+
+    .coffee-bean-section .record-card__link > span:not(.flavor-gradient) {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .coffee-bean-section .record-card__notes {
+        margin-top: 0;
+    }
+
+    .coffee-bean-section .record-card__date,
+    .coffee-bean-section .record-card__link > span:nth-of-type(5),
+    .coffee-bean-section .coffee-bean-card__status,
+    .coffee-bean-section .coffee-bean-card__process,
+    .coffee-bean-section .record-card__notes,
+    .coffee-bean-section .coffee-bean-card__notes {
+        display: none;
+    }
+
+    .coffee-bean-section .flavor-gradient {
+        height: 6px;
+        margin-bottom: 2px;
+    }
+
+    .coffee-bean-section .coffee-bean-card__meta {
+        gap: 5px;
+        margin-top: 1px;
+    }
+
+    .coffee-bean-section .coffee-bean-card__meta span {
+        min-height: 24px;
+        padding: 0 8px;
+        font-size: 12px;
     }
 
     .cafe-filter-toolbar a {
