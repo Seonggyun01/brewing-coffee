@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>카페 지도 - BrewLog</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='home-dashboard-20260802')}">
-    <link rel="stylesheet" th:href="@{/css/cafe-map.css(v=27)}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='map-app-20260802')}">
+    <link rel="stylesheet" th:href="@{/css/cafe-map.css(v=31)}">
 </head>
 <body class="cafe-map-page">
     <header th:replace="~{fragments/app-header :: appHeader('cafes')}"></header>
@@ -33,7 +33,7 @@
             <aside class="cafe-map-panel">
                 <div class="cafe-map-panel__header">
                     <div>
-                        <span>Visited Cafes</span>
+                        <span>방문 기록</span>
                         <h2>방문 카페</h2>
                     </div>
                     <strong data-cafe-count>0</strong>
@@ -48,6 +48,6 @@
         </section>
     </main>
 
-    <script th:src="@{/js/cafe-map.js(v=22)}"></script>
+    <script th:src="@{/js/cafe-map.js(v=28)}"></script>
 </body>
 </html>

@@ -145,6 +145,14 @@ const projectCoordinate = ([longitude, latitude]) => {
 };
 
 const resolveRegionName = (cafe) => {
+    if (Number.isFinite(cafe.latitude) && Number.isFinite(cafe.longitude)) {
+        const coordinateRule = coordinateRegionRules.find((rule) => rule.test(cafe));
+
+        if (coordinateRule) {
+            return coordinateRule.region;
+        }
+    }
+
     const address = cafe.address || '';
     const addressRule = ADDRESS_REGION_RULES.find((rule) => address.includes(rule.keyword));
 
@@ -152,8 +160,7 @@ const resolveRegionName = (cafe) => {
         return addressRule.region;
     }
 
-    const coordinateRule = coordinateRegionRules.find((rule) => rule.test(cafe));
-    return coordinateRule ? coordinateRule.region : null;
+    return null;
 };
 
 const resolveSubregionName = (cafe, regionName) => {
@@ -417,7 +424,7 @@ const renderSelectedRegion = (regionName, cafes) => {
     const label = REGION_LABELS[regionName] || regionName;
 
     selectedCafeElement.innerHTML = `
-        <span>Selected Region</span>
+        <span>선택 지역</span>
         <strong>${label}</strong>
         <p>이 지역에 기록된 방문 카페 ${cafes.length}개</p>
         <small>지역 지도를 클릭해 카페 위치를 확인하세요.</small>
@@ -426,7 +433,7 @@ const renderSelectedRegion = (regionName, cafes) => {
 
 const renderSelectedCafe = (cafe) => {
     selectedCafeElement.innerHTML = `
-        <span>Selected Cafe</span>
+        <span>선택 카페</span>
         <strong>${cafe.cafeName}</strong>
         <p>${cafe.address || '주소 미기록'}</p>
         <small>방문 ${cafe.visitCount}회</small>
@@ -468,8 +475,9 @@ const markerPositionForCafe = (cafe, subregions) => {
 
 const renderCafeMarker = (cafe, viewBoxSize, subregions = []) => {
     const { x, y } = markerPositionForCafe(cafe, subregions);
-    const scale = clamp(viewBoxSize * 0.000034, 0.0022, 0.0052);
+    const scale = clamp(viewBoxSize * 0.0001, 0.0075, 0.016);
     const marker = document.createElementNS(SVG_NS, 'g');
+    const hitArea = document.createElementNS(SVG_NS, 'circle');
     const pin = document.createElementNS(SVG_NS, 'path');
     const title = document.createElementNS(SVG_NS, 'title');
 
@@ -477,10 +485,17 @@ const renderCafeMarker = (cafe, viewBoxSize, subregions = []) => {
     marker.setAttribute('data-cafe-id', String(cafe.id));
     marker.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) scale(${scale.toFixed(4)})`);
 
+    hitArea.setAttribute('class', 'cafe-detail-marker__hit');
+    hitArea.setAttribute('cx', '0');
+    hitArea.setAttribute('cy', '0');
+    hitArea.setAttribute('r', '320');
+
     pin.setAttribute('d', 'M0,-240 C82,-240 148,-174 148,-92 C148,16 0,198 0,198 C0,198 -148,16 -148,-92 C-148,-174 -82,-240 0,-240 Z M0,-146 C-34,-146 -62,-118 -62,-84 C-62,-50 -34,-22 0,-22 C34,-22 62,-50 62,-84 C62,-118 34,-146 0,-146 Z');
     title.textContent = cafe.cafeName;
 
     marker.appendChild(pin);
+    hitArea.addEventListener('click', () => setActiveCafe(cafe));
+    marker.appendChild(hitArea);
     marker.appendChild(title);
     marker.addEventListener('click', () => setActiveCafe(cafe));
 

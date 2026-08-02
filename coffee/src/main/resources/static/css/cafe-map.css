@@ -1,13 +1,11 @@
 .cafe-map-page {
     min-height: 100vh;
-    background:
-        radial-gradient(circle at 14% 12%, rgba(255, 255, 255, 0.9), transparent 28%),
-        linear-gradient(140deg, #f7f2ea 0%, #f3ede3 56%, #f8f5ef 100%);
+    background: #ffffff;
 }
 
 .cafe-map-shell {
     width: min(var(--app-max-width), calc(100% - (var(--app-gutter) * 2)));
-    margin: clamp(24px, 4vw, 34px) auto 0;
+    margin: clamp(22px, 3vw, 30px) auto 0;
     padding-bottom: var(--app-shell-padding-bottom);
 }
 
@@ -16,7 +14,7 @@
     align-items: flex-end;
     justify-content: space-between;
     gap: clamp(16px, 3vw, 24px);
-    margin: 0 0 22px;
+    margin: 0 0 18px;
 }
 
 .cafe-map-hero__eyebrow {
@@ -27,31 +25,34 @@
 }
 
 .cafe-map-hero h1 {
-    font-size: 48px;
+    font-size: clamp(38px, 4.6vw, 54px);
+    letter-spacing: 0;
+    line-height: 1.02;
 }
 
 .cafe-map-hero p:last-child {
-    margin: 12px 0 0;
+    margin: 10px 0 0;
     color: var(--muted);
-    font-size: 18px;
+    font-size: 17px;
 }
 
 .cafe-map-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: clamp(14px, 2.4vw, 20px);
+    gap: 18px;
 }
 
 .cafe-map-page.has-region-detail .cafe-map-layout {
-    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+    grid-template-columns: minmax(0, 2fr) minmax(300px, 0.86fr);
+    align-items: stretch;
 }
 
 .cafe-map-card,
 .cafe-map-panel {
     border: 1px solid rgba(132, 105, 76, 0.22);
     border-radius: 8px;
-    background: rgba(255, 252, 247, 0.9);
-    box-shadow: 0 18px 42px rgba(68, 48, 31, 0.08);
+    background: #ffffff;
+    box-shadow: 0 18px 38px rgba(68, 48, 31, 0.07);
 }
 
 .cafe-map-card {
@@ -67,9 +68,12 @@
     height: auto;
     min-height: 0;
     overflow: hidden;
-    background:
-        radial-gradient(circle at 52% 46%, rgba(255, 250, 243, 0.96), transparent 36%),
-        linear-gradient(145deg, #f5efe5 0%, #ede4d8 100%);
+    background: #fbf8f4;
+}
+
+.cafe-map-page.has-region-detail .cafe-map {
+    aspect-ratio: 4 / 3;
+    min-height: min(62vh, 560px);
 }
 
 .cafe-map__svg {
@@ -136,6 +140,12 @@
 
 .cafe-detail-marker {
     cursor: pointer;
+    pointer-events: all;
+}
+
+.cafe-detail-marker__hit {
+    fill: rgba(47, 111, 94, 0.01);
+    pointer-events: all;
 }
 
 .cafe-detail-marker path {
@@ -186,7 +196,7 @@
     display: grid;
     grid-template-rows: auto auto minmax(0, 1fr);
     min-height: 0;
-    padding: 24px;
+    padding: 22px;
 }
 
 .cafe-map-panel__header {
@@ -194,7 +204,7 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 16px;
-    padding-bottom: 18px;
+    padding-bottom: 16px;
     border-bottom: 1px solid var(--line);
 }
 
@@ -205,22 +215,22 @@
 }
 
 .cafe-map-panel__header h2 {
-    margin: 6px 0 0;
-    font-size: 24px;
+    margin: 5px 0 0;
+    font-size: 23px;
 }
 
 .cafe-map-panel__header strong {
-    font-size: 34px;
+    font-size: 32px;
 }
 
 .cafe-map-panel__selected {
     display: grid;
     gap: 6px;
-    margin: 18px 0;
-    padding: 16px;
+    margin: 16px 0;
+    padding: 15px;
     border: 1px solid #dccbb9;
     border-radius: 8px;
-    background: #fff8ef;
+    background: #fffaf7;
 }
 
 .cafe-map-panel__selected strong {
@@ -244,13 +254,13 @@
 
 .cafe-list-card {
     display: grid;
-    gap: 7px;
+    gap: 6px;
     width: 100%;
-    padding: 16px;
+    padding: 14px;
     border: 1px solid #dccbb9;
     border-radius: 8px;
     color: var(--text);
-    background: #fffaf3;
+    background: #ffffff;
     font: inherit;
     text-align: left;
     cursor: pointer;
@@ -286,8 +296,29 @@
         grid-template-columns: 1fr;
     }
 
+    .cafe-map-page.has-region-detail .cafe-map-panel {
+        position: sticky;
+        bottom: calc(var(--app-bottom-safe) + 12px);
+        z-index: 6;
+        max-height: min(42vh, 360px);
+        margin-top: -74px;
+        overflow: hidden;
+        border-color: rgba(132, 105, 76, 0.22);
+        background: rgba(255, 255, 255, 0.97);
+        box-shadow: 0 -12px 34px rgba(68, 48, 31, 0.16);
+    }
+
+    .cafe-map-page.has-region-detail .cafe-map-list {
+        overflow: auto;
+    }
+
     .cafe-map {
         aspect-ratio: 560 / 720;
+    }
+
+    .cafe-map-page.has-region-detail .cafe-map {
+        aspect-ratio: 560 / 720;
+        min-height: 0;
     }
 
     .cafe-map__svg {
@@ -305,7 +336,7 @@
 
 @media (max-width: 640px) {
     .cafe-map-hero h1 {
-        font-size: 40px;
+        font-size: 36px;
     }
 
     .cafe-map-hero p:last-child {
@@ -318,5 +349,27 @@
 
     .cafe-map {
         aspect-ratio: 560 / 740;
+    }
+
+    .cafe-map-page.has-region-detail .cafe-map-panel {
+        max-height: min(46vh, 380px);
+        padding: 16px;
+    }
+
+    .cafe-map-panel__header h2 {
+        font-size: 20px;
+    }
+
+    .cafe-map-panel__header strong {
+        font-size: 28px;
+    }
+
+    .cafe-map-panel__selected {
+        margin: 12px 0;
+        padding: 12px;
+    }
+
+    .cafe-list-card {
+        padding: 12px;
     }
 }
