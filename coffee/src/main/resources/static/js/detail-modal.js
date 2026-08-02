@@ -4,6 +4,8 @@
     let panel;
     let content;
     let title;
+    let eyebrow;
+    let actionSlot;
     let closeButton;
     let lastFocusedElement;
     let abortController;
@@ -24,7 +26,11 @@
             <div class="detail-modal__backdrop" data-detail-modal-close></div>
             <section class="detail-modal__panel" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title" tabindex="-1">
                 <header class="detail-modal__header">
-                    <strong id="detail-modal-title">상세 정보</strong>
+                    <div class="detail-modal__title">
+                        <span data-detail-modal-eyebrow>상세</span>
+                        <strong id="detail-modal-title">상세 정보</strong>
+                    </div>
+                    <div class="detail-modal__actions" data-detail-modal-actions></div>
                     <button class="detail-modal__close" type="button" data-detail-modal-close aria-label="상세 창 닫기">×</button>
                 </header>
                 <div class="detail-modal__body" data-detail-modal-body></div>
@@ -35,6 +41,8 @@
         panel = modal.querySelector('.detail-modal__panel');
         content = modal.querySelector('[data-detail-modal-body]');
         title = modal.querySelector('#detail-modal-title');
+        eyebrow = modal.querySelector('[data-detail-modal-eyebrow]');
+        actionSlot = modal.querySelector('[data-detail-modal-actions]');
         closeButton = modal.querySelector('.detail-modal__close');
 
         modal.addEventListener('click', (event) => {
@@ -46,7 +54,9 @@
 
     function setLoading() {
         ensureModal();
+        eyebrow.textContent = '상세';
         title.textContent = '상세 정보';
+        actionSlot.replaceChildren();
         content.innerHTML = `
             <div class="detail-modal__loading" role="status" aria-live="polite">
                 <strong>상세 정보를 불러오는 중입니다</strong>
@@ -104,17 +114,37 @@
         });
     }
 
+    function getDetailKind(url) {
+        if (url.pathname.startsWith('/coffee-beans/')) {
+            return {className: 'detail-modal__content--bean', label: '원두'};
+        }
+        if (url.pathname.startsWith('/brew-records/')) {
+            return {className: 'detail-modal__content--brew', label: '브루잉'};
+        }
+        if (url.pathname.startsWith('/cafe-filter-coffees/')) {
+            return {className: 'detail-modal__content--cafe', label: '카페 필터'};
+        }
+        return {className: 'detail-modal__content--default', label: '상세'};
+    }
+
     function prepareDetailMain(sourceDocument, url) {
         const main = sourceDocument.querySelector('main.page');
         if (!main) {
             return null;
         }
 
+        const kind = getDetailKind(url);
         const clonedMain = main.cloneNode(true);
-        clonedMain.classList.add('detail-modal__content');
-        clonedMain.querySelectorAll('.page__header .text-link').forEach((link) => {
-            link.remove();
+        clonedMain.classList.add('detail-modal__content', kind.className);
+        const pageHeader = clonedMain.querySelector('.page__header');
+        const heading = pageHeader?.querySelector('h1');
+        const modalActions = document.createElement('div');
+        modalActions.className = 'detail-modal__actions-inner';
+
+        pageHeader?.querySelectorAll('.button-group, :scope > form, :scope > .button').forEach((element) => {
+            modalActions.appendChild(element);
         });
+        pageHeader?.remove();
 
         clonedMain.querySelectorAll('a[href]').forEach((link) => {
             const targetUrl = new URL(link.getAttribute('href'), url);
@@ -123,7 +153,12 @@
             }
         });
 
-        return clonedMain;
+        return {
+            actions: modalActions,
+            content: clonedMain,
+            eyebrow: kind.label,
+            title: heading?.textContent?.trim() || sourceDocument.title || '상세 정보'
+        };
     }
 
     async function loadDetail(url) {
@@ -147,16 +182,21 @@
 
         const html = await response.text();
         const sourceDocument = new DOMParser().parseFromString(html, 'text/html');
-        const nextContent = prepareDetailMain(sourceDocument, url);
+        const detail = prepareDetailMain(sourceDocument, url);
 
-        if (!nextContent) {
+        if (!detail) {
             window.location.href = url.href;
             return;
         }
 
-        const heading = nextContent.querySelector('.page__header h1');
-        title.textContent = heading?.textContent?.trim() || sourceDocument.title || '상세 정보';
-        content.replaceChildren(nextContent);
+        eyebrow.textContent = detail.eyebrow;
+        title.textContent = detail.title;
+        if (detail.actions.childElementCount > 0) {
+            actionSlot.replaceChildren(detail.actions);
+        } else {
+            actionSlot.replaceChildren();
+        }
+        content.replaceChildren(detail.content);
         executeScripts(sourceDocument);
         closeButton.focus({preventScroll: true});
     }
