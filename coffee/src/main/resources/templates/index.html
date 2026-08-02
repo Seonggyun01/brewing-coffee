@@ -4,39 +4,118 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BrewLog Origin Map</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='app-shell-20260802')}">
-    <link rel="stylesheet" th:href="@{/css/origin-map.css(v='app-shell-20260802')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='home-dashboard-20260802')}">
+    <link rel="stylesheet" th:href="@{/css/origin-map.css(v='home-dashboard-20260802')}">
 </head>
 <body class="origin-map-page">
     <header th:replace="~{fragments/app-header :: appHeader('home')}"></header>
 
-    <main class="origin-map-shell">
-        <section class="origin-map-visual" aria-label="커피 원산지 세계 지도">
-            <div class="origin-map-stage" th:replace="~{fragments/world-map :: worldMap}"></div>
-            <div class="origin-map-zoom" aria-label="세계 지도 확대 조절">
-                <button type="button" data-origin-zoom-out aria-label="지도 축소">−</button>
-                <span data-origin-zoom-label>100%</span>
-                <button type="button" data-origin-zoom-in aria-label="지도 확대">+</button>
-                <button type="button" data-origin-zoom-reset>초기화</button>
+    <main class="home-dashboard">
+        <section class="home-dashboard__hero">
+            <div>
+                <p class="home-dashboard__eyebrow">BrewLog</p>
+                <h1>오늘 어떤 커피를 마실까요?</h1>
+                <p>원두 상태를 보고 바로 기록하거나, 지난 맛과 장소를 빠르게 다시 열어보세요.</p>
             </div>
+            <div class="home-dashboard__actions" aria-label="빠른 기록">
+                <a class="button button--primary" th:href="@{/brew-records/new}">브루잉</a>
+                <a class="button button--secondary" th:href="@{/coffee-beans/new}">새 원두</a>
+                <a class="button button--secondary" th:href="@{/cafe-filter-coffees/new}">카페 필터</a>
+            </div>
+        </section>
 
-            <section class="origin-map-stats" aria-label="원산지 경험 요약">
-                <article>
-                    <span>Countries</span>
-                    <strong data-stat="countries">0</strong>
-                    <small>경험한 산지</small>
+        <section class="home-panel home-panel--beans">
+            <div class="home-panel__header">
+                <div>
+                    <span>Inventory</span>
+                    <h2>지금 마실 수 있는 원두</h2>
+                </div>
+                <a th:href="@{/coffee-beans}">전체 보기</a>
+            </div>
+            <div class="home-bean-strip" th:if="${!#lists.isEmpty(currentBeans)}">
+                <article class="home-bean-card record-card" th:each="bean : ${currentBeans}">
+                    <a class="record-card__link" th:href="@{|/coffee-beans/${bean.id}|}">
+                        <span class="flavor-gradient" th:style="${bean.flavorGradientStyle}"></span>
+                        <strong th:text="${bean.name}">원두 이름</strong>
+                        <span th:text="${bean.weight != null ? bean.weight + 'g 남음' : '무게 미기록'}">100g 남음</span>
+                    </a>
                 </article>
-                <article>
-                    <span>Beans</span>
-                    <strong data-stat="beans">0</strong>
-                    <small>기록한 원두</small>
+            </div>
+            <div class="home-empty" th:if="${#lists.isEmpty(currentBeans)}">
+                <strong>보유중 원두가 없어요.</strong>
+                <a th:href="@{/coffee-beans/new}">새 원두 등록</a>
+            </div>
+        </section>
+
+        <section class="home-panel home-panel--map">
+            <div class="home-panel__header">
+                <div>
+                    <span>Origin Map</span>
+                    <h2>경험한 산지</h2>
+                </div>
+                <a th:href="@{/coffee-beans}">원두 보기</a>
+            </div>
+            <div class="origin-map-shell">
+                <section class="origin-map-visual" aria-label="커피 원산지 세계 지도">
+                    <div class="origin-map-stage" th:replace="~{fragments/world-map :: worldMap}"></div>
+                    <div class="origin-map-zoom" aria-label="세계 지도 확대 조절">
+                        <button type="button" data-origin-zoom-out aria-label="지도 축소">−</button>
+                        <span data-origin-zoom-label>100%</span>
+                        <button type="button" data-origin-zoom-in aria-label="지도 확대">+</button>
+                        <button type="button" data-origin-zoom-reset>초기화</button>
+                    </div>
+
+                    <section class="origin-map-stats" aria-label="원산지 경험 요약">
+                        <article>
+                            <span>Countries</span>
+                            <strong data-stat="countries">0</strong>
+                            <small>경험한 산지</small>
+                        </article>
+                        <article>
+                            <span>Beans</span>
+                            <strong data-stat="beans">0</strong>
+                            <small>기록한 원두</small>
+                        </article>
+                        <article>
+                            <span>Brews</span>
+                            <strong data-stat="brews">0</strong>
+                            <small>브루잉 순간</small>
+                        </article>
+                    </section>
+                </section>
+            </div>
+        </section>
+
+        <section class="home-panel home-panel--timeline">
+            <div class="home-panel__header">
+                <div>
+                    <span>Recent</span>
+                    <h2>최근 기록</h2>
+                </div>
+                <a th:href="@{/brew-records}">전체 보기</a>
+            </div>
+            <div class="home-timeline">
+                <article class="home-timeline-card record-card" th:each="record : ${recentBrews}">
+                    <a class="record-card__link" th:href="@{|/brew-records/${record.id}|}">
+                        <span class="home-timeline-card__type">브루잉</span>
+                        <strong th:text="${record.coffeeBeanName}">원두 이름</strong>
+                        <span th:text="${record.brewedDate != null ? record.brewedDate : '날짜 미기록'}">2026-08-02</span>
+                        <span th:text="${record.rating != null ? record.rating + ' / 5' : '만족도 미기록'}">4 / 5</span>
+                    </a>
                 </article>
-                <article>
-                    <span>Brews</span>
-                    <strong data-stat="brews">0</strong>
-                    <small>브루잉 순간</small>
+                <article class="home-timeline-card record-card" th:each="record : ${recentCafeFilters}">
+                    <a class="record-card__link" th:href="@{|/cafe-filter-coffees/${record.id}|}">
+                        <span class="home-timeline-card__type">카페</span>
+                        <strong th:text="${record.coffeeBeanName}">원두 이름</strong>
+                        <span th:text="${record.purchasePlaceName != null ? record.purchasePlaceName : '카페 미기록'}">카페</span>
+                        <span th:text="${record.temperatureType != null ? record.temperatureType.displayName : '타입 미기록'}">아이스</span>
+                    </a>
                 </article>
-            </section>
+            </div>
+            <div class="home-empty" th:if="${#lists.isEmpty(recentBrews) and #lists.isEmpty(recentCafeFilters)}">
+                <strong>아직 최근 기록이 없어요.</strong>
+                <a th:href="@{/brew-records/new}">첫 기록 남기기</a>
+            </div>
         </section>
 
         <aside class="origin-country-panel" data-country-panel aria-live="polite" hidden>
