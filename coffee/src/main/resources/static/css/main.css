@@ -2304,10 +2304,10 @@ small {
     .app-header {
         top: 8px;
         grid-template-columns: 1fr;
-        gap: 8px;
         width: min(100% - (var(--app-gutter) * 2), var(--app-max-width));
         margin-top: 8px;
-        padding: 10px;
+        min-height: 58px;
+        padding: 10px 14px;
     }
 
     .app-header__brand {
@@ -2318,21 +2318,7 @@ small {
         font-size: 18px;
     }
 
-    .app-header__nav {
-        width: 100%;
-        justify-content: flex-start;
-        gap: 8px;
-        overflow-x: auto;
-        padding: 0 2px 2px;
-    }
-
-    .app-header__nav a {
-        flex: 0 0 auto;
-        min-height: 34px;
-        padding: 0 6px;
-        white-space: nowrap;
-    }
-
+    .app-header__nav,
     .app-header__actions {
         display: none;
     }
