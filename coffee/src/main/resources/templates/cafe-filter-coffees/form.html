@@ -58,7 +58,12 @@
             <textarea class="extracted-raw-text" readonly th:text="${extractedRawText}"></textarea>
         </section>
 
-        <form class="form" data-form-wizard th:action="@{/cafe-filter-coffees}" th:object="${cafeFilterCoffeeForm}" method="post">
+        <form class="form"
+              data-form-wizard
+              data-model-save-form
+              th:action="@{/cafe-filter-coffees}"
+              th:object="${cafeFilterCoffeeForm}"
+              method="post">
             <input type="hidden" th:field="*{cafeLatitude}">
             <input type="hidden" th:field="*{cafeLongitude}">
             <nav class="form-wizard" aria-label="카페 필터커피 등록 단계">
@@ -487,10 +492,10 @@
     <div class="model-wait-overlay" data-model-wait-overlay hidden role="status" aria-live="polite">
         <div class="model-wait-overlay__panel">
             <span class="model-wait-overlay__spinner" aria-hidden="true"></span>
-            <strong>응답 대기 중입니다</strong>
-            <p>이미지를 읽고 원두 정보를 정리하고 있어요.</p>
+            <strong data-model-wait-title>응답 대기 중입니다</strong>
+            <p data-model-wait-description>이미지를 읽고 원두 정보를 정리하고 있어요.</p>
         </div>
     </div>
-    <script th:src="@{/js/form-wizard.js(v='save-validation-20260801')}"></script>
+    <script th:src="@{/js/form-wizard.js(v='bean-save-wait-20260802')}"></script>
 </body>
 </html>

@@ -85,8 +85,27 @@ document.querySelectorAll('[data-form-wizard]').forEach((form) => {
     setActiveStep(0, false);
 });
 
-document.querySelectorAll('[data-card-extraction-form]').forEach((form) => {
+function showModelWaitOverlay(title, description) {
     const overlay = document.querySelector('[data-model-wait-overlay]');
+    const titleElement = overlay?.querySelector('[data-model-wait-title]');
+    const descriptionElement = overlay?.querySelector('[data-model-wait-description]');
+
+    if (!overlay) {
+        return;
+    }
+
+    if (titleElement) {
+        titleElement.textContent = title;
+    }
+    if (descriptionElement) {
+        descriptionElement.textContent = description;
+    }
+
+    overlay.hidden = false;
+    document.body.classList.add('is-model-waiting');
+}
+
+document.querySelectorAll('[data-card-extraction-form]').forEach((form) => {
     const submitButton = form.querySelector('button[type="submit"]');
 
     form.addEventListener('submit', () => {
@@ -96,9 +115,28 @@ document.querySelectorAll('[data-card-extraction-form]').forEach((form) => {
             submitButton.dataset.originalText = submitButton.textContent || '';
             submitButton.textContent = '분석 중...';
         }
-        if (overlay) {
-            overlay.hidden = false;
-            document.body.classList.add('is-model-waiting');
+        showModelWaitOverlay('응답 대기 중입니다', '이미지를 읽고 원두 정보를 정리하고 있어요.');
+    });
+});
+
+document.querySelectorAll('[data-model-save-form]').forEach((form) => {
+    const submitButton = form.querySelector('[data-wizard-submit], button[type="submit"]');
+    const customFlavorNotesInput = form.querySelector('[name="customFlavorNotesText"]');
+
+    form.addEventListener('submit', () => {
+        const canValidate = typeof form.checkValidity === 'function';
+        const shouldWaitForModel = customFlavorNotesInput?.value?.trim();
+
+        if ((canValidate && !form.checkValidity()) || !shouldWaitForModel) {
+            return;
         }
+
+        form.setAttribute('aria-busy', 'true');
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.dataset.originalText = submitButton.textContent || '';
+            submitButton.textContent = '저장 중...';
+        }
+        showModelWaitOverlay('원두를 저장중입니다', '새 향미 노트의 색상을 정리하고 저장하고 있어요.');
     });
 });
