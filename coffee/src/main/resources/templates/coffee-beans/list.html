@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>원두 관리 - BrewLog</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='home-dashboard-20260802')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='bean-list-app-20260802')}">
 </head>
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('beans')}"></header>
@@ -22,7 +22,7 @@
 
         <p class="flash" th:if="${message}" th:text="${message}"></p>
 
-        <form class="search" th:action="@{/coffee-beans}" method="get">
+        <form class="search bean-search" th:action="@{/coffee-beans}" method="get">
             <input type="hidden" name="countryCode" th:if="${selectedCountryCode != null}" th:value="${selectedCountryCode}">
             <input type="search" name="keyword" th:value="${keyword}" placeholder="원두 이름으로 검색">
             <button class="button button--secondary" type="submit">검색</button>

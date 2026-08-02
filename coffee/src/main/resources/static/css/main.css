@@ -813,6 +813,15 @@ h1 {
     background: transparent;
 }
 
+.bean-search {
+    align-items: center;
+}
+
+.bean-search .button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
 .filter-summary {
     display: flex;
     align-items: center;
@@ -3148,6 +3157,23 @@ small {
         padding: 3px;
     }
 
+    .bean-search.search {
+        flex-direction: row;
+        align-items: center;
+        gap: 4px;
+        padding: 3px;
+    }
+
+    .bean-search input {
+        min-width: 0;
+    }
+
+    .bean-search .button {
+        min-height: 36px;
+        padding: 0 10px;
+        font-size: 13px;
+    }
+
     input,
     select,
     textarea {
@@ -3404,13 +3430,13 @@ small {
     }
 
     .coffee-bean-section {
-        gap: 8px;
-        padding: 11px;
+        gap: 7px;
+        padding: 10px;
     }
 
     .coffee-bean-section__header {
         gap: 10px;
-        padding-bottom: 8px;
+        padding-bottom: 7px;
     }
 
     .coffee-bean-section__header h2 {
@@ -3434,8 +3460,8 @@ small {
 
     .coffee-bean-section .record-card__link,
     .record-card__link {
-        min-height: 92px;
-        padding: 10px;
+        min-height: 82px;
+        padding: 9px;
     }
 
     .coffee-bean-section .record-card__link {
@@ -3488,7 +3514,7 @@ small {
     }
 
     .coffee-bean-section .coffee-bean-card__meta span {
-        min-height: 22px;
+        min-height: 20px;
         padding: 0 7px;
         font-size: 12px;
     }
