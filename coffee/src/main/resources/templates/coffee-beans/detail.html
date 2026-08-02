@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${coffeeBean.name + ' - BrewLog'}">원두 상세 - BrewLog</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='home-dashboard-20260802')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='bean-detail-app-20260802')}">
 </head>
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('beans')}"></header>
     <main class="page page--narrow">
-        <header class="page__header page__header--detail">
+        <header class="page__header page__header--detail bean-detail-page-header">
             <div>
                 <a class="text-link" th:href="@{/coffee-beans}">원두 목록</a>
-                <h1 th:text="${coffeeBean.name}">원두 이름</h1>
+                <h1>원두 상세</h1>
             </div>
             <div class="button-group">
                 <a class="button button--secondary" th:href="@{/coffee-beans/{id}/edit(id=${coffeeBean.id})}">수정</a>
@@ -24,9 +24,20 @@
 
         <p class="flash" th:if="${message}" th:text="${message}"></p>
 
-        <section class="detail__memo">
-            <h2>향미 노트</h2>
+        <section class="bean-detail-hero">
             <span class="flavor-gradient flavor-gradient--large" th:style="${coffeeBean.flavorGradientStyle}"></span>
+            <div class="bean-detail-hero__title">
+                <div>
+                    <span th:text="${coffeeBean.roastery ?: '로스터리 미기록'}">로스터리</span>
+                    <h2 th:text="${coffeeBean.name}">원두 이름</h2>
+                </div>
+                <a class="button button--primary" th:href="@{/brew-records/new}">브루잉 기록</a>
+            </div>
+            <div class="bean-detail-hero__metrics">
+                <span th:text="${coffeeBean.weight != null ? coffeeBean.weight + 'g 남음' : '무게 미기록'}">200g 남음</span>
+                <span th:text="${coffeeBean.status != null ? coffeeBean.status.displayName : '상태 미기록'}">보유 중</span>
+                <span th:text="${coffeeBean.processType ?: '가공 미기록'}">WASHED</span>
+            </div>
             <div class="selected-tags" th:if="${!#lists.isEmpty(coffeeBean.flavorNotes) || !#lists.isEmpty(coffeeBean.customFlavorNotes)}">
                 <span th:each="note : ${coffeeBean.flavorNotes}"
                       th:style="'border-color:' + ${note.color} + '; background:' + ${note.color} + '22;'"
@@ -39,57 +50,83 @@
             <p th:if="${#lists.isEmpty(coffeeBean.flavorNotes) && #lists.isEmpty(coffeeBean.customFlavorNotes)}">선택한 향미 노트가 없습니다.</p>
         </section>
 
+        <section class="bean-detail-section">
+            <div class="bean-detail-section__header">
+                <div>
+                    <span>Recent Brew</span>
+                    <h2>최근 브루잉</h2>
+                </div>
+                <a th:href="@{/brew-records}">전체 보기</a>
+            </div>
+            <div class="bean-detail-brews" th:if="${!#lists.isEmpty(recentBrewRecords)}">
+                <article class="record-card" th:each="record : ${recentBrewRecords}">
+                    <a class="record-card__link" th:href="@{/brew-records/{id}(id=${record.id})}">
+                        <span class="record-card__date" th:text="${record.brewedDate ?: '날짜 미기록'}">2026-08-02</span>
+                        <strong th:text="${record.brewMethod != null ? record.brewMethod.displayName : '브루잉'}">V60</strong>
+                        <span th:text="${record.rating != null ? record.rating + ' / 5' : '만족도 미기록'}">4 / 5</span>
+                    </a>
+                </article>
+            </div>
+            <div class="home-empty" th:if="${#lists.isEmpty(recentBrewRecords)}">
+                <strong>아직 이 원두로 남긴 브루잉이 없어요.</strong>
+                <a th:href="@{/brew-records/new}">기록하기</a>
+            </div>
+        </section>
+
         <section class="detail">
-            <dl>
-                <div>
-                    <dt>로스터리</dt>
-                    <dd th:text="${coffeeBean.roastery ?: '-'}">브루잉 로스터스</dd>
-                </div>
-                <div>
-                    <dt>국가</dt>
-                    <dd th:text="${coffeeBean.country ?: '-'}">Ethiopia</dd>
-                </div>
-                <div>
-                    <dt>지역</dt>
-                    <dd th:text="${coffeeBean.region ?: '-'}">Guji</dd>
-                </div>
-                <div>
-                    <dt>농장</dt>
-                    <dd th:text="${coffeeBean.farm ?: '-'}">Hambela</dd>
-                </div>
-                <div>
-                    <dt>품종</dt>
-                    <dd th:text="${coffeeBean.variety ?: '-'}">Heirloom</dd>
-                </div>
-                <div>
-                    <dt>고도</dt>
-                    <dd th:text="${coffeeBean.altitude ?: '-'}">1900-2100m</dd>
-                </div>
-                <div>
-                    <dt>가공 방식</dt>
-                    <dd th:text="${coffeeBean.processType ?: '-'}">WASHED</dd>
-                </div>
-                <div>
-                    <dt>원두 상태</dt>
-                    <dd th:text="${coffeeBean.status != null ? coffeeBean.status.displayName : '-'}">보유 중</dd>
-                </div>
-                <div>
-                    <dt>로스팅일</dt>
-                    <dd th:text="${coffeeBean.roastedDate ?: '-'}">2026-05-01</dd>
-                </div>
-                <div>
-                    <dt>구매일</dt>
-                    <dd th:text="${coffeeBean.purchasedDate ?: '-'}">2026-05-02</dd>
-                </div>
-                <div>
-                    <dt>가격</dt>
-                    <dd th:text="${coffeeBean.price != null ? #numbers.formatInteger(coffeeBean.price, 0, 'COMMA') + '원' : '-'}">18,000원</dd>
-                </div>
-                <div>
-                    <dt>남은 무게</dt>
-                    <dd th:text="${coffeeBean.weight != null ? coffeeBean.weight + 'g' : '-'}">200g</dd>
-                </div>
-            </dl>
+            <details class="bean-detail-section" open>
+                <summary>세부정보</summary>
+                <dl>
+                    <div>
+                        <dt>로스터리</dt>
+                        <dd th:text="${coffeeBean.roastery ?: '-'}">브루잉 로스터스</dd>
+                    </div>
+                    <div>
+                        <dt>국가</dt>
+                        <dd th:text="${coffeeBean.country ?: '-'}">Ethiopia</dd>
+                    </div>
+                    <div>
+                        <dt>지역</dt>
+                        <dd th:text="${coffeeBean.region ?: '-'}">Guji</dd>
+                    </div>
+                    <div>
+                        <dt>농장</dt>
+                        <dd th:text="${coffeeBean.farm ?: '-'}">Hambela</dd>
+                    </div>
+                    <div>
+                        <dt>품종</dt>
+                        <dd th:text="${coffeeBean.variety ?: '-'}">Heirloom</dd>
+                    </div>
+                    <div>
+                        <dt>고도</dt>
+                        <dd th:text="${coffeeBean.altitude ?: '-'}">1900-2100m</dd>
+                    </div>
+                    <div>
+                        <dt>가공 방식</dt>
+                        <dd th:text="${coffeeBean.processType ?: '-'}">WASHED</dd>
+                    </div>
+                    <div>
+                        <dt>원두 상태</dt>
+                        <dd th:text="${coffeeBean.status != null ? coffeeBean.status.displayName : '-'}">보유 중</dd>
+                    </div>
+                    <div>
+                        <dt>로스팅일</dt>
+                        <dd th:text="${coffeeBean.roastedDate ?: '-'}">2026-05-01</dd>
+                    </div>
+                    <div>
+                        <dt>구매일</dt>
+                        <dd th:text="${coffeeBean.purchasedDate ?: '-'}">2026-05-02</dd>
+                    </div>
+                    <div>
+                        <dt>가격</dt>
+                        <dd th:text="${coffeeBean.price != null ? #numbers.formatInteger(coffeeBean.price, 0, 'COMMA') + '원' : '-'}">18,000원</dd>
+                    </div>
+                    <div>
+                        <dt>남은 무게</dt>
+                        <dd th:text="${coffeeBean.weight != null ? coffeeBean.weight + 'g' : '-'}">200g</dd>
+                    </div>
+                </dl>
+            </details>
 
             <section class="detail__memo">
                 <h2>구매처</h2>

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.hsg.coffee.domain.brewRecord.service.BrewRecordService;
 import com.hsg.coffee.domain.brewRecord.entity.FlavorCategory;
 import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCreateForm;
@@ -44,6 +45,7 @@ public class CoffeeBeanController {
     private final CoffeeBeanService coffeeBeanService;
     private final CoffeeBeanCardExtractionService coffeeBeanCardExtractionService;
     private final PurchasePlaceService purchasePlaceService;
+    private final BrewRecordService brewRecordService;
 
     @Value("${brewlog.kakao.javascript-key:}")
     private String kakaoJavascriptKey;
@@ -119,6 +121,9 @@ public class CoffeeBeanController {
     @GetMapping("/{id}")
     public String detail(@PathVariable Long id, Model model) {
         model.addAttribute("coffeeBean", coffeeBeanService.get(id));
+        model.addAttribute("recentBrewRecords", brewRecordService.getByCoffeeBean(id).stream()
+                .limit(3)
+                .toList());
         addKakaoAttributes(model);
         return "coffee-beans/detail";
     }
