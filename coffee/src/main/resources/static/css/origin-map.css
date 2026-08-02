@@ -32,7 +32,7 @@
 
 .home-dashboard .origin-map-stage {
     min-height: 380px;
-    padding: 16px 0 86px;
+    padding: 16px 0 56px;
 }
 
 .home-dashboard .world-map {
@@ -41,9 +41,37 @@
 }
 
 .home-dashboard .origin-map-stats {
-    right: 18px;
-    bottom: 14px;
-    left: 18px;
+    right: 20px;
+    bottom: 16px;
+    left: 20px;
+}
+
+.home-dashboard .origin-map-stats article {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "label value"
+        "caption value";
+    align-items: center;
+    gap: 1px 12px;
+    padding: 10px 16px;
+}
+
+.home-dashboard .origin-map-stats span {
+    grid-area: label;
+    font-size: 13px;
+    line-height: 1.1;
+}
+
+.home-dashboard .origin-map-stats strong {
+    grid-area: value;
+    font-size: 24px;
+    line-height: 1;
+}
+
+.home-dashboard .origin-map-stats small {
+    grid-area: caption;
+    font-size: 12px;
+    line-height: 1.25;
 }
 
 .origin-map-visual {
@@ -430,7 +458,7 @@
     }
 
     .home-dashboard .origin-map-stage {
-        padding: 8px 0 82px;
+        padding: 8px 0 52px;
     }
 
     .origin-map-zoom {
@@ -471,7 +499,7 @@
     }
 
     .home-dashboard .origin-map-stats article {
-        padding: 10px;
+        padding: 8px 10px;
         border-right: 1px solid rgba(132, 105, 76, 0.18);
         border-bottom: 0;
     }
@@ -484,13 +512,25 @@
         font-size: 14px;
     }
 
+    .home-dashboard .origin-map-stats span {
+        font-size: 11px;
+    }
+
     .origin-map-stats strong {
         font-size: 28px;
         line-height: 1.08;
     }
 
+    .home-dashboard .origin-map-stats strong {
+        font-size: 20px;
+    }
+
     .origin-map-stats small {
         font-size: 13px;
+    }
+
+    .home-dashboard .origin-map-stats small {
+        font-size: 10px;
     }
 
     .origin-country-panel {
@@ -568,6 +608,17 @@
 
     .origin-map-stats article {
         padding: 13px 14px;
+    }
+
+    .home-dashboard .origin-map-stats {
+        right: 8px;
+        bottom: 8px;
+        left: 8px;
+    }
+
+    .home-dashboard .origin-map-stats article {
+        gap: 1px 6px;
+        padding: 7px 8px;
     }
 
     .origin-country-panel h1 {
