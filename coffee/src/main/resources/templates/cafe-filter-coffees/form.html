@@ -275,6 +275,64 @@
             </section>
 
             <section class="form-section" data-wizard-step>
+                <h2>맛 프로파일</h2>
+                <div class="taste-profile-layout">
+                    <div class="taste-chart" data-taste-chart data-input-mode="true">
+                        <svg viewBox="0 0 220 220" role="img" aria-label="맛 프로파일 차트">
+                            <g data-chart-grid></g>
+                            <g data-chart-axis></g>
+                            <polygon data-chart-polygon points="" />
+                            <g data-chart-labels></g>
+                        </svg>
+                    </div>
+                    <div class="taste-grid">
+                        <div class="taste-row">
+                            <span>산미</span>
+                            <label th:each="score : ${tasteScores}">
+                                <input type="radio" th:field="*{acidity}" th:value="${score}">
+                                <span th:text="${score}">1</span>
+                            </label>
+                        </div>
+                        <div class="taste-row">
+                            <span>단맛</span>
+                            <label th:each="score : ${tasteScores}">
+                                <input type="radio" th:field="*{sweetness}" th:value="${score}">
+                                <span th:text="${score}">1</span>
+                            </label>
+                        </div>
+                        <div class="taste-row">
+                            <span>쓴맛</span>
+                            <label th:each="score : ${tasteScores}">
+                                <input type="radio" th:field="*{bitterness}" th:value="${score}">
+                                <span th:text="${score}">1</span>
+                            </label>
+                        </div>
+                        <div class="taste-row">
+                            <span>바디감</span>
+                            <label th:each="score : ${tasteScores}">
+                                <input type="radio" th:field="*{body}" th:value="${score}">
+                                <span th:text="${score}">1</span>
+                            </label>
+                        </div>
+                        <div class="taste-row">
+                            <span>향</span>
+                            <label th:each="score : ${tasteScores}">
+                                <input type="radio" th:field="*{aroma}" th:value="${score}">
+                                <span th:text="${score}">1</span>
+                            </label>
+                        </div>
+                        <div class="taste-row">
+                            <span>밸런스</span>
+                            <label th:each="score : ${tasteScores}">
+                                <input type="radio" th:field="*{balance}" th:value="${score}">
+                                <span th:text="${score}">1</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="form-section" data-wizard-step>
                 <h2>느낌</h2>
                 <div class="score-options">
                     <label class="score-pill" th:each="score : ${tasteScores}">
@@ -490,6 +548,91 @@
         } else {
             initializeKakaoPlaceSearch();
         }
+    </script>
+    <script>
+        function renderTasteChart(chart, values) {
+            const labels = ['산미', '단맛', '쓴맛', '바디감', '향', '밸런스'];
+            const center = 110;
+            const radius = 78;
+            const labelRadius = 99;
+            const point = (value, index, baseRadius = radius) => {
+                const angle = (-90 + index * 60) * Math.PI / 180;
+                const scaledRadius = baseRadius * value / 5;
+                return [
+                    center + Math.cos(angle) * scaledRadius,
+                    center + Math.sin(angle) * scaledRadius
+                ];
+            };
+
+            const grid = chart.querySelector('[data-chart-grid]');
+            const axis = chart.querySelector('[data-chart-axis]');
+            const labelsGroup = chart.querySelector('[data-chart-labels]');
+            const polygon = chart.querySelector('[data-chart-polygon]');
+
+            grid.innerHTML = '';
+            axis.innerHTML = '';
+            labelsGroup.innerHTML = '';
+            polygon.setAttribute('fill', 'rgba(181, 137, 90, 0.26)');
+            polygon.setAttribute('stroke', '#b5895a');
+            polygon.setAttribute('stroke-width', '2');
+
+            for (let level = 1; level <= 5; level += 1) {
+                const gridPoints = labels.map((_, index) => point(level, index)).map(([x, y]) => `${x},${y}`).join(' ');
+                const gridPolygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                gridPolygon.setAttribute('points', gridPoints);
+                gridPolygon.setAttribute('class', 'taste-chart__grid');
+                gridPolygon.setAttribute('fill', 'none');
+                gridPolygon.setAttribute('stroke', 'rgba(184, 156, 122, 0.38)');
+                gridPolygon.setAttribute('stroke-width', '1');
+                grid.appendChild(gridPolygon);
+            }
+
+            labels.forEach((label, index) => {
+                const [x, y] = point(5, index);
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', center);
+                line.setAttribute('y1', center);
+                line.setAttribute('x2', x);
+                line.setAttribute('y2', y);
+                line.setAttribute('class', 'taste-chart__axis');
+                line.setAttribute('stroke', 'rgba(154, 119, 82, 0.24)');
+                line.setAttribute('stroke-width', '1');
+                axis.appendChild(line);
+
+                const [labelX, labelY] = point(5, index, labelRadius);
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', labelX);
+                text.setAttribute('y', labelY);
+                text.setAttribute('class', 'taste-chart__label');
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('dominant-baseline', 'middle');
+                text.setAttribute('fill', '#7a6048');
+                text.setAttribute('font-size', '10');
+                text.setAttribute('font-weight', '700');
+                text.textContent = label;
+                labelsGroup.appendChild(text);
+            });
+
+            const polygonPoints = values.map((value, index) => point(value, index)).map(([x, y]) => `${x},${y}`).join(' ');
+            polygon.setAttribute('points', polygonPoints);
+        }
+
+        document.querySelectorAll('[data-taste-chart]').forEach((chart) => {
+            const form = chart.closest('form');
+            const fields = ['acidity', 'sweetness', 'bitterness', 'body', 'aroma', 'balance'];
+            const readValues = () => fields.map((field) => {
+                const checked = form.querySelector(`input[name="${field}"]:checked`);
+                return checked ? Number(checked.value) : 0;
+            });
+
+            fields.forEach((field) => {
+                form.querySelectorAll(`input[name="${field}"]`).forEach((input) => {
+                    input.addEventListener('change', () => renderTasteChart(chart, readValues()));
+                });
+            });
+
+            renderTasteChart(chart, readValues());
+        });
     </script>
     <div class="model-wait-overlay" data-model-wait-overlay hidden role="status" aria-live="polite">
         <div class="model-wait-overlay__panel">

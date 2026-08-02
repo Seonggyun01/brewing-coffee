@@ -97,6 +97,30 @@ public class CafeFilterCoffeeForm {
     @Max(value = 5, message = "만족도는 5점 이하이어야 합니다.")
     private Integer rating;
 
+    @Min(value = 1, message = "산미는 1점 이상이어야 합니다.")
+    @Max(value = 5, message = "산미는 5점 이하이어야 합니다.")
+    private Integer acidity;
+
+    @Min(value = 1, message = "단맛은 1점 이상이어야 합니다.")
+    @Max(value = 5, message = "단맛은 5점 이하이어야 합니다.")
+    private Integer sweetness;
+
+    @Min(value = 1, message = "쓴맛은 1점 이상이어야 합니다.")
+    @Max(value = 5, message = "쓴맛은 5점 이하이어야 합니다.")
+    private Integer bitterness;
+
+    @Min(value = 1, message = "바디감은 1점 이상이어야 합니다.")
+    @Max(value = 5, message = "바디감은 5점 이하이어야 합니다.")
+    private Integer body;
+
+    @Min(value = 1, message = "향은 1점 이상이어야 합니다.")
+    @Max(value = 5, message = "향은 5점 이하이어야 합니다.")
+    private Integer aroma;
+
+    @Min(value = 1, message = "밸런스는 1점 이상이어야 합니다.")
+    @Max(value = 5, message = "밸런스는 5점 이하이어야 합니다.")
+    private Integer balance;
+
     private List<BrewFeelingTag> feelingTags = new ArrayList<>();
 
     @Size(max = 500, message = "직접 입력한 느낌 태그는 500자 이하로 입력해주세요.")

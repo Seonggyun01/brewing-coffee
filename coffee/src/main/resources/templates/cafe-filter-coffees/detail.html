@@ -44,6 +44,28 @@
             </div>
 
             <section>
+                <h2>맛 프로파일</h2>
+                <div class="taste-profile-layout taste-profile-layout--detail">
+                    <div class="taste-chart" data-taste-chart th:attr="data-values=${cafeFilterCoffee.tasteChartValues}">
+                        <svg viewBox="0 0 220 220" role="img" aria-label="맛 프로파일 차트">
+                            <g data-chart-grid></g>
+                            <g data-chart-axis></g>
+                            <polygon data-chart-polygon points="" />
+                            <g data-chart-labels></g>
+                        </svg>
+                    </div>
+                    <div class="taste-summary">
+                        <span>산미 <strong th:text="${cafeFilterCoffee.acidity ?: '-'}">3</strong></span>
+                        <span>단맛 <strong th:text="${cafeFilterCoffee.sweetness ?: '-'}">4</strong></span>
+                        <span>쓴맛 <strong th:text="${cafeFilterCoffee.bitterness ?: '-'}">2</strong></span>
+                        <span>바디감 <strong th:text="${cafeFilterCoffee.body ?: '-'}">3</strong></span>
+                        <span>향 <strong th:text="${cafeFilterCoffee.aroma ?: '-'}">5</strong></span>
+                        <span>밸런스 <strong th:text="${cafeFilterCoffee.balance ?: '-'}">4</strong></span>
+                    </div>
+                </div>
+            </section>
+
+            <section>
                 <h2>향미</h2>
                 <p th:text="${cafeFilterCoffee.roastery ?: '로스터리 미기록'}">로스터리</p>
                 <div class="selected-tags" th:if="${!#lists.isEmpty(cafeFilterCoffee.flavorNotes) || !#lists.isEmpty(cafeFilterCoffee.customFlavorNotes)}">
@@ -97,5 +119,78 @@
             </section>
         </section>
     </main>
+    <script>
+        function renderTasteChart(chart, values) {
+            const labels = ['산미', '단맛', '쓴맛', '바디감', '향', '밸런스'];
+            const center = 110;
+            const radius = 78;
+            const labelRadius = 99;
+            const point = (value, index, baseRadius = radius) => {
+                const angle = (-90 + index * 60) * Math.PI / 180;
+                const scaledRadius = baseRadius * value / 5;
+                return [
+                    center + Math.cos(angle) * scaledRadius,
+                    center + Math.sin(angle) * scaledRadius
+                ];
+            };
+
+            const grid = chart.querySelector('[data-chart-grid]');
+            const axis = chart.querySelector('[data-chart-axis]');
+            const labelsGroup = chart.querySelector('[data-chart-labels]');
+            const polygon = chart.querySelector('[data-chart-polygon]');
+
+            grid.innerHTML = '';
+            axis.innerHTML = '';
+            labelsGroup.innerHTML = '';
+            polygon.setAttribute('fill', 'rgba(181, 137, 90, 0.26)');
+            polygon.setAttribute('stroke', '#b5895a');
+            polygon.setAttribute('stroke-width', '2');
+
+            for (let level = 1; level <= 5; level += 1) {
+                const gridPoints = labels.map((_, index) => point(level, index)).map(([x, y]) => `${x},${y}`).join(' ');
+                const gridPolygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                gridPolygon.setAttribute('points', gridPoints);
+                gridPolygon.setAttribute('class', 'taste-chart__grid');
+                gridPolygon.setAttribute('fill', 'none');
+                gridPolygon.setAttribute('stroke', 'rgba(184, 156, 122, 0.38)');
+                gridPolygon.setAttribute('stroke-width', '1');
+                grid.appendChild(gridPolygon);
+            }
+
+            labels.forEach((label, index) => {
+                const [x, y] = point(5, index);
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', center);
+                line.setAttribute('y1', center);
+                line.setAttribute('x2', x);
+                line.setAttribute('y2', y);
+                line.setAttribute('class', 'taste-chart__axis');
+                line.setAttribute('stroke', 'rgba(154, 119, 82, 0.24)');
+                line.setAttribute('stroke-width', '1');
+                axis.appendChild(line);
+
+                const [labelX, labelY] = point(5, index, labelRadius);
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', labelX);
+                text.setAttribute('y', labelY);
+                text.setAttribute('class', 'taste-chart__label');
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('dominant-baseline', 'middle');
+                text.setAttribute('fill', '#7a6048');
+                text.setAttribute('font-size', '10');
+                text.setAttribute('font-weight', '700');
+                text.textContent = label;
+                labelsGroup.appendChild(text);
+            });
+
+            const polygonPoints = values.map((value, index) => point(value, index)).map(([x, y]) => `${x},${y}`).join(' ');
+            polygon.setAttribute('points', polygonPoints);
+        }
+
+        document.querySelectorAll('[data-taste-chart]').forEach((chart) => {
+            const values = (chart.dataset.values || '0,0,0,0,0,0').split(',').map(Number);
+            renderTasteChart(chart, values);
+        });
+    </script>
 </body>
 </html>

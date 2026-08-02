@@ -119,6 +119,12 @@ public class CafeFilterCoffeeService {
         brewRecordForm.setBrewTimeSec(form.isRecordRecipe() ? form.getBrewTimeSec() : null);
         brewRecordForm.setPourSteps(form.isRecordRecipe() ? form.getPourSteps() : List.of());
         brewRecordForm.setRating(form.getRating());
+        brewRecordForm.setAcidity(form.getAcidity());
+        brewRecordForm.setSweetness(form.getSweetness());
+        brewRecordForm.setBitterness(form.getBitterness());
+        brewRecordForm.setBody(form.getBody());
+        brewRecordForm.setAroma(form.getAroma());
+        brewRecordForm.setBalance(form.getBalance());
         brewRecordForm.setFeelingTags(form.getFeelingTags());
         brewRecordForm.setCustomFeelingTagsText(form.getCustomFeelingTagsText());
         brewRecordForm.setMemo(form.getMemo());
