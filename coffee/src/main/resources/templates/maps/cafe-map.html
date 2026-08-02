@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>카페 지도 - BrewLog</title>
     <link rel="stylesheet" th:href="@{/css/main.css(v='map-app-20260802')}">
-    <link rel="stylesheet" th:href="@{/css/cafe-map.css(v=32)}">
+    <link rel="stylesheet" th:href="@{/css/cafe-map.css(v=35)}">
 </head>
 <body class="cafe-map-page">
     <header th:replace="~{fragments/app-header :: appHeader('cafes')}"></header>
@@ -23,10 +23,21 @@
         <section class="cafe-map-layout">
             <div class="cafe-map-card">
                 <div id="cafeMap" class="cafe-map" aria-label="방문 카페 한국 지도">
-                    <button class="cafe-map__back" type="button" data-map-back hidden>전체 지도</button>
-                    <svg class="cafe-map__svg" viewBox="0 0 560 720" role="img" aria-label="대한민국 시도별 방문 카페 지도" data-korea-map></svg>
-                    <div class="cafe-map__grid" aria-hidden="true"></div>
-                    <div class="cafe-map__marker-layer" data-cafe-marker-layer></div>
+                    <div class="cafe-map__actions">
+                        <button class="cafe-map__control" type="button" data-map-reset>전체 지도</button>
+                        <button class="cafe-map__control cafe-map__control--primary" type="button" data-visible-cafe-search>
+                            이 화면에서 카페 찾기
+                        </button>
+                        <button class="cafe-map__control" type="button" data-visible-cafe-clear hidden>검색 지우기</button>
+                    </div>
+                    <p class="cafe-map__search-status" data-visible-cafe-status hidden></p>
+                    <div class="cafe-map__canvas" data-kakao-cafe-map></div>
+                    <div class="cafe-map__empty" data-cafe-map-status>
+                        <strong>카페 지도를 준비하고 있어요.</strong>
+                        <p th:text="${hasKakaoMapKey} ? '방문 카페 위치를 불러오는 중입니다.' : '카카오맵 JavaScript 키 설정이 필요합니다.'">
+                            방문 카페 위치를 불러오는 중입니다.
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -48,6 +59,8 @@
         </section>
     </main>
 
-    <script th:src="@{/js/cafe-map.js(v=29)}"></script>
+    <script th:if="${hasKakaoMapKey}"
+            th:src="@{'https://dapi.kakao.com/v2/maps/sdk.js'(appkey=${kakaoJavascriptKey},libraries='services',autoload='false')}"></script>
+    <script th:src="@{/js/cafe-map.js(v=32)}"></script>
 </body>
 </html>

@@ -1,816 +1,364 @@
 const cafeListElement = document.querySelector('[data-cafe-list]');
 const selectedCafeElement = document.querySelector('[data-selected-cafe]');
 const cafeCountElement = document.querySelector('[data-cafe-count]');
-const markerLayerElement = document.querySelector('[data-cafe-marker-layer]');
-const koreaMapElement = document.querySelector('[data-korea-map]');
-const mapBackButton = document.querySelector('[data-map-back]');
-const cafeMapElement = document.querySelector('#cafeMap');
-const pageElement = document.body;
+const cafeMapCanvas = document.querySelector('[data-kakao-cafe-map]');
+const cafeMapStatus = document.querySelector('[data-cafe-map-status]');
+const mapResetButton = document.querySelector('[data-map-reset]');
+const visibleCafeSearchButton = document.querySelector('[data-visible-cafe-search]');
+const visibleCafeClearButton = document.querySelector('[data-visible-cafe-clear]');
+const visibleCafeStatusElement = document.querySelector('[data-visible-cafe-status]');
 
-const VIEW_BOX = {
-    width: 560,
-    height: 720,
-    value: '0 0 560 720'
+const DEFAULT_CENTER = {
+    latitude: 36.2683,
+    longitude: 127.6358
+};
+const DEFAULT_LEVEL = 13;
+const MAX_VISIBLE_SEARCH_RESULTS = 15;
+
+let cafes = [];
+let map = null;
+let placesService = null;
+let activeInfoWindow = null;
+let activeVisibleInfoOverlay = null;
+let markersByCafeId = new Map();
+let visibleCafeOverlays = [];
+
+const escapeHtml = (value) => String(value || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+
+const hasCoordinate = (cafe) => {
+    return Number.isFinite(Number(cafe.latitude)) && Number.isFinite(Number(cafe.longitude));
 };
 
-const KOREA_BOUNDS = {
-    minLat: 33.0,
-    maxLat: 38.7,
-    minLng: 125.5,
-    maxLng: 130.0
-};
-
-const KOREA_LONGITUDE_SCALE = 0.82;
-
-const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
-const SVG_NS = 'http://www.w3.org/2000/svg';
-const EMPTY_REGION_COLOR = '#ddd2c4';
-const LIGHT_REGION_COLOR = { r: 219, g: 181, b: 122 };
-const DARK_REGION_COLOR = { r: 92, g: 46, b: 31 };
-const ZOOM_STEP = 0.1;
-const DETAIL_ZOOM_THRESHOLD = 1.9;
-const OVERVIEW_ZOOM_INTERVAL_MS = 70;
-const MARKER_PIN_TIP_Y = 198;
-
-let currentCafes = [];
-let currentTopology = null;
-let municipalityTopology = null;
-let currentRegionName = null;
-let focusedRegionName = null;
-let overviewZoomLevel = 1;
-let overviewPanOffset = { x: 0, y: 0 };
-let overviewDragStart = null;
-let isZoomTransitioning = false;
-let lastOverviewZoomAt = 0;
-
-const REGION_LABELS = {
-    Busan: '부산',
-    'Chungcheongbuk-do': '충북',
-    'Chungcheongnam-do': '충남',
-    Daegu: '대구',
-    Daejeon: '대전',
-    'Gangwon-do': '강원',
-    Gwangju: '광주',
-    'Gyeonggi-do': '경기',
-    'Gyeongsangbuk-do': '경북',
-    'Gyeongsangnam-do': '경남',
-    Incheon: '인천',
-    Jeju: '제주',
-    'Jeollabuk-do': '전북',
-    'Jeollanam-do': '전남',
-    Seoul: '서울',
-    Ulsan: '울산'
-};
-
-const ADDRESS_REGION_RULES = [
-    { keyword: '서울', region: 'Seoul' },
-    { keyword: '부산', region: 'Busan' },
-    { keyword: '대구', region: 'Daegu' },
-    { keyword: '인천', region: 'Incheon' },
-    { keyword: '광주', region: 'Gwangju' },
-    { keyword: '대전', region: 'Daejeon' },
-    { keyword: '울산', region: 'Ulsan' },
-    { keyword: '세종', region: 'Chungcheongnam-do' },
-    { keyword: '경기', region: 'Gyeonggi-do' },
-    { keyword: '강원', region: 'Gangwon-do' },
-    { keyword: '충북', region: 'Chungcheongbuk-do' },
-    { keyword: '충청북', region: 'Chungcheongbuk-do' },
-    { keyword: '충남', region: 'Chungcheongnam-do' },
-    { keyword: '충청남', region: 'Chungcheongnam-do' },
-    { keyword: '전북', region: 'Jeollabuk-do' },
-    { keyword: '전라북', region: 'Jeollabuk-do' },
-    { keyword: '전남', region: 'Jeollanam-do' },
-    { keyword: '전라남', region: 'Jeollanam-do' },
-    { keyword: '경북', region: 'Gyeongsangbuk-do' },
-    { keyword: '경상북', region: 'Gyeongsangbuk-do' },
-    { keyword: '경남', region: 'Gyeongsangnam-do' },
-    { keyword: '경상남', region: 'Gyeongsangnam-do' },
-    { keyword: '제주', region: 'Jeju' }
-];
-
-const ADDRESS_SUBREGION_RULES = [
-    { keyword: '광산구', region: 'Gwangju', subregion: 'Gwangsan' },
-    { keyword: '북구', region: 'Gwangju', subregion: 'Buk' },
-    { keyword: '동구', region: 'Gwangju', subregion: 'Dong' },
-    { keyword: '강남구', region: 'Seoul', subregion: 'Gangnam' },
-    { keyword: '강동구', region: 'Seoul', subregion: 'Gandong' },
-    { keyword: '강북구', region: 'Seoul', subregion: 'Gangbuk' },
-    { keyword: '강서구', region: 'Seoul', subregion: 'Gangseo' },
-    { keyword: '관악구', region: 'Seoul', subregion: 'Gwanak' },
-    { keyword: '광진구', region: 'Seoul', subregion: 'Gwang-jin' },
-    { keyword: '구로구', region: 'Seoul', subregion: 'Guro' },
-    { keyword: '금천구', region: 'Seoul', subregion: 'Geum-cheon' },
-    { keyword: '노원구', region: 'Seoul', subregion: 'Nowon' },
-    { keyword: '도봉구', region: 'Seoul', subregion: 'Dobong' },
-    { keyword: '동대문구', region: 'Seoul', subregion: 'Dong-daemun' },
-    { keyword: '동작구', region: 'Seoul', subregion: 'Dongjak' },
-    { keyword: '마포구', region: 'Seoul', subregion: 'Mapo' },
-    { keyword: '서대문구', region: 'Seoul', subregion: 'Seodaemun' },
-    { keyword: '서초구', region: 'Seoul', subregion: 'Seocho' },
-    { keyword: '성동구', region: 'Seoul', subregion: 'Seongdong' },
-    { keyword: '성북구', region: 'Seoul', subregion: 'Seongbuk' },
-    { keyword: '송파구', region: 'Seoul', subregion: 'Songpa' },
-    { keyword: '양천구', region: 'Seoul', subregion: 'Yangcheon' },
-    { keyword: '영등포구', region: 'Seoul', subregion: 'Yeongdeungpo' },
-    { keyword: '용산구', region: 'Seoul', subregion: 'Yongsan' },
-    { keyword: '은평구', region: 'Seoul', subregion: 'Eun-pyeong' },
-    { keyword: '종로구', region: 'Seoul', subregion: 'Jongro' },
-    { keyword: '중구', region: 'Seoul', subregion: 'Jung' },
-    { keyword: '중랑구', region: 'Seoul', subregion: 'Jungnang' }
-];
-
-const coordinateRegionRules = [
-    { region: 'Seoul', test: ({ latitude, longitude }) => latitude >= 37.41 && latitude <= 37.7 && longitude >= 126.76 && longitude <= 127.2 },
-    { region: 'Incheon', test: ({ latitude, longitude }) => latitude >= 37.25 && latitude <= 37.65 && longitude >= 126.35 && longitude <= 126.86 },
-    { region: 'Gyeonggi-do', test: ({ latitude, longitude }) => latitude >= 36.85 && latitude <= 38.35 && longitude >= 126.55 && longitude <= 127.85 },
-    { region: 'Jeju', test: ({ latitude, longitude }) => latitude >= 33.1 && latitude <= 33.65 && longitude >= 126.05 && longitude <= 126.95 },
-    { region: 'Busan', test: ({ latitude, longitude }) => latitude >= 35.0 && latitude <= 35.4 && longitude >= 128.75 && longitude <= 129.35 },
-    { region: 'Daegu', test: ({ latitude, longitude }) => latitude >= 35.75 && latitude <= 36.02 && longitude >= 128.45 && longitude <= 128.8 },
-    { region: 'Daejeon', test: ({ latitude, longitude }) => latitude >= 36.2 && latitude <= 36.5 && longitude >= 127.25 && longitude <= 127.55 },
-    { region: 'Gwangju', test: ({ latitude, longitude }) => latitude >= 35.05 && latitude <= 35.28 && longitude >= 126.75 && longitude <= 127.02 },
-    { region: 'Ulsan', test: ({ latitude, longitude }) => latitude >= 35.35 && latitude <= 35.75 && longitude >= 129.0 && longitude <= 129.5 },
-    { region: 'Gangwon-do', test: ({ latitude, longitude }) => latitude >= 37.0 && longitude >= 127.5 },
-    { region: 'Chungcheongbuk-do', test: ({ latitude, longitude }) => latitude >= 36.45 && latitude < 37.25 && longitude >= 127.45 && longitude < 128.35 },
-    { region: 'Chungcheongnam-do', test: ({ latitude, longitude }) => latitude >= 35.95 && latitude < 37.1 && longitude >= 126.45 && longitude < 127.45 },
-    { region: 'Jeollabuk-do', test: ({ latitude, longitude }) => latitude >= 35.45 && latitude < 36.25 && longitude >= 126.45 && longitude < 127.85 },
-    { region: 'Jeollanam-do', test: ({ latitude }) => latitude < 35.45 },
-    { region: 'Gyeongsangbuk-do', test: ({ latitude, longitude }) => latitude >= 35.75 && latitude < 37.25 && longitude >= 128.0 },
-    { region: 'Gyeongsangnam-do', test: ({ latitude, longitude }) => latitude < 35.75 && longitude >= 127.7 }
-];
-
-const projectCoordinate = ([longitude, latitude]) => {
-    const rawX = ((longitude - KOREA_BOUNDS.minLng) / (KOREA_BOUNDS.maxLng - KOREA_BOUNDS.minLng)) * VIEW_BOX.width;
-    const x = VIEW_BOX.width / 2 + (rawX - VIEW_BOX.width / 2) * KOREA_LONGITUDE_SCALE;
-    const y = ((KOREA_BOUNDS.maxLat - latitude) / (KOREA_BOUNDS.maxLat - KOREA_BOUNDS.minLat)) * VIEW_BOX.height;
-    return [x, y];
-};
-
-const resolveRegionName = (cafe) => {
-    if (Number.isFinite(cafe.latitude) && Number.isFinite(cafe.longitude)) {
-        const coordinateRule = coordinateRegionRules.find((rule) => rule.test(cafe));
-
-        if (coordinateRule) {
-            return coordinateRule.region;
-        }
-    }
-
-    const address = cafe.address || '';
-    const addressRule = ADDRESS_REGION_RULES.find((rule) => address.includes(rule.keyword));
-
-    if (addressRule) {
-        return addressRule.region;
-    }
-
-    return null;
-};
-
-const resolveSubregionName = (cafe, regionName) => {
-    const address = cafe.address || '';
-    const addressRule = ADDRESS_SUBREGION_RULES.find((rule) => {
-        return rule.region === regionName && address.includes(rule.keyword);
-    });
-
-    return addressRule ? addressRule.subregion : null;
-};
-
-const cafesInRegion = (regionName) => {
-    return currentCafes.filter((cafe) => resolveRegionName(cafe) === regionName);
-};
-
-const buildRegionCounts = (cafes) => {
-    return cafes.reduce((counts, cafe) => {
-        const regionName = resolveRegionName(cafe);
-
-        if (!regionName) {
-            return counts;
-        }
-
-        counts.set(regionName, (counts.get(regionName) || 0) + 1);
-        return counts;
-    }, new Map());
-};
-
-const interpolateColor = (from, to, progress) => {
-    const value = (key) => Math.round(from[key] + (to[key] - from[key]) * progress);
-    return `rgb(${value('r')}, ${value('g')}, ${value('b')})`;
-};
-
-const colorForCount = (count, maxCount) => {
-    if (count === 0) {
-        return EMPTY_REGION_COLOR;
-    }
-
-    const progress = maxCount <= 1 ? 0.58 : 0.22 + (count / maxCount) * 0.78;
-    return interpolateColor(LIGHT_REGION_COLOR, DARK_REGION_COLOR, clamp(progress, 0, 1));
-};
-
-const decodeTopoArc = (topology, arcRef) => {
-    const arcIndex = arcRef < 0 ? ~arcRef : arcRef;
-    const arc = topology.arcs[arcIndex];
-    const points = [];
-    let x = 0;
-    let y = 0;
-
-    arc.forEach(([deltaX, deltaY]) => {
-        x += deltaX;
-        y += deltaY;
-        points.push([
-            x * topology.transform.scale[0] + topology.transform.translate[0],
-            y * topology.transform.scale[1] + topology.transform.translate[1]
-        ]);
-    });
-
-    return arcRef < 0 ? points.reverse() : points;
-};
-
-const geometryPolygons = (geometry) => {
-    return geometry.type === 'Polygon' ? [geometry.arcs] : geometry.arcs;
-};
-
-const ringCoordinates = (topology, ring) => {
-    return ring.flatMap((arcRef, arcIndex) => {
-        const points = decodeTopoArc(topology, arcRef);
-        return arcIndex === 0 ? points : points.slice(1);
-    });
-};
-
-const collectProjectedCoordinates = (topology, geometry) => {
-    return geometryPolygons(geometry).flatMap((polygon) => {
-        return polygon.flatMap((ring) => ringCoordinates(topology, ring).map(projectCoordinate));
-    });
-};
-
-const collectGeometryCoordinates = (topology, geometry) => {
-    return geometryPolygons(geometry).map((polygon) => {
-        return polygon.map((ring) => ringCoordinates(topology, ring));
-    });
-};
-
-const boundsForGeometry = (topology, geometry) => {
-    const points = collectProjectedCoordinates(topology, geometry);
-    const xs = points.map(([x]) => x);
-    const ys = points.map(([, y]) => y);
-
-    return {
-        minX: Math.min(...xs),
-        maxX: Math.max(...xs),
-        minY: Math.min(...ys),
-        maxY: Math.max(...ys)
-    };
-};
-
-const boundsForGeometries = (topology, geometries) => {
-    const points = geometries.flatMap((geometry) => collectProjectedCoordinates(topology, geometry));
-    const xs = points.map(([x]) => x);
-    const ys = points.map(([, y]) => y);
-
-    return {
-        minX: Math.min(...xs),
-        maxX: Math.max(...xs),
-        minY: Math.min(...ys),
-        maxY: Math.max(...ys)
-    };
-};
-
-const centerForGeometry = (topology, geometry) => {
-    const bounds = boundsForGeometry(topology, geometry);
-    return {
-        x: (bounds.minX + bounds.maxX) / 2,
-        y: (bounds.minY + bounds.maxY) / 2
-    };
-};
-
-const ringToPath = (topology, ring) => {
-    const coordinates = ringCoordinates(topology, ring);
-
-    if (coordinates.length === 0) {
-        return '';
-    }
-
-    return coordinates.map((coordinate, index) => {
-        const [x, y] = projectCoordinate(coordinate);
-        return `${index === 0 ? 'M' : 'L'}${x.toFixed(2)},${y.toFixed(2)}`;
-    }).join(' ') + ' Z';
-};
-
-const geometryToPath = (topology, geometry) => {
-    return geometryPolygons(geometry).map((polygon) => {
-        return polygon.map((ring) => ringToPath(topology, ring)).join(' ');
-    }).join(' ');
-};
-
-const regionCollection = () => currentTopology.objects['skorea-provinces-geo'];
-const municipalityCollection = () => municipalityTopology.objects['skorea-municipalities-geo'];
-
-const findRegionGeometry = (regionName) => {
-    return regionCollection().geometries.find((geometry) => geometry.properties.NAME_1 === regionName);
-};
-
-const findSubregionGeometries = (regionName) => {
-    if (!municipalityTopology) {
-        return [];
-    }
-
-    return municipalityCollection().geometries.filter((geometry) => geometry.properties.NAME_1 === regionName);
-};
-
-const pointInRing = ([longitude, latitude], ring) => {
-    let isInside = false;
-
-    for (let index = 0, previousIndex = ring.length - 1; index < ring.length; previousIndex = index++) {
-        const [currentLongitude, currentLatitude] = ring[index];
-        const [previousLongitude, previousLatitude] = ring[previousIndex];
-        const intersects = (currentLatitude > latitude) !== (previousLatitude > latitude)
-            && longitude < ((previousLongitude - currentLongitude) * (latitude - currentLatitude)) / (previousLatitude - currentLatitude) + currentLongitude;
-
-        if (intersects) {
-            isInside = !isInside;
-        }
-    }
-
-    return isInside;
-};
-
-const pointInGeometry = (topology, geometry, coordinate) => {
-    return collectGeometryCoordinates(topology, geometry).some((polygon) => {
-        const [outerRing, ...innerRings] = polygon;
-        const isInsideOuterRing = pointInRing(coordinate, outerRing);
-        const isInsideInnerRing = innerRings.some((ring) => pointInRing(coordinate, ring));
-
-        return isInsideOuterRing && !isInsideInnerRing;
-    });
-};
-
-const findSubregionForCafe = (subregions, cafe) => {
-    const regionName = resolveRegionName(cafe);
-    const addressSubregionName = resolveSubregionName(cafe, regionName);
-    const addressSubregion = subregions.find((geometry) => geometry.properties.NAME_2 === addressSubregionName);
-
-    if (addressSubregion) {
-        return addressSubregion;
-    }
-
-    return subregions.find((geometry) => {
-        return pointInGeometry(municipalityTopology, geometry, [cafe.longitude, cafe.latitude]);
-    });
-};
-
-const buildSubregionCounts = (subregions, cafes) => {
-    return cafes.reduce((counts, cafe) => {
-        const subregion = findSubregionForCafe(subregions, cafe);
-
-        if (!subregion) {
-            return counts;
-        }
-
-        const subregionName = subregion.properties.NAME_2;
-        counts.set(subregionName, (counts.get(subregionName) || 0) + 1);
-        return counts;
-    }, new Map());
-};
-
-const setMapScale = (scale) => {
-    koreaMapElement.style.transform = `translate(${overviewPanOffset.x}px, ${overviewPanOffset.y}px) scale(${scale})`;
-    koreaMapElement.classList.toggle('is-overview-zoomed', !currentRegionName && scale > 1);
-};
-
-const resetMapScale = () => {
-    overviewZoomLevel = 1;
-    overviewPanOffset = { x: 0, y: 0 };
-    koreaMapElement.classList.remove('is-overview-dragging');
-    setMapScale(1);
-};
-
-const createRegionPath = (geometry, count, maxCount, options = {}) => {
-    const {
-        topology = currentTopology,
-        isDetail = false,
-        isSubregion = false,
-        onClick = null
-    } = options;
-    const regionName = geometry.properties.NAME_1;
-    const subregionName = geometry.properties.NAME_2;
-    const displayName = subregionName || regionName;
-    const path = document.createElementNS(SVG_NS, 'path');
-
-    path.setAttribute('class', `cafe-map__geo-path${isDetail ? ' cafe-map__geo-path--detail' : ''}${isSubregion ? ' cafe-map__geo-path--subregion' : ''}`);
-    path.setAttribute('d', geometryToPath(topology, geometry));
-    path.setAttribute('fill', colorForCount(count, maxCount));
-    path.setAttribute('data-region', displayName);
-    path.setAttribute('data-region-name', regionName);
-    path.setAttribute('data-count', String(count));
-
-    if (subregionName) {
-        path.setAttribute('data-subregion-name', subregionName);
-    }
-
-    const title = document.createElementNS(SVG_NS, 'title');
-    title.textContent = `${REGION_LABELS[displayName] || displayName}: 방문 카페 ${count}개`;
-    path.appendChild(title);
-
-    if (onClick) {
-        path.addEventListener('click', onClick);
-    }
-
-    if (!isDetail) {
-        path.addEventListener('mouseenter', () => {
-            focusedRegionName = regionName;
-        });
-    }
-
-    return path;
-};
-
-const renderSelectedRegion = (regionName, cafes) => {
-    const label = REGION_LABELS[regionName] || regionName;
-
-    selectedCafeElement.innerHTML = `
-        <span>선택 지역</span>
-        <strong>${label}</strong>
-        <p>이 지역에 기록된 방문 카페 ${cafes.length}개</p>
-        <small>지역 지도를 클릭해 카페 위치를 확인하세요.</small>
+const setStatus = (title, message, isHidden = false) => {
+    cafeMapStatus.classList.toggle('is-hidden', isHidden);
+    cafeMapStatus.innerHTML = `
+        <strong>${escapeHtml(title)}</strong>
+        <p>${escapeHtml(message)}</p>
     `;
 };
 
-const renderSelectedCafe = (cafe) => {
-    selectedCafeElement.innerHTML = `
+const setVisibleCafeStatus = (message) => {
+    visibleCafeStatusElement.hidden = !message;
+    visibleCafeStatusElement.textContent = message || '';
+};
+
+const selectedCafeHtml = (cafe) => {
+    const address = cafe.address || '주소 미기록';
+    const visitCount = cafe.visitCount || 1;
+    const latestVisit = cafe.latestVisitDate ? `<small>최근 방문 ${escapeHtml(cafe.latestVisitDate)}</small>` : '';
+
+    return `
         <span>선택 카페</span>
-        <strong>${cafe.cafeName}</strong>
-        <p>${cafe.address || '주소 미기록'}</p>
-        <small>방문 ${cafe.visitCount}회</small>
+        <strong>${escapeHtml(cafe.cafeName)}</strong>
+        <p>${escapeHtml(address)}</p>
+        <small>방문 ${visitCount}회</small>
+        ${latestVisit}
     `;
 };
 
-const setActiveCafe = (cafe) => {
-    renderSelectedCafe(cafe);
+const selectedVisibleCafeHtml = (place) => {
+    const address = place.road_address_name || place.address_name || '주소 미기록';
+    const link = place.place_url
+        ? `<a href="${escapeHtml(place.place_url)}" target="_blank" rel="noopener noreferrer">카카오맵에서 보기</a>`
+        : '';
 
-    document.querySelectorAll('[data-cafe-id]').forEach((element) => {
-        element.classList.toggle('is-active', String(cafe.id) === element.dataset.cafeId);
-    });
+    return `
+        <span>현재 화면 검색 결과</span>
+        <strong>${escapeHtml(place.place_name)}</strong>
+        <p>${escapeHtml(address)}</p>
+        ${link}
+    `;
 };
 
-const clampPointToGeometry = (point, topology, geometry) => {
-    const bounds = boundsForGeometry(topology, geometry);
-    const inset = Math.min(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY) * 0.04;
+const visitedInfoHtml = (cafe) => {
+    const address = cafe.address || '주소 미기록';
+    const visitCount = cafe.visitCount || 1;
 
-    return {
-        x: clamp(point.x, bounds.minX + inset, bounds.maxX - inset),
-        y: clamp(point.y, bounds.minY + inset, bounds.maxY - inset)
-    };
+    return `
+        <div class="cafe-map-info">
+            <strong>${escapeHtml(cafe.cafeName)}</strong>
+            <p>${escapeHtml(address)}</p>
+            <small>방문 ${visitCount}회</small>
+        </div>
+    `;
 };
 
-const markerPositionForCafe = (cafe, subregions) => {
-    const coordinate = [cafe.longitude, cafe.latitude];
+const visibleCafeInfoHtml = (place) => {
+    const address = place.road_address_name || place.address_name || '주소 미기록';
+    const link = place.place_url
+        ? `<a href="${escapeHtml(place.place_url)}" target="_blank" rel="noopener noreferrer">카카오맵</a>`
+        : '';
 
-    if (Number.isFinite(cafe.longitude) && Number.isFinite(cafe.latitude)) {
-        const [x, y] = projectCoordinate(coordinate);
-        return { x, y };
-    }
-
-    const regionName = resolveRegionName(cafe);
-    const addressSubregionName = resolveSubregionName(cafe, regionName);
-    const addressSubregion = subregions.find((geometry) => geometry.properties.NAME_2 === addressSubregionName);
-
-    if (addressSubregion) {
-        return centerForGeometry(municipalityTopology, addressSubregion);
-    }
-
-    return { x: VIEW_BOX.width / 2, y: VIEW_BOX.height / 2 };
+    return `
+        <div class="cafe-map-info cafe-map-info--visible">
+            <strong>${escapeHtml(place.place_name)}</strong>
+            <p>${escapeHtml(address)}</p>
+            ${link}
+        </div>
+    `;
 };
 
-const renderCafeMarker = (cafe, viewBoxSize, subregions = []) => {
-    const { x, y } = markerPositionForCafe(cafe, subregions);
-    const scale = clamp(viewBoxSize * 0.0001, 0.0075, 0.016);
-    const marker = document.createElementNS(SVG_NS, 'g');
-    const pinGraphic = document.createElementNS(SVG_NS, 'g');
-    const hitArea = document.createElementNS(SVG_NS, 'circle');
-    const pin = document.createElementNS(SVG_NS, 'path');
-    const tooltip = document.createElementNS(SVG_NS, 'g');
-    const tooltipRect = document.createElementNS(SVG_NS, 'rect');
-    const tooltipName = document.createElementNS(SVG_NS, 'text');
-    const tooltipMeta = document.createElementNS(SVG_NS, 'text');
-    const title = document.createElementNS(SVG_NS, 'title');
-    const tooltipWidth = clamp((cafe.cafeName || '').length * 12 + 46, 112, 220);
-    const tooltipScale = clamp(viewBoxSize * 0.00062, 0.07, 0.12);
-    const tooltipX = -(tooltipWidth * tooltipScale) / 2;
-    const tooltipY = -((MARKER_PIN_TIP_Y + 240) * scale + 52 * tooltipScale);
-
-    marker.setAttribute('class', 'cafe-detail-marker');
-    marker.setAttribute('data-cafe-id', String(cafe.id));
-    marker.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)})`);
-    marker.setAttribute('tabindex', '0');
-    marker.setAttribute('role', 'button');
-    marker.setAttribute('aria-label', `${cafe.cafeName} 위치 보기`);
-
-    pinGraphic.setAttribute('class', 'cafe-detail-marker__pin');
-    pinGraphic.setAttribute('transform', `translate(0 ${(-MARKER_PIN_TIP_Y * scale).toFixed(2)}) scale(${scale.toFixed(4)})`);
-
-    hitArea.setAttribute('class', 'cafe-detail-marker__hit');
-    hitArea.setAttribute('cx', '0');
-    hitArea.setAttribute('cy', '0');
-    hitArea.setAttribute('r', String(clamp(viewBoxSize * 0.006, 2.4, 4.2)));
-
-    pin.setAttribute('d', 'M0,-240 C82,-240 148,-174 148,-92 C148,16 0,198 0,198 C0,198 -148,16 -148,-92 C-148,-174 -82,-240 0,-240 Z M0,-146 C-34,-146 -62,-118 -62,-84 C-62,-50 -34,-22 0,-22 C34,-22 62,-50 62,-84 C62,-118 34,-146 0,-146 Z');
-    title.textContent = cafe.cafeName;
-
-    tooltip.setAttribute('class', 'cafe-detail-marker__tooltip');
-    tooltip.setAttribute('transform', `translate(${tooltipX.toFixed(2)} ${tooltipY.toFixed(2)}) scale(${tooltipScale.toFixed(4)})`);
-
-    tooltipRect.setAttribute('width', tooltipWidth.toFixed(2));
-    tooltipRect.setAttribute('height', '44');
-    tooltipRect.setAttribute('rx', '8');
-    tooltipRect.setAttribute('ry', '8');
-
-    tooltipName.setAttribute('x', '12');
-    tooltipName.setAttribute('y', '18');
-    tooltipName.textContent = cafe.cafeName;
-
-    tooltipMeta.setAttribute('x', '12');
-    tooltipMeta.setAttribute('y', '34');
-    tooltipMeta.textContent = cafe.address ? cafe.address.split(' ').slice(-2).join(' ') : `방문 ${cafe.visitCount}회`;
-
-    pinGraphic.appendChild(pin);
-    hitArea.addEventListener('click', () => setActiveCafe(cafe));
-    tooltip.appendChild(tooltipRect);
-    tooltip.appendChild(tooltipName);
-    tooltip.appendChild(tooltipMeta);
-    marker.appendChild(hitArea);
-    marker.appendChild(pinGraphic);
-    marker.appendChild(tooltip);
-    marker.appendChild(title);
-    marker.addEventListener('click', () => setActiveCafe(cafe));
-    marker.addEventListener('keydown', (event) => {
-        if (event.key !== 'Enter' && event.key !== ' ') {
-            return;
-        }
-
-        event.preventDefault();
-        setActiveCafe(cafe);
-    });
-
-    return marker;
-};
-
-const renderOverviewMap = () => {
-    const regionCounts = buildRegionCounts(currentCafes);
-    const maxCount = Math.max(1, ...regionCounts.values());
-
-    currentRegionName = null;
-    focusedRegionName = null;
-    isZoomTransitioning = false;
-    lastOverviewZoomAt = 0;
-    pageElement.classList.remove('has-region-detail');
-    koreaMapElement.setAttribute('viewBox', VIEW_BOX.value);
-    koreaMapElement.innerHTML = '';
-    markerLayerElement.innerHTML = '';
-    mapBackButton.hidden = true;
-    resetMapScale();
-
-    regionCollection().geometries.forEach((geometry) => {
-        const regionName = geometry.properties.NAME_1;
-        const count = regionCounts.get(regionName) || 0;
-        koreaMapElement.appendChild(createRegionPath(geometry, count, maxCount, {
-            onClick: () => selectRegion(regionName)
-        }));
-    });
-
-    cafeCountElement.textContent = currentCafes.length;
-};
-
-const renderDetailMap = (regionName) => {
-    const fallbackGeometry = findRegionGeometry(regionName);
-    const subregions = findSubregionGeometries(regionName);
-    const detailGeometries = subregions.length > 0 ? subregions : [fallbackGeometry];
-    const detailTopology = subregions.length > 0 ? municipalityTopology : currentTopology;
-    const regionCafes = cafesInRegion(regionName);
-    const subregionCounts = buildSubregionCounts(subregions, regionCafes);
-    const maxCount = Math.max(1, ...subregionCounts.values(), regionCafes.length);
-    const bounds = boundsForGeometries(detailTopology, detailGeometries);
-    const padding = Math.max(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY) * 0.18;
-    const minX = Math.max(0, bounds.minX - padding);
-    const minY = Math.max(0, bounds.minY - padding);
-    const width = Math.min(VIEW_BOX.width - minX, bounds.maxX - bounds.minX + padding * 2);
-    const height = Math.min(VIEW_BOX.height - minY, bounds.maxY - bounds.minY + padding * 2);
-
-    currentRegionName = regionName;
-    isZoomTransitioning = false;
-    pageElement.classList.add('has-region-detail');
-    koreaMapElement.setAttribute('viewBox', `${minX} ${minY} ${width} ${height}`);
-    koreaMapElement.innerHTML = '';
-    markerLayerElement.innerHTML = '';
-    mapBackButton.hidden = false;
-    resetMapScale();
-
-    detailGeometries.forEach((geometry) => {
-        const subregionName = geometry.properties.NAME_2;
-        const count = subregionName ? (subregionCounts.get(subregionName) || 0) : regionCafes.length;
-
-        koreaMapElement.appendChild(createRegionPath(geometry, count, maxCount, {
-            topology: detailTopology,
-            isDetail: true,
-            isSubregion: Boolean(subregionName)
-        }));
-    });
-
-    regionCafes.forEach((cafe) => koreaMapElement.appendChild(renderCafeMarker(cafe, Math.max(width, height), subregions)));
-
-    renderSelectedRegion(regionName, regionCafes);
-    renderCafeList(regionCafes);
-};
-
-const selectRegion = (regionName) => {
-    renderDetailMap(regionName);
-};
-
-const regionNameFromEventTarget = (target) => {
-    const path = target.closest?.('[data-region-name]');
-    return path ? path.dataset.regionName : null;
-};
-
-const regionNameFromPoint = (event) => {
-    return document.elementsFromPoint(event.clientX, event.clientY)
-        .map(regionNameFromEventTarget)
-        .find(Boolean) || null;
-};
-
-const zoomIntoRegion = (regionName) => {
-    if (!regionName || isZoomTransitioning) {
-        return;
-    }
-
-    overviewZoomLevel = clamp(overviewZoomLevel + ZOOM_STEP, 1, DETAIL_ZOOM_THRESHOLD);
-    setMapScale(overviewZoomLevel);
-
-    if (overviewZoomLevel >= DETAIL_ZOOM_THRESHOLD) {
-        isZoomTransitioning = true;
-        window.setTimeout(() => selectRegion(regionName), 180);
-    }
-};
-
-const zoomOutOverviewMap = () => {
-    overviewZoomLevel = clamp(overviewZoomLevel - ZOOM_STEP, 1, DETAIL_ZOOM_THRESHOLD);
-    if (overviewZoomLevel === 1) {
-        overviewPanOffset = { x: 0, y: 0 };
-    }
-    setMapScale(overviewZoomLevel);
-};
-
-const startOverviewDrag = (event) => {
-    if (currentRegionName || overviewZoomLevel === 1 || event.button !== 0) {
-        return;
-    }
-
-    overviewDragStart = {
-        pointerId: event.pointerId,
-        x: event.clientX,
-        y: event.clientY,
-        panX: overviewPanOffset.x,
-        panY: overviewPanOffset.y
-    };
-    koreaMapElement.classList.add('is-overview-dragging');
-    cafeMapElement.setPointerCapture(event.pointerId);
-};
-
-const dragOverviewMap = (event) => {
-    if (!overviewDragStart || overviewDragStart.pointerId !== event.pointerId) {
-        return;
-    }
-
-    const deltaX = event.clientX - overviewDragStart.x;
-    const deltaY = event.clientY - overviewDragStart.y;
-
-    overviewPanOffset = {
-        x: overviewDragStart.panX + deltaX,
-        y: overviewDragStart.panY + deltaY
-    };
-    setMapScale(overviewZoomLevel);
-};
-
-const endOverviewDrag = (event) => {
-    if (!overviewDragStart || overviewDragStart.pointerId !== event.pointerId) {
-        return;
-    }
-
-    overviewDragStart = null;
-    koreaMapElement.classList.remove('is-overview-dragging');
-
-    if (cafeMapElement.hasPointerCapture(event.pointerId)) {
-        cafeMapElement.releasePointerCapture(event.pointerId);
-    }
-};
-
-const zoomOutToOverview = () => {
-    if (!currentRegionName || isZoomTransitioning) {
-        return;
-    }
-
-    isZoomTransitioning = true;
-    setMapScale(0.94);
-    window.setTimeout(() => {
-        renderOverviewMap();
-        selectedCafeElement.innerHTML = '<p>지도나 목록에서 카페를 선택하세요.</p>';
-    }, 120);
-};
-
-const renderCafeList = (cafes) => {
-    cafeCountElement.textContent = currentRegionName ? cafes.length : currentCafes.length;
+const renderCafeList = () => {
+    cafeCountElement.textContent = cafes.length;
 
     if (cafes.length === 0) {
         cafeListElement.innerHTML = '<p>표시할 카페가 없습니다.</p>';
+        selectedCafeElement.innerHTML = '<p>카페 필터 기록을 남기면 이곳에 카페가 표시됩니다.</p>';
         return;
     }
 
     cafeListElement.innerHTML = cafes.map((cafe) => `
         <button class="cafe-list-card" type="button" data-cafe-id="${cafe.id}">
-            <strong>${cafe.cafeName}</strong>
-            <span>${cafe.address || '주소 미기록'}</span>
-            <small>방문 ${cafe.visitCount}회</small>
+            <strong>${escapeHtml(cafe.cafeName)}</strong>
+            <span>${escapeHtml(cafe.address || '주소 미기록')}</span>
+            <small>방문 ${cafe.visitCount || 1}회</small>
         </button>
     `).join('');
 
     cafeListElement.querySelectorAll('[data-cafe-id]').forEach((card) => {
         card.addEventListener('click', () => {
-            const cafe = currentCafes.find((item) => String(item.id) === card.dataset.cafeId);
+            const cafe = cafes.find((item) => String(item.id) === card.dataset.cafeId);
             if (cafe) {
-                setActiveCafe(cafe);
+                selectCafe(cafe);
             }
         });
     });
 };
 
-mapBackButton.addEventListener('click', () => {
-    renderOverviewMap();
-    selectedCafeElement.innerHTML = '<p>지도나 목록에서 카페를 선택하세요.</p>';
-});
-
-cafeMapElement.addEventListener('wheel', (event) => {
-    const isZoomIn = event.deltaY < 0;
-    const isZoomOut = event.deltaY > 0;
-
-    if (!currentRegionName && (isZoomIn || isZoomOut)) {
-        const regionName = regionNameFromEventTarget(event.target) || focusedRegionName;
-
-        if (!regionName && overviewZoomLevel === 1) {
-            return;
-        }
-
-        event.preventDefault();
-        const now = Date.now();
-
-        if (now - lastOverviewZoomAt < OVERVIEW_ZOOM_INTERVAL_MS) {
-            return;
-        }
-
-        lastOverviewZoomAt = now;
-
-        if (isZoomIn) {
-            zoomIntoRegion(regionName);
-        } else {
-            zoomOutOverviewMap();
-        }
-
-        return;
-    }
-
-    if (currentRegionName && isZoomOut) {
-        event.preventDefault();
-        zoomOutToOverview();
-    }
-}, { passive: false });
-
-cafeMapElement.addEventListener('click', (event) => {
-    if (currentRegionName) {
-        return;
-    }
-
-    const regionName = regionNameFromEventTarget(event.target) || regionNameFromPoint(event);
-
-    if (regionName) {
-        selectRegion(regionName);
-    }
-});
-
-cafeMapElement.addEventListener('pointerdown', startOverviewDrag);
-cafeMapElement.addEventListener('pointermove', dragOverviewMap);
-cafeMapElement.addEventListener('pointerup', endOverviewDrag);
-cafeMapElement.addEventListener('pointercancel', endOverviewDrag);
-cafeMapElement.addEventListener('lostpointercapture', () => {
-    overviewDragStart = null;
-    koreaMapElement.classList.remove('is-overview-dragging');
-});
-
-Promise.all([
-    fetch('/api/maps/cafes').then((response) => response.json()),
-    fetch('/data/skorea-provinces-topo.json').then((response) => response.json()),
-    fetch('/data/skorea-municipalities-topo.json').then((response) => response.json())
-])
-    .then(([cafes, topology, municipalityData]) => {
-        currentCafes = cafes;
-        currentTopology = topology;
-        municipalityTopology = municipalityData;
-        renderOverviewMap();
-    })
-    .catch(() => {
-        cafeListElement.innerHTML = '<p>카페 데이터를 불러오지 못했습니다.</p>';
-        koreaMapElement.innerHTML = '<text x="280" y="360" text-anchor="middle">지도를 불러오지 못했습니다.</text>';
+const markActiveCard = (cafe) => {
+    document.querySelectorAll('[data-cafe-id]').forEach((element) => {
+        element.classList.toggle('is-active', cafe && String(cafe.id) === element.dataset.cafeId);
     });
+};
+
+const closeActiveInfo = () => {
+    if (activeInfoWindow) {
+        activeInfoWindow.close();
+        activeInfoWindow = null;
+    }
+
+    if (activeVisibleInfoOverlay) {
+        activeVisibleInfoOverlay.setMap(null);
+        activeVisibleInfoOverlay = null;
+    }
+};
+
+const setNationwideView = () => {
+    if (!map) {
+        return;
+    }
+
+    map.setCenter(new kakao.maps.LatLng(DEFAULT_CENTER.latitude, DEFAULT_CENTER.longitude));
+    map.setLevel(DEFAULT_LEVEL);
+};
+
+function selectCafe(cafe) {
+    const marker = markersByCafeId.get(String(cafe.id));
+    if (!map || !marker) {
+        return;
+    }
+
+    const position = marker.getPosition();
+
+    closeActiveInfo();
+    selectedCafeElement.innerHTML = selectedCafeHtml(cafe);
+    markActiveCard(cafe);
+    map.panTo(position);
+
+    if (map.getLevel() > 5) {
+        map.setLevel(5);
+    }
+
+    activeInfoWindow = new kakao.maps.InfoWindow({
+        content: visitedInfoHtml(cafe),
+        removable: true
+    });
+    activeInfoWindow.open(map, marker);
+}
+
+function selectVisibleCafe(place, position) {
+    closeActiveInfo();
+    markActiveCard(null);
+    selectedCafeElement.innerHTML = selectedVisibleCafeHtml(place);
+
+    activeVisibleInfoOverlay = new kakao.maps.CustomOverlay({
+        position,
+        content: visibleCafeInfoHtml(place),
+        xAnchor: 0.5,
+        yAnchor: 1.42,
+        zIndex: 8
+    });
+    activeVisibleInfoOverlay.setMap(map);
+}
+
+const createVisitedMarkers = () => {
+    markersByCafeId = new Map();
+
+    cafes.filter(hasCoordinate).forEach((cafe) => {
+        const position = new kakao.maps.LatLng(Number(cafe.latitude), Number(cafe.longitude));
+        const marker = new kakao.maps.Marker({
+            map,
+            position,
+            title: cafe.cafeName
+        });
+
+        markersByCafeId.set(String(cafe.id), marker);
+        kakao.maps.event.addListener(marker, 'click', () => selectCafe(cafe));
+    });
+};
+
+const createVisibleCafePinElement = (place) => {
+    const markerElement = document.createElement('button');
+    markerElement.type = 'button';
+    markerElement.className = 'cafe-map-visible-pin';
+    markerElement.setAttribute('aria-label', `${place.place_name} 위치 보기`);
+    return markerElement;
+};
+
+const clearVisibleCafeSearch = () => {
+    closeActiveInfo();
+
+    visibleCafeOverlays.forEach((overlay) => overlay.setMap(null));
+    visibleCafeOverlays = [];
+
+    visibleCafeClearButton.hidden = true;
+    setVisibleCafeStatus('');
+};
+
+const renderVisibleCafes = (places) => {
+    clearVisibleCafeSearch();
+
+    places.slice(0, MAX_VISIBLE_SEARCH_RESULTS).forEach((place) => {
+        const position = new kakao.maps.LatLng(Number(place.y), Number(place.x));
+        const markerElement = createVisibleCafePinElement(place);
+        const overlay = new kakao.maps.CustomOverlay({
+            position,
+            content: markerElement,
+            xAnchor: 0.5,
+            yAnchor: 1,
+            zIndex: 6,
+            clickable: true
+        });
+
+        markerElement.addEventListener('click', () => selectVisibleCafe(place, position));
+        overlay.setMap(map);
+        visibleCafeOverlays.push(overlay);
+    });
+
+    visibleCafeClearButton.hidden = false;
+    setVisibleCafeStatus(`현재 지도 화면에서 카페 ${places.length}개를 찾았어요.`);
+    selectedCafeElement.innerHTML = '<p>초록색 핀을 선택하면 현재 화면의 카페 정보를 볼 수 있어요.</p>';
+};
+
+const filterPlacesInCurrentBounds = (places) => {
+    const bounds = map.getBounds();
+
+    return places.filter((place) => {
+        const position = new kakao.maps.LatLng(Number(place.y), Number(place.x));
+        return bounds.contain(position);
+    });
+};
+
+const searchVisibleCafes = () => {
+    if (!map || !placesService || !window.kakao?.maps?.services?.Status) {
+        setVisibleCafeStatus('카카오맵 장소 검색을 사용할 수 없어요.');
+        return;
+    }
+
+    visibleCafeSearchButton.disabled = true;
+    setVisibleCafeStatus('현재 지도 화면에서 카페를 검색하고 있어요.');
+
+    placesService.categorySearch('CE7', (data, status) => {
+        visibleCafeSearchButton.disabled = false;
+
+        const visiblePlaces = status === kakao.maps.services.Status.OK
+            ? filterPlacesInCurrentBounds(data)
+            : [];
+
+        if (visiblePlaces.length === 0) {
+            clearVisibleCafeSearch();
+            setVisibleCafeStatus('현재 지도 화면에서 표시할 카페를 찾지 못했어요.');
+            return;
+        }
+
+        renderVisibleCafes(visiblePlaces);
+    }, {
+        useMapBounds: true
+    });
+};
+
+const initializeMap = () => {
+    if (!window.kakao?.maps?.Map) {
+        setStatus('카카오맵을 불러오지 못했어요.', '키 설정과 JavaScript SDK 도메인 등록을 확인해주세요.');
+        return;
+    }
+
+    map = new kakao.maps.Map(cafeMapCanvas, {
+        center: new kakao.maps.LatLng(DEFAULT_CENTER.latitude, DEFAULT_CENTER.longitude),
+        level: DEFAULT_LEVEL
+    });
+    placesService = window.kakao?.maps?.services?.Places
+        ? new kakao.maps.services.Places(map)
+        : null;
+
+    createVisitedMarkers();
+    setStatus('', '', true);
+    setNationwideView();
+
+    selectedCafeElement.innerHTML = '<p>지도 마커나 목록에서 카페를 선택하세요.</p>';
+
+    window.setTimeout(() => {
+        map.relayout();
+        setNationwideView();
+    }, 0);
+};
+
+const initialize = () => {
+    fetch('/api/maps/cafes')
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error('Failed to load cafes');
+            }
+            return response.json();
+        })
+        .then((data) => {
+            cafes = data.filter(hasCoordinate);
+            renderCafeList();
+
+            if (cafes.length === 0) {
+                setStatus('표시할 카페가 없어요.', '카페 필터 기록에서 좌표가 있는 카페를 등록해보세요.');
+            }
+
+            if (window.kakao?.maps?.load) {
+                kakao.maps.load(initializeMap);
+            } else {
+                initializeMap();
+            }
+        })
+        .catch(() => {
+            cafeListElement.innerHTML = '<p>카페 데이터를 불러오지 못했습니다.</p>';
+            selectedCafeElement.innerHTML = '<p>잠시 후 다시 시도해주세요.</p>';
+            setStatus('카페 데이터를 불러오지 못했어요.', '서버 상태를 확인한 뒤 다시 열어주세요.');
+        });
+};
+
+mapResetButton.addEventListener('click', () => {
+    closeActiveInfo();
+    markActiveCard(null);
+    selectedCafeElement.innerHTML = '<p>지도 마커나 목록에서 카페를 선택하세요.</p>';
+    setNationwideView();
+});
+
+visibleCafeSearchButton.addEventListener('click', searchVisibleCafes);
+visibleCafeClearButton.addEventListener('click', () => {
+    clearVisibleCafeSearch();
+    selectedCafeElement.innerHTML = '<p>지도 마커나 목록에서 카페를 선택하세요.</p>';
+    setNationwideView();
+});
+
+initialize();
