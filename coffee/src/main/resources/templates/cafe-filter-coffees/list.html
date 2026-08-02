@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>카페 필터커피 - BrewLog</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='home-dashboard-20260802')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='cafe-filter-app-20260802-2')}">
 </head>
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('cafe-filter')}"></header>
@@ -19,13 +19,20 @@
 
         <p class="flash" th:if="${message}" th:text="${message}"></p>
 
+        <form class="bean-search cafe-filter-search" th:action="@{/cafe-filter-coffees}" method="get" role="search">
+            <input type="hidden" name="cafeId" th:if="${selectedCafeId != null}" th:value="${selectedCafeId}">
+            <input type="search" name="q" th:value="${query}" placeholder="카페, 원두, 메모로 검색">
+            <button class="button button--secondary" type="submit">검색</button>
+            <a class="button button--ghost" th:href="@{/cafe-filter-coffees}" th:if="${selectedCafeId != null || (query != null && !#strings.isEmpty(query))}">초기화</a>
+        </form>
+
         <section class="cafe-filter-toolbar" th:if="${!#lists.isEmpty(filterCafes)}" aria-label="카페 필터">
-            <a th:href="@{/cafe-filter-coffees}"
+            <a th:href="@{/cafe-filter-coffees(q=${query})}"
                th:classappend="${selectedCafeId == null} ? ' is-active'">
                 전체
             </a>
             <a th:each="cafe : ${filterCafes}"
-               th:href="@{/cafe-filter-coffees(cafeId=${cafe.id})}"
+               th:href="@{/cafe-filter-coffees(cafeId=${cafe.id},q=${query})}"
                th:classappend="${selectedCafeId != null && selectedCafeId == cafe.id} ? ' is-active'"
                th:text="${cafe.name}">
                 카페
@@ -37,14 +44,14 @@
                 <a class="cafe-filter-card__link" th:href="@{/cafe-filter-coffees/{id}(id=${record.id})}">
                     <span class="flavor-gradient" th:style="${record.flavorGradientStyle}"></span>
                     <div class="cafe-filter-card__body">
-                        <span th:text="${record.brewedDate != null ? record.brewedDate : '날짜 미기록'}">2026-07-31</span>
+                        <span th:text="${record.purchasePlaceName ?: '카페 미기록'}">카페</span>
                         <strong th:text="${record.coffeeBeanName}">에티오피아 구지</strong>
-                        <p th:text="${record.purchasePlaceName ?: '카페 미기록'}">카페</p>
-                        <p th:text="${record.roastery ?: '로스터리 미기록'}">로스터리</p>
                         <div>
+                            <small th:text="${record.brewedDate != null ? record.brewedDate : '날짜 미기록'}">2026-07-31</small>
                             <small th:text="${record.temperatureType != null ? record.temperatureType.displayName : '핫/아이스 미기록'}">핫</small>
                             <small th:text="${record.rating != null ? record.rating + '점' : '평점 없음'}">4점</small>
                         </div>
+                        <p th:text="${record.memo != null && !#strings.isEmpty(record.memo) ? record.memo : record.flavorNoteSummary}">카페에서 마신 느낌</p>
                     </div>
                 </a>
             </article>

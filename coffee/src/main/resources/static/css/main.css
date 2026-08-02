@@ -1768,15 +1768,27 @@ small {
 .cafe-filter-list {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
+    gap: 12px;
     align-items: stretch;
+}
+
+.cafe-filter-search {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.cafe-filter-search input {
+    min-width: 0;
 }
 
 .cafe-filter-toolbar {
     display: flex;
     gap: 8px;
     overflow-x: auto;
-    padding: 4px 0 14px;
+    padding: 4px 0 12px;
     scrollbar-width: none;
 }
 
@@ -1817,9 +1829,9 @@ small {
 
 .cafe-filter-card__link {
     display: grid;
-    gap: 14px;
-    min-height: 230px;
-    padding: 18px;
+    gap: 12px;
+    min-height: 188px;
+    padding: 16px;
     color: inherit;
     text-decoration: none;
 }
@@ -1838,9 +1850,13 @@ small {
 }
 
 .cafe-filter-card__body strong {
+    display: -webkit-box;
+    overflow: hidden;
     color: var(--text);
-    font-size: 20px;
-    line-height: 1.35;
+    font-size: 19px;
+    line-height: 1.3;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .cafe-filter-card__body div {
@@ -1852,13 +1868,21 @@ small {
 
 .cafe-filter-card__body small {
     display: inline-flex;
-    min-height: 28px;
+    min-height: 26px;
     align-items: center;
-    padding: 0 10px;
+    padding: 0 9px;
     border-radius: 999px;
     color: var(--accent);
     background: var(--accent-soft);
+    font-size: 12px;
     font-weight: 800;
+}
+
+.cafe-filter-card__body p {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .cafe-filter-detail {
@@ -1875,9 +1899,39 @@ small {
     box-shadow: 0 8px 24px rgba(68, 48, 31, 0.05);
 }
 
+.cafe-filter-detail__experience {
+    display: grid;
+    gap: 8px;
+}
+
+.cafe-filter-detail__experience > span {
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.cafe-filter-detail__experience h2 {
+    margin: 0;
+    font-size: clamp(28px, 4vw, 48px);
+    line-height: 1.08;
+}
+
+.cafe-filter-detail__experience p,
+.cafe-filter-detail > section > p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.55;
+}
+
 .cafe-filter-detail h2 {
     margin: 0 0 12px;
     font-size: 18px;
+}
+
+.cafe-filter-detail .cafe-filter-detail__experience h2 {
+    margin: 0;
+    font-size: clamp(28px, 4vw, 48px);
+    line-height: 1.08;
 }
 
 .cafe-filter-detail__summary {
@@ -3782,19 +3836,52 @@ small {
         font-size: 13px;
     }
 
+    .cafe-filter-search {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 6px;
+        margin-bottom: 0;
+    }
+
+    .cafe-filter-search .button {
+        min-height: 40px;
+        padding: 0 12px;
+        font-size: 13px;
+    }
+
+    .cafe-filter-search .button--ghost {
+        grid-column: 1 / -1;
+        justify-self: start;
+        min-height: 32px;
+        padding: 0 10px;
+    }
+
     .cafe-filter-card__link {
-        gap: 10px;
-        min-height: 188px;
-        padding: 14px;
+        gap: 8px;
+        min-height: 122px;
+        padding: 12px;
+    }
+
+    .cafe-filter-card .flavor-gradient {
+        height: 6px;
     }
 
     .cafe-filter-card__body strong {
-        font-size: 18px;
+        font-size: 16px;
     }
 
     .cafe-filter-card__body > span,
     .cafe-filter-card__body p {
-        font-size: 13px;
+        font-size: 12px;
+    }
+
+    .cafe-filter-card__body div {
+        gap: 5px;
+    }
+
+    .cafe-filter-card__body small {
+        min-height: 21px;
+        padding: 0 7px;
+        font-size: 11px;
     }
 
     .cafe-filter-detail {
@@ -3808,6 +3895,10 @@ small {
 
     .cafe-filter-detail h2 {
         font-size: 17px;
+    }
+
+    .cafe-filter-detail .cafe-filter-detail__experience h2 {
+        font-size: 26px;
     }
 
     .pour-track,
@@ -3855,7 +3946,7 @@ small {
     }
 
     .cafe-filter-card__link {
-        min-height: 190px;
+        min-height: 118px;
     }
 
     .flavor-category-wheel__label {

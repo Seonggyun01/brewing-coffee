@@ -48,11 +48,13 @@ public class CafeFilterCoffeeController {
     @GetMapping
     public String list(
             @RequestParam(required = false) Long cafeId,
+            @RequestParam(required = false) String q,
             Model model
     ) {
-        model.addAttribute("cafeFilterCoffees", cafeFilterCoffeeService.getByCafe(cafeId));
+        model.addAttribute("cafeFilterCoffees", cafeFilterCoffeeService.getByCafeAndQuery(cafeId, q));
         model.addAttribute("filterCafes", cafeFilterCoffeeService.getFilterCafes());
         model.addAttribute("selectedCafeId", cafeId);
+        model.addAttribute("query", q);
         return "cafe-filter-coffees/list";
     }
 

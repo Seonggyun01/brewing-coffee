@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${cafeFilterCoffee.coffeeBeanName + ' - BrewLog'}">카페 필터커피 - BrewLog</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='home-dashboard-20260802')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='cafe-filter-app-20260802-2')}">
 </head>
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('cafe-filter')}"></header>
@@ -21,6 +21,13 @@
 
         <section class="cafe-filter-detail">
             <span class="flavor-gradient flavor-gradient--large" th:style="${cafeFilterCoffee.flavorGradientStyle}"></span>
+
+            <section class="cafe-filter-detail__experience">
+                <span th:text="${cafeFilterCoffee.purchasePlaceName ?: '카페 미기록'}">카페</span>
+                <h2 th:text="${cafeFilterCoffee.coffeeBeanName}">에티오피아 구지</h2>
+                <p th:text="${cafeFilterCoffee.memo ?: '메모가 없습니다.'}">메모</p>
+            </section>
+
             <div class="cafe-filter-detail__summary">
                 <div>
                     <span>마신 날</span>
@@ -37,7 +44,7 @@
             </div>
 
             <section>
-                <h2>원두</h2>
+                <h2>향미</h2>
                 <p th:text="${cafeFilterCoffee.roastery ?: '로스터리 미기록'}">로스터리</p>
                 <div class="selected-tags" th:if="${!#lists.isEmpty(cafeFilterCoffee.flavorNotes) || !#lists.isEmpty(cafeFilterCoffee.customFlavorNotes)}">
                     <span th:each="note : ${cafeFilterCoffee.flavorNotes}"
@@ -57,7 +64,6 @@
                     <span th:each="tag : ${cafeFilterCoffee.customFeelingTags}" th:text="${tag}">맑은 여운</span>
                 </div>
                 <p th:if="${#lists.isEmpty(cafeFilterCoffee.feelingTags) && #lists.isEmpty(cafeFilterCoffee.customFeelingTags)}">느낌 태그가 없습니다.</p>
-                <p th:text="${cafeFilterCoffee.memo ?: '-'}">메모</p>
             </section>
 
             <section th:if="${cafeFilterCoffee.brewMethod != null || cafeFilterCoffee.beanAmount != null || cafeFilterCoffee.waterAmount != null || cafeFilterCoffee.waterTemperature != null || cafeFilterCoffee.grindSizeMicron != null || cafeFilterCoffee.brewTimeSec != null}">

@@ -1,9 +1,11 @@
 package com.hsg.coffee.domain.cafeFilterCoffee.service;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.hsg.coffee.domain.brewRecord.dto.BrewRecordForm;
 import com.hsg.coffee.domain.brewRecord.dto.BrewRecordResponse;
@@ -39,12 +41,36 @@ public class CafeFilterCoffeeService {
         return brewRecordService.getCafeRecordsByPurchasePlaces(purchasePlaceService.getEquivalentCafePlaceIds(cafeId));
     }
 
+    public List<BrewRecordResponse> getByCafeAndQuery(Long cafeId, String query) {
+        List<BrewRecordResponse> records = getByCafe(cafeId);
+        if (!StringUtils.hasText(query)) {
+            return records;
+        }
+
+        String normalizedQuery = normalize(query);
+        return records.stream()
+                .filter(record -> contains(record.getCoffeeBeanName(), normalizedQuery)
+                        || contains(record.getPurchasePlaceName(), normalizedQuery)
+                        || contains(record.getRoastery(), normalizedQuery)
+                        || contains(record.getMemo(), normalizedQuery)
+                        || contains(record.getFlavorNoteSummary(), normalizedQuery))
+                .toList();
+    }
+
     public List<PurchasePlace> getFilterCafes() {
         return purchasePlaceService.getCafePlacesWithFilterRecords();
     }
 
     public BrewRecordResponse get(Long id) {
         return brewRecordService.getCafeRecord(id);
+    }
+
+    private boolean contains(String value, String normalizedQuery) {
+        return StringUtils.hasText(value) && normalize(value).contains(normalizedQuery);
+    }
+
+    private String normalize(String value) {
+        return value.trim().toLowerCase(Locale.ROOT).replaceAll("\\s+", "");
     }
 
     @Transactional
