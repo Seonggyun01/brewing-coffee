@@ -1,22 +1,32 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <body>
-<header class="app-header" th:fragment="appHeader(active)">
-    <a class="app-header__brand" th:href="@{/}">
-        <img class="app-header__logo" th:src="@{/img/brewCoffeeLogo.png(v='logo-20260802')}" alt="BrewLog">
-        <strong>BrewLog</strong>
-    </a>
-    <nav class="app-header__nav" aria-label="주요 메뉴">
-        <a th:href="@{/}" th:classappend="${active == 'home'} ? ' is-active'">Home</a>
-        <a th:href="@{/coffee-beans}" th:classappend="${active == 'beans'} ? ' is-active'">Beans</a>
-        <a th:href="@{/brew-records}" th:classappend="${active == 'records'} ? ' is-active'">Brew Records</a>
-        <a th:href="@{/cafe-filter-coffees}" th:classappend="${active == 'cafe-filter'} ? ' is-active'">Cafe Filter</a>
-        <a th:href="@{/cafes/map}" th:classappend="${active == 'cafes'} ? ' is-active'">Cafe Map</a>
-    </nav>
-    <div class="app-header__actions">
-        <a class="button button--secondary" th:href="@{/cafe-filter-coffees/new}">카페 필터</a>
-        <a class="button button--primary" th:href="@{/coffee-beans/new}">새 원두</a>
-    </div>
+<div class="app-shell-bars" th:fragment="appHeader(active)">
+    <header class="app-header">
+        <a class="app-header__brand" th:href="@{/}">
+            <img class="app-header__logo" th:src="@{/img/brewCoffeeLogo.png(v='logo-20260802')}" alt="BrewLog">
+            <strong>BrewLog</strong>
+        </a>
+        <span class="app-header__screen" th:switch="${active}" aria-hidden="true">
+            <span th:case="'home'">홈</span>
+            <span th:case="'beans'">원두</span>
+            <span th:case="'records'">브루잉</span>
+            <span th:case="'cafe-filter'">카페</span>
+            <span th:case="'cafes'">지도</span>
+            <span th:case="*">BrewLog</span>
+        </span>
+        <nav class="app-header__nav" aria-label="주요 메뉴">
+            <a th:href="@{/}" th:classappend="${active == 'home'} ? ' is-active'">홈</a>
+            <a th:href="@{/coffee-beans}" th:classappend="${active == 'beans'} ? ' is-active'">원두</a>
+            <a th:href="@{/brew-records}" th:classappend="${active == 'records'} ? ' is-active'">브루잉</a>
+            <a th:href="@{/cafe-filter-coffees}" th:classappend="${active == 'cafe-filter'} ? ' is-active'">카페</a>
+            <a th:href="@{/cafes/map}" th:classappend="${active == 'cafes'} ? ' is-active'">지도</a>
+        </nav>
+        <div class="app-header__actions">
+            <a class="button button--secondary" th:href="@{/cafe-filter-coffees/new}">카페 필터</a>
+            <a class="button button--primary" th:href="@{/coffee-beans/new}">새 원두</a>
+        </div>
+    </header>
     <nav class="app-bottom-nav" aria-label="하단 주요 메뉴">
         <a th:href="@{/}" th:classappend="${active == 'home'} ? ' is-active'">
             <span>홈</span>
@@ -43,7 +53,7 @@
         </div>
     </details>
     <script th:src="@{/js/app-actions.js(v='app-fab-20260801-2')}"></script>
-    <script th:src="@{/js/detail-modal.js(v='detail-modal-clean-20260802')}"></script>
-</header>
+    <script th:src="@{/js/detail-modal.js(v='app-shell-20260802')}"></script>
+</div>
 </body>
 </html>
