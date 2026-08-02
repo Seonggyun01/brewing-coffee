@@ -9,14 +9,17 @@
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('cafe-filter')}"></header>
     <main class="page page--narrow cafe-filter-page">
-        <header class="page__header">
+        <header class="page__header page__header--detail">
             <div>
                 <a class="text-link" th:href="@{/cafe-filter-coffees}">카페 필터커피</a>
                 <h1 th:text="${cafeFilterCoffee.coffeeBeanName}">에티오피아 구지</h1>
             </div>
-            <form th:action="@{/cafe-filter-coffees/{id}/delete(id=${cafeFilterCoffee.id})}" method="post">
-                <button class="button button--danger" type="submit">삭제</button>
-            </form>
+            <div class="button-group">
+                <a class="button button--secondary" th:href="@{/cafe-filter-coffees/{id}/edit(id=${cafeFilterCoffee.id})}">수정</a>
+                <form th:action="@{/cafe-filter-coffees/{id}/delete(id=${cafeFilterCoffee.id})}" method="post">
+                    <button class="button button--danger" type="submit">삭제</button>
+                </form>
+            </div>
         </header>
 
         <section class="cafe-filter-detail">

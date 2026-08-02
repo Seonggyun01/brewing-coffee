@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>카페 필터커피 등록 - BrewLog</title>
+    <title th:text="${formTitle + ' - BrewLog'}">카페 필터커피 등록 - BrewLog</title>
     <link rel="stylesheet" th:href="@{/css/main.css(v='form-app-20260802')}">
 </head>
 <body>
@@ -12,12 +12,12 @@
         <header class="page__header">
             <div>
                 <a class="text-link" th:href="@{/cafe-filter-coffees}">카페 필터커피</a>
-                <h1>카페 필터커피 등록</h1>
+                <h1 th:text="${formTitle}">카페 필터커피 등록</h1>
             </div>
-            <a class="button button--ghost" th:href="@{/cafe-filter-coffees}">취소</a>
+            <a class="button button--ghost" th:href="${cancelUrl}">취소</a>
         </header>
 
-        <section class="card-extraction-section">
+        <section class="card-extraction-section" th:unless="${isEditMode}">
             <div class="card-extraction-section__header">
                 <div>
                     <span>Photo Assist</span>
@@ -61,9 +61,9 @@
         <form class="form"
               data-form-wizard
               data-model-save-form
-              data-model-save-title="카페 필터커피를 저장중입니다"
               data-model-save-description="새 향미 노트의 색상을 정리하고 카페 기록을 저장하고 있어요."
-              th:action="@{/cafe-filter-coffees}"
+              th:attr="data-model-save-title=${isEditMode} ? '카페 필터커피를 수정중입니다' : '카페 필터커피를 저장중입니다'"
+              th:action="${isEditMode} ? @{/cafe-filter-coffees/{id}/edit(id=${cafeFilterCoffeeId})} : @{/cafe-filter-coffees}"
               th:object="${cafeFilterCoffeeForm}"
               method="post">
             <input type="hidden" th:field="*{cafeLatitude}">
@@ -359,7 +359,7 @@
             <div class="form__actions">
                 <button class="button button--ghost form__arrow form__arrow--prev" type="button" data-wizard-prev aria-label="이전 단계">←</button>
                 <button class="button button--secondary form__arrow form__arrow--next" type="button" data-wizard-next aria-label="다음 단계">→</button>
-                <button class="button button--primary form__save" type="submit" data-wizard-submit>저장</button>
+                <button class="button button--primary form__save" type="submit" data-wizard-submit th:text="${submitText}">저장</button>
             </div>
         </form>
     </main>

@@ -62,6 +62,7 @@ public class CafeFilterCoffeeController {
     public String createForm(Model model) {
         model.addAttribute("cafeFilterCoffeeForm", new CafeFilterCoffeeForm());
         addFormAttributes(model);
+        addCreateModeAttributes(model);
         return "cafe-filter-coffees/form";
     }
 
@@ -81,6 +82,7 @@ public class CafeFilterCoffeeController {
         }
 
         addFormAttributes(model);
+        addCreateModeAttributes(model);
         return "cafe-filter-coffees/form";
     }
 
@@ -93,11 +95,39 @@ public class CafeFilterCoffeeController {
     ) {
         if (bindingResult.hasErrors()) {
             addFormAttributes(model);
+            addCreateModeAttributes(model);
             return "cafe-filter-coffees/form";
         }
 
         Long id = cafeFilterCoffeeService.create(form);
         redirectAttributes.addFlashAttribute("message", "카페 필터커피 기록을 등록했습니다.");
+        return "redirect:/cafe-filter-coffees/" + id;
+    }
+
+    @GetMapping("/{id}/edit")
+    public String editForm(@PathVariable Long id, Model model) {
+        model.addAttribute("cafeFilterCoffeeForm", cafeFilterCoffeeService.getUpdateForm(id));
+        addFormAttributes(model);
+        addEditModeAttributes(model, id);
+        return "cafe-filter-coffees/form";
+    }
+
+    @PostMapping("/{id}/edit")
+    public String update(
+            @PathVariable Long id,
+            @Valid @ModelAttribute("cafeFilterCoffeeForm") CafeFilterCoffeeForm form,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (bindingResult.hasErrors()) {
+            addFormAttributes(model);
+            addEditModeAttributes(model, id);
+            return "cafe-filter-coffees/form";
+        }
+
+        cafeFilterCoffeeService.update(id, form);
+        redirectAttributes.addFlashAttribute("message", "카페 필터커피 기록을 수정했습니다.");
         return "redirect:/cafe-filter-coffees/" + id;
     }
 
@@ -129,6 +159,21 @@ public class CafeFilterCoffeeController {
         model.addAttribute("feelingTags", BrewFeelingTag.values());
         model.addAttribute("kakaoJavascriptKey", kakaoJavascriptKey);
         model.addAttribute("hasKakaoMapKey", StringUtils.hasText(kakaoJavascriptKey));
+    }
+
+    private void addCreateModeAttributes(Model model) {
+        model.addAttribute("isEditMode", false);
+        model.addAttribute("formTitle", "카페 필터커피 등록");
+        model.addAttribute("submitText", "저장");
+        model.addAttribute("cancelUrl", "/cafe-filter-coffees");
+    }
+
+    private void addEditModeAttributes(Model model, Long id) {
+        model.addAttribute("isEditMode", true);
+        model.addAttribute("cafeFilterCoffeeId", id);
+        model.addAttribute("formTitle", "카페 필터커피 수정");
+        model.addAttribute("submitText", "수정 저장");
+        model.addAttribute("cancelUrl", "/cafe-filter-coffees/" + id);
     }
 
     private CafeFilterCoffeeForm fromCoffeeBeanForm(CoffeeBeanCreateForm coffeeBeanForm) {

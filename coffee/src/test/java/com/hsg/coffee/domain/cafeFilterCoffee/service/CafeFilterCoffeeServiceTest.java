@@ -14,6 +14,7 @@ import com.hsg.coffee.domain.brewRecord.dto.BrewRecordResponse;
 import com.hsg.coffee.domain.brewRecord.entity.BrewTemperatureType;
 import com.hsg.coffee.domain.brewRecord.repository.BrewRecordRepository;
 import com.hsg.coffee.domain.cafeFilterCoffee.dto.CafeFilterCoffeeForm;
+import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
 import com.hsg.coffee.domain.purchasePlace.repository.PurchasePlaceRepository;
 
@@ -68,5 +69,37 @@ class CafeFilterCoffeeServiceTest {
         assertEquals(4, response.getAroma());
         assertEquals(5, response.getBalance());
         assertEquals("4,5,2,3,4,5", response.getTasteChartValues());
+    }
+
+    @Test
+    void updateWithTasteProfile() {
+        CafeFilterCoffeeForm form = new CafeFilterCoffeeForm();
+        form.setName("수정 전 원두");
+        form.setCafeName("수정 전 카페");
+        form.setVisitedDate(LocalDate.of(2026, 8, 2));
+        form.setTemperatureType(BrewTemperatureType.HOT);
+
+        Long id = cafeFilterCoffeeService.create(form);
+        CafeFilterCoffeeForm updateForm = cafeFilterCoffeeService.getUpdateForm(id);
+        updateForm.setName("수정 후 원두");
+        updateForm.setCafeName("수정 후 카페");
+        updateForm.setProcessType(ProcessType.WASHED);
+        updateForm.setTemperatureType(BrewTemperatureType.ICE);
+        updateForm.setRating(5);
+        updateForm.setAcidity(2);
+        updateForm.setSweetness(4);
+        updateForm.setBitterness(1);
+        updateForm.setBody(3);
+        updateForm.setAroma(5);
+        updateForm.setBalance(4);
+
+        cafeFilterCoffeeService.update(id, updateForm);
+
+        BrewRecordResponse response = cafeFilterCoffeeService.get(id);
+        assertEquals("수정 후 원두", response.getCoffeeBeanName());
+        assertEquals("수정 후 카페", response.getPurchasePlaceName());
+        assertEquals(BrewTemperatureType.ICE, response.getTemperatureType());
+        assertEquals(5, response.getRating());
+        assertEquals("2,4,1,3,5,4", response.getTasteChartValues());
     }
 }
