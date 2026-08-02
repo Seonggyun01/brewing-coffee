@@ -119,6 +119,20 @@
 
 ---
 
+### `docs/specs/brewlog_frontend_split_review_v1.md`
+
+읽어야 하는 경우:
+- Thymeleaf를 유지할지 Vue3/React로 분리할지 판단할 때
+- 복잡한 폼, 지도, 그래프 화면을 프론트 island로 분리할지 검토할 때
+- 프론트 API DTO와 화면 상태 구조를 정리할 때
+
+읽지 말아야 하는 경우:
+- 단순 CSS 색상이나 여백만 수정할 때
+- 백엔드 Service, Repository만 수정할 때
+- OCR 모델 자체의 성능만 비교할 때
+
+---
+
 ### `docs/specs/brewing_taste_record_ux_spec_v1.md`
 
 읽어야 하는 경우:

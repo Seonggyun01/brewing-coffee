@@ -9,6 +9,7 @@
 - `brewlog_erd_backend_design_v_1.md`: 백엔드 ERD 및 엔티티 설계 명세
 - `brewlog_frontend_app_redesign_plan_v1.md`: 앱형 프론트엔드 개편 계획 및 사용자 플로우 명세
 - `brewlog_frontend_design_v1.md`: 프론트엔드 디자인 명세
+- `brewlog_frontend_split_review_v1.md`: Thymeleaf 유지와 Vue3/React 분리 전환 검토
 - `brewlog_tech_stack_local_roadmap_v1.md`: 기술 스택 및 로컬 개발 로드맵
 - `coffee_bean_card_image_extraction_spec_v1.md`: 원두 카드 이미지 기반 자동 입력 명세
 - `google_vision_ocr_implementation_spec_v1.md`: Google Vision OCR 실제 연동 구현 명세
