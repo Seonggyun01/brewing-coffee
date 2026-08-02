@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>카페 필터커피 등록 - BrewLog</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='home-dashboard-20260802')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='form-app-20260802')}">
 </head>
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('cafe-filter')}"></header>
@@ -61,6 +61,8 @@
         <form class="form"
               data-form-wizard
               data-model-save-form
+              data-model-save-title="카페 필터커피를 저장중입니다"
+              data-model-save-description="새 향미 노트의 색상을 정리하고 카페 기록을 저장하고 있어요."
               th:action="@{/cafe-filter-coffees}"
               th:object="${cafeFilterCoffeeForm}"
               method="post">
@@ -134,35 +136,35 @@
                     </label>
                 </div>
 
-                <div class="flavor-editor">
-                    <div>
-                        <span>향미 노트</span>
+                <details class="form-details">
+                    <summary>향미 노트</summary>
+                    <div class="flavor-editor">
                         <p class="section-help">가장 가까운 향미만 1~3개 정도 남겨도 충분합니다.</p>
+                        <div class="compact-flavor-groups" aria-label="향미 노트 카테고리">
+                            <details class="compact-flavor-group"
+                                     th:each="category : ${flavorCategories}">
+                                <summary>
+                                    <span class="compact-flavor-group__swatch"
+                                          th:style="'background:' + ${category.color}"
+                                          aria-hidden="true"></span>
+                                    <span th:text="${category.displayName}">시트러스</span>
+                                    <small th:text="${category.description}">상큼하고 밝은 산미</small>
+                                </summary>
+                                <div class="compact-flavor-group__body">
+                                    <label class="tag-chip"
+                                           th:each="note : ${flavorNotesByCategory.get(category)}">
+                                        <input type="checkbox" th:field="*{flavorNotes}" th:value="${note}">
+                                        <span th:text="${note.displayName}">레몬</span>
+                                    </label>
+                                </div>
+                            </details>
+                        </div>
+                        <label class="flavor-custom-note-field">
+                            <span>직접 입력 향미 노트</span>
+                            <input type="text" th:field="*{customFlavorNotesText}" placeholder="예: 라임, 복숭아, 꿀">
+                        </label>
                     </div>
-                    <div class="compact-flavor-groups" aria-label="향미 노트 카테고리">
-                        <details class="compact-flavor-group"
-                                 th:each="category : ${flavorCategories}">
-                            <summary>
-                                <span class="compact-flavor-group__swatch"
-                                      th:style="'background:' + ${category.color}"
-                                      aria-hidden="true"></span>
-                                <span th:text="${category.displayName}">시트러스</span>
-                                <small th:text="${category.description}">상큼하고 밝은 산미</small>
-                            </summary>
-                            <div class="compact-flavor-group__body">
-                                <label class="tag-chip"
-                                       th:each="note : ${flavorNotesByCategory.get(category)}">
-                                    <input type="checkbox" th:field="*{flavorNotes}" th:value="${note}">
-                                    <span th:text="${note.displayName}">레몬</span>
-                                </label>
-                            </div>
-                        </details>
-                    </div>
-                    <label class="flavor-custom-note-field">
-                        <span>직접 입력 향미 노트</span>
-                        <input type="text" th:field="*{customFlavorNotesText}" placeholder="예: 라임, 복숭아, 꿀">
-                    </label>
-                </div>
+                </details>
             </section>
 
             <section class="form-section" data-wizard-step>
@@ -496,6 +498,6 @@
             <p data-model-wait-description>이미지를 읽고 원두 정보를 정리하고 있어요.</p>
         </div>
     </div>
-    <script th:src="@{/js/form-wizard.js(v='bean-save-wait-20260802')}"></script>
+    <script th:src="@{/js/form-wizard.js(v='form-app-20260802')}"></script>
 </body>
 </html>

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${title + ' - BrewLog'}">원두 등록 - BrewLog</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='home-dashboard-20260802')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='form-app-20260802')}">
 </head>
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('beans')}"></header>
@@ -61,6 +61,8 @@
         <form class="form"
               data-form-wizard
               data-model-save-form
+              data-model-save-title="원두를 저장중입니다"
+              data-model-save-description="새 향미 노트의 색상을 정리하고 원두 정보를 저장하고 있어요."
               th:action="@{${actionUrl}}"
               th:object="${coffeeBeanForm}"
               method="post">
@@ -108,62 +110,64 @@
                     </label>
                 </div>
 
-                <div class="flavor-editor">
-                    <div>
-                        <span>향미 노트</span>
-                        <p class="section-help">카테고리를 클릭하여 향미 노트를 선택하세요. 권장 3~5개, 최대 8개</p>
-                        <small th:if="${#fields.hasErrors('flavorNotes')}" th:errors="*{flavorNotes}"></small>
-                    </div>
-                    <div class="flavor-picker" data-flavor-picker aria-label="향미 노트 선택">
-                        <div class="flavor-category-wheel">
-                            <svg class="flavor-category-wheel__svg"
-                                 data-flavor-category-wheel-svg
-                                 viewBox="0 0 520 520"
-                                 role="img"
-                                 aria-label="향미 카테고리"></svg>
-                            <div class="flavor-category-wheel__center" aria-hidden="true">
-                                <span>선택된 향미</span>
-                                <strong data-wheel-selection-count>0</strong>
+                <details class="form-details">
+                    <summary>향미 노트</summary>
+                    <div class="flavor-editor">
+                        <div>
+                            <p class="section-help">카테고리를 클릭하여 향미 노트를 선택하세요. 권장 3~5개, 최대 8개</p>
+                            <small th:if="${#fields.hasErrors('flavorNotes')}" th:errors="*{flavorNotes}"></small>
+                        </div>
+                        <div class="flavor-picker" data-flavor-picker aria-label="향미 노트 선택">
+                            <div class="flavor-category-wheel">
+                                <svg class="flavor-category-wheel__svg"
+                                     data-flavor-category-wheel-svg
+                                     viewBox="0 0 520 520"
+                                     role="img"
+                                     aria-label="향미 카테고리"></svg>
+                                <div class="flavor-category-wheel__center" aria-hidden="true">
+                                    <span>선택된 향미</span>
+                                    <strong data-wheel-selection-count>0</strong>
+                                </div>
+                            </div>
+                            <div class="flavor-picker__groups">
+                                <section class="flavor-picker__group"
+                                         th:each="category : ${flavorCategories}"
+                                         th:attr="data-category-name=${category.displayName}, data-category-color=${category.color}, data-category-description=${category.description}">
+                                    <header>
+                                        <span class="flavor-picker__swatch"
+                                              th:style="'background:' + ${category.color}"
+                                              aria-hidden="true"></span>
+                                        <div>
+                                            <h3 th:text="${category.displayName}">Citrus</h3>
+                                            <p th:text="${category.description}">상큼하고 밝은 산미</p>
+                                        </div>
+                                    </header>
+                                    <div class="flavor-picker__notes">
+                                        <label class="tag-chip flavor-picker__note"
+                                               th:each="note : ${flavorNotesByCategory.get(category)}"
+                                               th:attr="data-note-label=${note.displayName}, data-note-color=${note.color}">
+                                            <input type="checkbox" th:field="*{flavorNotes}" th:value="${note}">
+                                            <span th:style="'--note-color:' + ${note.color} + '; border-color:' + ${note.color} + '; background:' + ${note.color} + '16;'" th:text="${note.displayName}">레몬</span>
+                                        </label>
+                                    </div>
+                                </section>
                             </div>
                         </div>
-                        <div class="flavor-picker__groups">
-                            <section class="flavor-picker__group"
-                                     th:each="category : ${flavorCategories}"
-                                     th:attr="data-category-name=${category.displayName}, data-category-color=${category.color}, data-category-description=${category.description}">
-                                <header>
-                                    <span class="flavor-picker__swatch"
-                                          th:style="'background:' + ${category.color}"
-                                          aria-hidden="true"></span>
-                                    <div>
-                                        <h3 th:text="${category.displayName}">Citrus</h3>
-                                        <p th:text="${category.description}">상큼하고 밝은 산미</p>
-                                    </div>
-                                </header>
-                                <div class="flavor-picker__notes">
-                                    <label class="tag-chip flavor-picker__note"
-                                           th:each="note : ${flavorNotesByCategory.get(category)}"
-                                           th:attr="data-note-label=${note.displayName}, data-note-color=${note.color}">
-                                        <input type="checkbox" th:field="*{flavorNotes}" th:value="${note}">
-                                        <span th:style="'--note-color:' + ${note.color} + '; border-color:' + ${note.color} + '; background:' + ${note.color} + '16;'" th:text="${note.displayName}">레몬</span>
-                                    </label>
-                                </div>
-                            </section>
+                        <label class="flavor-custom-note-field">
+                            <span>직접 입력 향미 노트</span>
+                            <input type="text" th:field="*{customFlavorNotesText}" placeholder="예: 라임 껍질, 청포도, 말린 오렌지">
+                            <small th:if="${#fields.hasErrors('customFlavorNotesText')}" th:errors="*{customFlavorNotesText}"></small>
+                        </label>
+                        <div class="selection-panel" data-selection-panel="flavorNotes">
+                            <div>
+                                <strong>선택한 향미 노트</strong>
+                                <span data-selection-count>0/8</span>
+                            </div>
+                            <p data-selection-empty>아직 선택한 향미 노트가 없습니다.</p>
+                            <div class="selected-tags" data-selection-list></div>
                         </div>
                     </div>
-                    <label class="flavor-custom-note-field">
-                        <span>직접 입력 향미 노트</span>
-                        <input type="text" th:field="*{customFlavorNotesText}" placeholder="예: 라임 껍질, 청포도, 말린 오렌지">
-                        <small th:if="${#fields.hasErrors('customFlavorNotesText')}" th:errors="*{customFlavorNotesText}"></small>
-                    </label>
-                    <div class="selection-panel" data-selection-panel="flavorNotes">
-                        <div>
-                            <strong>선택한 향미 노트</strong>
-                            <span data-selection-count>0/8</span>
-                        </div>
-                        <p data-selection-empty>아직 선택한 향미 노트가 없습니다.</p>
-                        <div class="selected-tags" data-selection-list></div>
-                    </div>
-                </div>
+                </details>
 
                 <label>
                     <span>메모</span>
@@ -726,6 +730,6 @@
             <p data-model-wait-description>이미지를 읽고 원두 정보를 정리하고 있어요.</p>
         </div>
     </div>
-    <script th:src="@{/js/form-wizard.js(v='bean-save-wait-20260802')}"></script>
+    <script th:src="@{/js/form-wizard.js(v='form-app-20260802')}"></script>
 </body>
 </html>

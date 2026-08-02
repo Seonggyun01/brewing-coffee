@@ -36,6 +36,10 @@ document.querySelectorAll('[data-form-wizard]').forEach((form) => {
     function setActiveStep(index, shouldScroll = true) {
         activeIndex = Math.min(Math.max(index, 0), steps.length - 1);
 
+        form.style.setProperty('--wizard-progress', `${((activeIndex + 1) / steps.length) * 100}%`);
+        form.dataset.wizardCurrentStep = String(activeIndex + 1);
+        form.dataset.wizardTotalSteps = String(steps.length);
+
         steps.forEach((step, stepIndex) => {
             step.hidden = stepIndex !== activeIndex;
         });
@@ -65,7 +69,21 @@ document.querySelectorAll('[data-form-wizard]').forEach((form) => {
         button.addEventListener('click', () => setActiveStep(index));
     });
     prevButton?.addEventListener('click', () => setActiveStep(activeIndex - 1));
-    nextButton?.addEventListener('click', () => setActiveStep(activeIndex + 1));
+    nextButton?.addEventListener('click', () => {
+        const invalidControl = findInvalidControl();
+
+        if (invalidControl) {
+            const invalidStep = invalidControl.closest('[data-wizard-step]');
+            const invalidStepIndex = steps.indexOf(invalidStep);
+
+            if (invalidStepIndex === activeIndex) {
+                showControlStep(invalidControl);
+                return;
+            }
+        }
+
+        setActiveStep(activeIndex + 1);
+    });
     submitButton?.addEventListener('click', (event) => {
         const invalidControl = findInvalidControl();
 
@@ -122,6 +140,8 @@ document.querySelectorAll('[data-card-extraction-form]').forEach((form) => {
 document.querySelectorAll('[data-model-save-form]').forEach((form) => {
     const submitButton = form.querySelector('[data-wizard-submit], button[type="submit"]');
     const customFlavorNotesInput = form.querySelector('[name="customFlavorNotesText"]');
+    const waitTitle = form.dataset.modelSaveTitle || '저장중입니다';
+    const waitDescription = form.dataset.modelSaveDescription || '새 향미 노트의 색상을 정리하고 저장하고 있어요.';
 
     form.addEventListener('submit', () => {
         const canValidate = typeof form.checkValidity === 'function';
@@ -137,6 +157,6 @@ document.querySelectorAll('[data-model-save-form]').forEach((form) => {
             submitButton.dataset.originalText = submitButton.textContent || '';
             submitButton.textContent = '저장 중...';
         }
-        showModelWaitOverlay('원두를 저장중입니다', '새 향미 노트의 색상을 정리하고 저장하고 있어요.');
+        showModelWaitOverlay(waitTitle, waitDescription);
     });
 });
