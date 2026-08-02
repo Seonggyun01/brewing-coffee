@@ -1,12 +1,16 @@
 :root {
     color-scheme: light;
-    --bg: #fbfaf9;
-    --text: #2b2520;
-    --muted: #71645d;
-    --line: #e8e2de;
+    --bg: #ffffff;
+    --text: #2a211d;
+    --muted: #7a6b63;
+    --line: #eee6e1;
     --surface: #ffffff;
-    --accent: #6f432a;
-    --accent-soft: #f2ebe7;
+    --surface-subtle: #faf8f6;
+    --accent: #6f3f28;
+    --accent-pressed: #54301f;
+    --accent-soft: #f6f1ee;
+    --danger: #b13a2e;
+    --shadow-soft: 0 10px 26px rgba(68, 48, 31, 0.06);
     --app-max-width: 1120px;
     --app-narrow-width: 860px;
     --app-gutter: 20px;
@@ -52,7 +56,7 @@ body {
     border: 1px solid var(--line);
     border-radius: 8px;
     background: rgba(255, 255, 255, 0.96);
-    box-shadow: 0 10px 26px rgba(68, 48, 31, 0.07);
+    box-shadow: var(--shadow-soft);
     backdrop-filter: blur(18px);
 }
 
@@ -99,7 +103,7 @@ body {
 
 .app-header__nav a.is-active,
 .app-header__nav a:hover {
-    border-color: #6f432a;
+    border-color: var(--accent);
     color: var(--text);
 }
 
@@ -260,7 +264,7 @@ h1 {
 .page {
     width: min(var(--app-max-width), calc(100% - (var(--app-gutter) * 2)));
     margin: 0 auto;
-    padding: var(--app-shell-padding-top) 0 calc(var(--app-shell-padding-bottom) + var(--app-bottom-safe));
+    padding: 40px 0 calc(var(--app-shell-padding-bottom) + var(--app-bottom-safe));
 }
 
 .page--narrow {
@@ -272,12 +276,13 @@ h1 {
     align-items: flex-start;
     justify-content: space-between;
     gap: 24px;
-    margin-bottom: 28px;
+    margin-bottom: 22px;
 }
 
 .page__header h1 {
-    margin-top: 8px;
-    font-size: 42px;
+    margin-top: 6px;
+    font-size: 38px;
+    letter-spacing: 0;
 }
 
 .page__header--detail > div:first-child {
@@ -314,8 +319,8 @@ h1 {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 42px;
-    padding: 0 16px;
+    min-height: 40px;
+    padding: 0 15px;
     border: 1px solid transparent;
     border-radius: 8px;
     font: inherit;
@@ -327,6 +332,11 @@ h1 {
 .button--primary {
     color: #fff;
     background: var(--accent);
+}
+
+.button--primary:hover,
+.button--primary:focus-visible {
+    background: var(--accent-pressed);
 }
 
 .button--secondary {
@@ -343,7 +353,7 @@ h1 {
 
 .button--danger {
     color: #fff;
-    background: #a13d2d;
+    background: var(--danger);
 }
 
 .button-group {
@@ -355,20 +365,26 @@ h1 {
 .flash {
     margin: 0 0 18px;
     padding: 14px 16px;
-    border: 1px solid var(--accent-soft);
+    border: 1px solid var(--line);
     border-radius: 8px;
     color: var(--accent);
-    background: rgba(217, 236, 228, 0.7);
+    background: var(--surface-subtle);
 }
 
 .search {
     display: flex;
     gap: 8px;
-    margin-bottom: 18px;
+    margin-bottom: 14px;
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
 }
 
 .search input {
     flex: 1;
+    border-color: transparent;
+    background: transparent;
 }
 
 .filter-summary {
@@ -376,12 +392,12 @@ h1 {
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    margin: 0 0 18px;
-    padding: 16px 18px;
-    border: 1px solid #d6c0a7;
+    margin: 0 0 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--line);
     border-radius: 8px;
     background: #ffffff;
-    box-shadow: 0 10px 24px rgba(72, 52, 34, 0.06);
+    box-shadow: none;
 }
 
 .filter-summary div {
@@ -931,12 +947,12 @@ small {
 .record-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
+    gap: 12px;
 }
 
 .coffee-bean-carousel {
     display: grid;
-    gap: 16px;
+    gap: 12px;
 }
 
 .coffee-bean-carousel__nav {
@@ -949,15 +965,15 @@ small {
 .coffee-bean-carousel__tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
 }
 
 .coffee-bean-carousel__tabs button,
 .coffee-bean-carousel__controls button {
-    border: 1px solid #e2d8d1;
+    border: 1px solid var(--line);
     border-radius: 999px;
     color: var(--muted);
-    background: rgba(255, 253, 248, 0.78);
+    background: var(--surface);
     font: inherit;
     cursor: pointer;
 }
@@ -965,17 +981,17 @@ small {
 .coffee-bean-carousel__tabs button {
     display: inline-flex;
     align-items: center;
-    gap: 9px;
-    min-height: 42px;
-    padding: 0 14px;
+    gap: 7px;
+    min-height: 38px;
+    padding: 0 12px;
     font-weight: 700;
 }
 
 .coffee-bean-carousel__tabs button.is-active {
-    border-color: rgba(92, 46, 31, 0.42);
+    border-color: rgba(111, 63, 40, 0.34);
     color: var(--text);
-    background: #fff7eb;
-    box-shadow: 0 8px 18px rgba(72, 52, 34, 0.08);
+    background: var(--accent-soft);
+    box-shadow: none;
 }
 
 .coffee-bean-carousel__tabs strong {
@@ -986,8 +1002,8 @@ small {
     min-height: 26px;
     padding: 0 8px;
     border-radius: 999px;
-    color: #6f432a;
-    background: rgba(216, 198, 178, 0.34);
+    color: var(--accent);
+    background: rgba(111, 63, 40, 0.08);
     font-size: 13px;
 }
 
@@ -1001,7 +1017,7 @@ small {
     place-items: center;
     width: 42px;
     height: 42px;
-    color: #6f4d2f;
+    color: var(--accent);
     font-size: 28px;
     line-height: 1;
 }
@@ -1038,36 +1054,36 @@ small {
 .coffee-bean-section {
     display: grid;
     flex: 0 0 100%;
-    gap: 16px;
-    padding: 22px;
-    border: 1px solid #e2d8d1;
+    gap: 12px;
+    padding: 18px;
+    border: 1px solid var(--line);
     border-radius: 8px;
     background: #ffffff;
-    box-shadow: 0 12px 30px rgba(72, 52, 34, 0.08);
+    box-shadow: var(--shadow-soft);
 }
 
 .coffee-bean-section__header {
     display: flex;
     align-items: end;
     justify-content: space-between;
-    gap: 16px;
-    margin: -6px -6px 0;
-    padding: 6px 6px 16px;
-    border-bottom: 1px solid #e2d8d1;
+    gap: 12px;
+    margin: 0;
+    padding: 0 0 12px;
+    border-bottom: 1px solid var(--line);
 }
 
 .coffee-bean-section__header h2 {
-    margin: 4px 0 0;
-    font-size: 24px;
+    margin: 3px 0 0;
+    font-size: 22px;
 }
 
 .coffee-bean-section__header > span {
     min-width: 44px;
-    padding: 7px 10px;
-    border: 1px solid #d8c6b2;
+    padding: 6px 9px;
+    border: 1px solid var(--line);
     border-radius: 999px;
-    color: #6f432a;
-    background: #fff7eb;
+    color: var(--accent);
+    background: var(--accent-soft);
     font-weight: 800;
     text-align: center;
 }
@@ -1080,21 +1096,21 @@ small {
 
 .coffee-bean-section__empty {
     margin: 0;
-    padding: 18px;
-    border: 1px dashed #cdb9a2;
+    padding: 16px;
+    border: 1px dashed var(--line);
     border-radius: 8px;
     color: var(--muted);
-    background: #f7f4f1;
+    background: var(--surface-subtle);
 }
 
 .coffee-bean-section .record-card {
-    border-color: #d5bea4;
+    border-color: var(--line);
     background: #ffffff;
-    box-shadow: 0 10px 22px rgba(83, 58, 36, 0.07);
+    box-shadow: none;
 }
 
 .coffee-bean-section .record-card__link {
-    min-height: 148px;
+    min-height: 124px;
 }
 
 .record-card {
@@ -1105,16 +1121,17 @@ small {
 
 .record-card__link {
     display: grid;
-    gap: 8px;
+    gap: 7px;
     min-height: 210px;
-    padding: 18px;
+    padding: 15px;
     color: inherit;
     text-decoration: none;
     -webkit-user-drag: none;
 }
 
 .record-card strong {
-    font-size: 21px;
+    font-size: 19px;
+    line-height: 1.28;
 }
 
 .record-card span {
@@ -2458,7 +2475,7 @@ small {
     .page,
     .page--narrow {
         width: min(100% - (var(--app-gutter) * 2), var(--app-max-width));
-        padding: var(--app-shell-padding-top) 0 calc(var(--app-shell-padding-bottom) + var(--app-bottom-safe));
+        padding: 28px 0 calc(var(--app-shell-padding-bottom) + var(--app-bottom-safe));
     }
 
     .page__header,
@@ -2468,13 +2485,13 @@ small {
     }
 
     .page__header {
-        gap: 12px;
-        margin-bottom: 18px;
+        gap: 10px;
+        margin-bottom: 14px;
     }
 
     .page__header h1 {
         margin-top: 4px;
-        font-size: 30px;
+        font-size: 28px;
         line-height: 1.12;
     }
 
@@ -2507,7 +2524,8 @@ small {
 
     .search {
         gap: 8px;
-        margin-bottom: 14px;
+        margin-bottom: 10px;
+        padding: 3px;
     }
 
     input,
@@ -2529,8 +2547,8 @@ small {
 
     .filter-summary {
         gap: 10px;
-        padding: 13px 14px;
-        margin-bottom: 14px;
+        padding: 12px;
+        margin-bottom: 10px;
     }
 
     .filter-summary strong {
@@ -2743,18 +2761,19 @@ small {
     }
 
     .coffee-bean-carousel {
-        gap: 9px;
+        gap: 8px;
     }
 
     .coffee-bean-carousel__tabs button {
-        min-height: 34px;
-        padding: 0 10px;
-        font-size: 13px;
+        min-height: 32px;
+        padding: 0 9px;
+        font-size: 12px;
     }
 
     .coffee-bean-carousel__tabs strong {
-        min-width: 22px;
-        min-height: 22px;
+        min-width: 20px;
+        min-height: 20px;
+        padding: 0 7px;
         font-size: 12px;
     }
 
@@ -2765,18 +2784,18 @@ small {
     }
 
     .coffee-bean-section {
-        gap: 9px;
-        padding: 13px 12px;
+        gap: 8px;
+        padding: 11px;
     }
 
     .coffee-bean-section__header {
         gap: 10px;
-        padding-bottom: 9px;
+        padding-bottom: 8px;
     }
 
     .coffee-bean-section__header h2 {
         margin-top: 2px;
-        font-size: 19px;
+        font-size: 18px;
     }
 
     .coffee-bean-section__header > span {
@@ -2790,17 +2809,17 @@ small {
     }
 
     .coffee-bean-section .record-grid {
-        gap: 9px;
+        gap: 8px;
     }
 
     .coffee-bean-section .record-card__link,
     .record-card__link {
-        min-height: 104px;
-        padding: 11px;
+        min-height: 92px;
+        padding: 10px;
     }
 
     .coffee-bean-section .record-card__link {
-        gap: 4px;
+        gap: 3px;
     }
 
     .record-card strong {
@@ -2810,8 +2829,8 @@ small {
     .coffee-bean-section .record-card strong {
         display: -webkit-box;
         overflow: hidden;
-        font-size: 15px;
-        line-height: 1.22;
+        font-size: 14px;
+        line-height: 1.2;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
     }
@@ -2839,18 +2858,18 @@ small {
     }
 
     .coffee-bean-section .flavor-gradient {
-        height: 6px;
-        margin-bottom: 4px;
+        height: 5px;
+        margin-bottom: 3px;
     }
 
     .coffee-bean-section .coffee-bean-card__meta {
         gap: 5px;
-        margin-top: 3px;
+        margin-top: 2px;
     }
 
     .coffee-bean-section .coffee-bean-card__meta span {
-        min-height: 24px;
-        padding: 0 8px;
+        min-height: 22px;
+        padding: 0 7px;
         font-size: 12px;
     }
 
