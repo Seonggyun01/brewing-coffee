@@ -1097,7 +1097,7 @@ small {
 }
 
 .coffee-bean-section .record-card__link {
-    min-height: 220px;
+    min-height: 148px;
 }
 
 .record-card {
@@ -2799,7 +2799,7 @@ small {
 
     .coffee-bean-section .record-card__link,
     .record-card__link {
-        min-height: 122px;
+        min-height: 104px;
         padding: 11px;
     }
 
@@ -2842,23 +2842,14 @@ small {
         margin-top: 0;
     }
 
-    .coffee-bean-section .record-card__date,
-    .coffee-bean-section .record-card__link > span:nth-of-type(5),
-    .coffee-bean-section .coffee-bean-card__status,
-    .coffee-bean-section .coffee-bean-card__process,
-    .coffee-bean-section .record-card__notes,
-    .coffee-bean-section .coffee-bean-card__notes {
-        display: none;
-    }
-
     .coffee-bean-section .flavor-gradient {
         height: 6px;
-        margin-bottom: 2px;
+        margin-bottom: 4px;
     }
 
     .coffee-bean-section .coffee-bean-card__meta {
         gap: 5px;
-        margin-top: 1px;
+        margin-top: 3px;
     }
 
     .coffee-bean-section .coffee-bean-card__meta span {

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>원두 관리 - BrewLog</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='mobile-bean-card-20260802')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='bean-card-minimal-20260802')}">
 </head>
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('beans')}"></header>
@@ -73,16 +73,10 @@
                     <article class="record-card coffee-bean-card" th:each="coffeeBean : ${currentCoffeeBeans}">
                         <a class="record-card__link" th:href="@{/coffee-beans/{id}(id=${coffeeBean.id})}">
                             <span class="flavor-gradient" th:style="${coffeeBean.flavorGradientStyle}"></span>
-                            <span class="record-card__date coffee-bean-card__status" th:text="${coffeeBean.status != null ? coffeeBean.status.displayName : '상태 미기록'}">보유 중</span>
                             <strong th:text="${coffeeBean.name}">에티오피아 구지</strong>
-                            <span class="coffee-bean-card__roastery" th:text="${coffeeBean.roastery ?: '로스터리 미기록'}">브루잉 로스터스</span>
-                            <span class="coffee-bean-card__origin" th:text="${(coffeeBean.originCountryDisplayName ?: '산지 미기록') + (coffeeBean.region != null ? ' / ' + coffeeBean.region : '')}">에티오피아 (Ethiopia) / Guji</span>
-                            <span class="coffee-bean-card__process" th:text="${coffeeBean.processType != null ? coffeeBean.processType : '가공 미기록'}">WASHED</span>
                             <div class="coffee-bean-card__meta">
                                 <span th:text="${coffeeBean.weight != null ? coffeeBean.weight + 'g 남음' : '무게 미기록'}">200g 남음</span>
-                                <span th:text="${coffeeBean.price != null ? #numbers.formatInteger(coffeeBean.price, 0, 'COMMA') + '원' : '가격 미기록'}">18,000원</span>
                             </div>
-                            <span class="record-card__notes coffee-bean-card__notes" th:text="${coffeeBean.flavorNoteSummary}">자스민, 레몬, 복숭아</span>
                         </a>
                     </article>
                 </section>
@@ -101,16 +95,10 @@
                     <article class="record-card coffee-bean-card" th:each="coffeeBean : ${finishedCoffeeBeans}">
                         <a class="record-card__link" th:href="@{/coffee-beans/{id}(id=${coffeeBean.id})}">
                             <span class="flavor-gradient" th:style="${coffeeBean.flavorGradientStyle}"></span>
-                            <span class="record-card__date coffee-bean-card__status" th:text="${coffeeBean.status != null ? coffeeBean.status.displayName : '상태 미기록'}">소진 기록</span>
                             <strong th:text="${coffeeBean.name}">에티오피아 구지</strong>
-                            <span class="coffee-bean-card__roastery" th:text="${coffeeBean.roastery ?: '로스터리 미기록'}">브루잉 로스터스</span>
-                            <span class="coffee-bean-card__origin" th:text="${(coffeeBean.originCountryDisplayName ?: '산지 미기록') + (coffeeBean.region != null ? ' / ' + coffeeBean.region : '')}">에티오피아 (Ethiopia) / Guji</span>
-                            <span class="coffee-bean-card__process" th:text="${coffeeBean.processType != null ? coffeeBean.processType : '가공 미기록'}">WASHED</span>
                             <div class="coffee-bean-card__meta">
                                 <span th:text="${coffeeBean.weight != null ? coffeeBean.weight + 'g 남음' : '무게 미기록'}">0g 남음</span>
-                                <span th:text="${coffeeBean.price != null ? #numbers.formatInteger(coffeeBean.price, 0, 'COMMA') + '원' : '가격 미기록'}">18,000원</span>
                             </div>
-                            <span class="record-card__notes coffee-bean-card__notes" th:text="${coffeeBean.flavorNoteSummary}">자스민, 레몬, 복숭아</span>
                         </a>
                     </article>
                 </section>
@@ -129,16 +117,10 @@
                     <article class="record-card coffee-bean-card" th:each="coffeeBean : ${cafeCoffeeBeans}">
                         <a class="record-card__link" th:href="@{/coffee-beans/{id}(id=${coffeeBean.id})}">
                             <span class="flavor-gradient" th:style="${coffeeBean.flavorGradientStyle}"></span>
-                            <span class="record-card__date coffee-bean-card__status" th:text="${coffeeBean.status != null ? coffeeBean.status.displayName : '상태 미기록'}">카페 음용</span>
                             <strong th:text="${coffeeBean.name}">에티오피아 구지</strong>
-                            <span class="coffee-bean-card__roastery" th:text="${coffeeBean.roastery ?: '로스터리 미기록'}">브루잉 로스터스</span>
-                            <span class="coffee-bean-card__origin" th:text="${(coffeeBean.originCountryDisplayName ?: '산지 미기록') + (coffeeBean.region != null ? ' / ' + coffeeBean.region : '')}">에티오피아 (Ethiopia) / Guji</span>
-                            <span class="coffee-bean-card__process" th:text="${coffeeBean.processType != null ? coffeeBean.processType : '가공 미기록'}">WASHED</span>
                             <div class="coffee-bean-card__meta">
                                 <span th:text="${coffeeBean.weight != null ? coffeeBean.weight + 'g 남음' : '무게 미기록'}">무게 미기록</span>
-                                <span th:text="${coffeeBean.price != null ? #numbers.formatInteger(coffeeBean.price, 0, 'COMMA') + '원' : '가격 미기록'}">가격 미기록</span>
                             </div>
-                            <span class="record-card__notes coffee-bean-card__notes" th:text="${coffeeBean.flavorNoteSummary}">자스민, 레몬, 복숭아</span>
                         </a>
                     </article>
                 </section>
