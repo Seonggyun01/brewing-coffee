@@ -104,6 +104,21 @@
 
 ---
 
+### `docs/specs/brewlog_frontend_app_redesign_plan_v1.md`
+
+읽어야 하는 경우:
+- BrewLog를 모바일 앱 같은 UI/UX로 개편할 때
+- 홈, 원두 목록, 원두 상세, 브루잉 기록, 카페 필터, 지도 화면의 사용자 플로우를 재정의할 때
+- 프론트엔드 개편 작업을 커밋 단위로 나누어 진행할 때
+- Thymeleaf 유지와 Vue3/React 분리 여부를 판단할 때
+
+읽지 말아야 하는 경우:
+- 백엔드 Service, Repository만 수정할 때
+- OCR/LLM 호출 로직만 수정할 때
+- DB 마이그레이션만 수정할 때
+
+---
+
 ### `docs/specs/brewing_taste_record_ux_spec_v1.md`
 
 읽어야 하는 경우:
