@@ -380,3 +380,135 @@
         max-height: 360px;
     }
 }
+
+@media (max-width: 760px) {
+    .origin-map-shell {
+        gap: 16px;
+        width: min(100% - 20px, 100%);
+        margin-top: 12px;
+        padding-bottom: 24px;
+    }
+
+    .origin-map-stage {
+        min-height: 380px;
+    }
+
+    .world-map {
+        min-height: 380px;
+    }
+
+    .origin-map-zoom {
+        top: 10px;
+        left: 10px;
+        gap: 5px;
+        padding: 6px;
+    }
+
+    .origin-map-zoom button,
+    .origin-map-zoom span {
+        min-width: 32px;
+        height: 32px;
+        font-size: 13px;
+    }
+
+    .origin-map-zoom button[data-origin-zoom-reset] {
+        min-width: 58px;
+        padding: 0 8px;
+    }
+
+    .origin-map-stats {
+        margin-top: 12px;
+    }
+
+    .origin-map-stats article {
+        gap: 3px;
+        padding: 14px 16px;
+    }
+
+    .origin-map-stats span {
+        font-size: 14px;
+    }
+
+    .origin-map-stats strong {
+        font-size: 28px;
+        line-height: 1.08;
+    }
+
+    .origin-map-stats small {
+        font-size: 13px;
+    }
+
+    .origin-country-panel {
+        gap: 14px;
+        margin-top: 12px;
+        padding: 20px 16px;
+    }
+
+    .origin-country-panel__close {
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        font-size: 22px;
+    }
+
+    .origin-country-panel h1 {
+        padding-right: 34px;
+        font-size: 30px;
+    }
+
+    .origin-country-panel p {
+        line-height: 1.55;
+    }
+
+    .origin-country-panel__cta {
+        min-height: 42px;
+        font-size: 14px;
+    }
+
+    .origin-country-panel__meta {
+        padding: 12px 0;
+        font-size: 13px;
+    }
+
+    .origin-bean-preview > div:first-child {
+        margin-bottom: 8px;
+    }
+
+    .origin-bean-preview h2 {
+        font-size: 17px;
+    }
+
+    .origin-bean-preview__list {
+        gap: 8px;
+        max-height: none;
+        padding-right: 0;
+    }
+
+    .origin-bean-card {
+        padding: 12px;
+    }
+}
+
+@media (max-width: 460px) {
+    .origin-map-shell {
+        width: min(100% - 16px, 100%);
+    }
+
+    .origin-map-stage,
+    .world-map {
+        min-height: 340px;
+    }
+
+    .origin-map-zoom span {
+        min-width: 48px;
+    }
+
+    .origin-map-stats article {
+        padding: 13px 14px;
+    }
+
+    .origin-country-panel h1 {
+        font-size: 28px;
+    }
+}

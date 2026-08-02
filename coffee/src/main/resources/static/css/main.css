@@ -2278,27 +2278,69 @@ small {
 
 @media (max-width: 760px) {
     :root {
-        --app-gutter: 14px;
-        --app-shell-padding-top: 32px;
-        --app-shell-padding-bottom: 40px;
-        --app-bottom-safe: 92px;
+        --app-gutter: 12px;
+        --app-shell-padding-top: 22px;
+        --app-shell-padding-bottom: 32px;
+        --app-bottom-safe: 84px;
+    }
+
+    body {
+        font-size: 15px;
     }
 
     .home {
         width: min(100% - (var(--app-gutter) * 2), var(--app-max-width));
-        padding: 48px 0 calc(var(--app-shell-padding-bottom) + var(--app-bottom-safe));
+        padding: 28px 0 calc(var(--app-shell-padding-bottom) + var(--app-bottom-safe));
+    }
+
+    .home__hero {
+        padding-bottom: 24px;
+    }
+
+    .home__eyebrow {
+        margin-bottom: 8px;
+        font-size: 12px;
     }
 
     h1 {
-        font-size: 44px;
+        font-size: 36px;
+        line-height: 1.08;
     }
 
     .home__summary {
-        font-size: 17px;
+        margin-top: 14px;
+        font-size: 15px;
+        line-height: 1.55;
+    }
+
+    .home__actions {
+        gap: 8px;
+        margin-top: 20px;
     }
 
     .home__grid {
         grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .home__card {
+        min-height: 136px;
+        padding: 18px;
+    }
+
+    .home__card span {
+        width: 34px;
+        height: 34px;
+        font-size: 14px;
+    }
+
+    .home__card h2 {
+        margin: 14px 0 6px;
+        font-size: 19px;
+    }
+
+    .home__card p {
+        line-height: 1.55;
     }
 
     .app-header {
@@ -2306,8 +2348,9 @@ small {
         grid-template-columns: 1fr;
         width: min(100% - (var(--app-gutter) * 2), var(--app-max-width));
         margin-top: 8px;
-        min-height: 58px;
-        padding: 10px 14px;
+        min-height: 50px;
+        padding: 8px 12px;
+        backdrop-filter: none;
     }
 
     .app-header__brand {
@@ -2315,7 +2358,14 @@ small {
     }
 
     .app-header__brand {
-        font-size: 18px;
+        gap: 8px;
+        font-size: 16px;
+    }
+
+    .app-header__logo {
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
     }
 
     .app-header__nav,
@@ -2325,15 +2375,15 @@ small {
 
     .app-bottom-nav {
         position: fixed;
-        right: 14px;
+        right: 12px;
         bottom: max(12px, env(safe-area-inset-bottom));
-        left: 14px;
+        left: 12px;
         z-index: 30;
         display: grid;
         grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 4px;
-        min-height: 64px;
-        padding: 8px;
+        min-height: 58px;
+        padding: 6px;
         border: 1px solid rgba(232, 226, 222, 0.92);
         border-radius: 8px;
         background: rgba(255, 255, 255, 0.96);
@@ -2344,7 +2394,7 @@ small {
     .app-bottom-nav a {
         display: inline-flex;
         min-width: 0;
-        min-height: 48px;
+        min-height: 44px;
         align-items: center;
         justify-content: center;
         border-radius: 8px;
@@ -2360,8 +2410,24 @@ small {
     }
 
     .app-fab {
-        right: 22px;
-        bottom: calc(var(--app-bottom-safe) + max(10px, env(safe-area-inset-bottom)));
+        right: 18px;
+        bottom: calc(var(--app-bottom-safe) + max(8px, env(safe-area-inset-bottom)));
+    }
+
+    .app-fab summary {
+        width: 50px;
+        height: 50px;
+        font-size: 27px;
+    }
+
+    .app-fab__menu {
+        bottom: 58px;
+        min-width: 164px;
+    }
+
+    .app-fab__menu a {
+        min-height: 38px;
+        font-size: 14px;
     }
 
     .coffee-bean-carousel__nav {
@@ -2402,8 +2468,15 @@ small {
         align-items: stretch;
     }
 
+    .page__header {
+        gap: 12px;
+        margin-bottom: 18px;
+    }
+
     .page__header h1 {
-        font-size: 34px;
+        margin-top: 4px;
+        font-size: 30px;
+        line-height: 1.12;
     }
 
     .page__header--detail .button-group {
@@ -2423,8 +2496,171 @@ small {
         grid-template-columns: 1fr;
     }
 
+    .button {
+        min-height: 38px;
+        padding: 0 13px;
+        font-size: 14px;
+    }
+
+    .button-group {
+        gap: 6px;
+    }
+
+    .search {
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+
+    input,
+    select,
+    textarea {
+        min-height: 42px;
+        padding: 10px 12px;
+        font-size: 16px;
+    }
+
+    label {
+        gap: 6px;
+    }
+
+    label span,
+    dt {
+        font-size: 13px;
+    }
+
+    .filter-summary {
+        gap: 10px;
+        padding: 13px 14px;
+        margin-bottom: 14px;
+    }
+
+    .filter-summary strong {
+        font-size: 16px;
+    }
+
+    .form {
+        gap: 16px;
+    }
+
+    .form-wizard {
+        gap: 12px;
+        padding: 10px;
+    }
+
+    .form-wizard__steps {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+    }
+
+    .form-wizard__steps::-webkit-scrollbar {
+        display: none;
+    }
+
+    .form-wizard__steps li {
+        flex: 0 0 112px;
+    }
+
+    .form-wizard__steps button {
+        min-height: 48px;
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+
+    .form-wizard__steps button span {
+        margin-bottom: 2px;
+        font-size: 11px;
+    }
+
+    .card-extraction-section,
+    .extracted-result-section,
+    .extraction-warning-box,
+    .form-section {
+        gap: 13px;
+        padding: 16px;
+    }
+
+    .card-extraction-section,
+    .extracted-result-section,
+    .extraction-warning-box {
+        margin-bottom: 16px;
+    }
+
+    .card-extraction-section__header {
+        display: grid;
+        gap: 10px;
+    }
+
+    .card-extraction-section h2,
+    .extracted-result-section h2 {
+        font-size: 19px;
+    }
+
+    .form-section h2,
+    .form-section summary {
+        font-size: 18px;
+    }
+
+    .form-section h3 {
+        font-size: 15px;
+    }
+
+    .section-help {
+        line-height: 1.5;
+    }
+
+    .form__grid {
+        gap: 13px;
+    }
+
+    .choice-card {
+        min-height: 50px;
+        padding: 12px;
+    }
+
+    .choice-card span {
+        font-size: 14px;
+    }
+
+    .form__arrow {
+        width: 44px;
+        height: 44px;
+        min-height: 44px;
+        font-size: 22px;
+    }
+
+    .detail {
+        gap: 16px;
+    }
+
+    .detail dl div {
+        min-height: 68px;
+        padding: 14px;
+    }
+
+    .detail dd {
+        margin-top: 5px;
+        font-size: 16px;
+    }
+
+    .detail__memo,
+    .empty-panel {
+        padding: 16px;
+    }
+
+    .purchase-place-map {
+        height: 240px;
+    }
+
+    .purchase-place-map__info {
+        padding: 12px;
+    }
+
     .taste-row {
         grid-template-columns: 1fr repeat(5, minmax(0, 1fr));
+        gap: 6px;
     }
 
     .compact-flavor-group summary {
@@ -2450,11 +2686,37 @@ small {
     }
 
     .flavor-picker__group {
-        padding: 18px;
+        gap: 14px;
+        padding: 16px;
+    }
+
+    .flavor-picker__notes {
+        gap: 8px;
+    }
+
+    .flavor-picker__note span,
+    .tag-chip span,
+    .selected-tags span,
+    .selected-tag-button,
+    .pour-detail__list span,
+    .coffee-bean-card__meta span,
+    .cafe-filter-card__body small {
+        min-height: 30px;
+        padding: 0 10px;
+        font-size: 13px;
+    }
+
+    .kakao-place-search {
+        gap: 12px;
+        padding: 14px;
     }
 
     .kakao-place-search__controls {
         grid-template-columns: 1fr;
+    }
+
+    .kakao-place-map {
+        min-height: 220px;
     }
 
     .taste-chart {
@@ -2474,9 +2736,142 @@ small {
     .taste-row label span {
         width: 100%;
     }
+
+    .score-pill span,
+    .taste-row label span {
+        height: 38px;
+        font-size: 13px;
+    }
+
+    .coffee-bean-carousel {
+        gap: 12px;
+    }
+
+    .coffee-bean-carousel__tabs button {
+        min-height: 38px;
+        padding: 0 12px;
+        font-size: 14px;
+    }
+
+    .coffee-bean-carousel__tabs strong {
+        min-width: 24px;
+        min-height: 24px;
+        font-size: 12px;
+    }
+
+    .coffee-bean-carousel__controls button {
+        width: 38px;
+        height: 38px;
+        font-size: 24px;
+    }
+
+    .coffee-bean-section {
+        gap: 12px;
+        padding: 16px 14px;
+    }
+
+    .coffee-bean-section__header {
+        gap: 12px;
+        padding-bottom: 12px;
+    }
+
+    .coffee-bean-section__header h2 {
+        font-size: 21px;
+    }
+
+    .coffee-bean-section .record-card__link,
+    .record-card__link {
+        min-height: 168px;
+        padding: 14px;
+    }
+
+    .record-card strong {
+        font-size: 18px;
+    }
+
+    .record-card__date,
+    .record-card span {
+        font-size: 13px;
+    }
+
+    .cafe-filter-toolbar a {
+        min-height: 36px;
+        padding: 0 13px;
+        font-size: 13px;
+    }
+
+    .cafe-filter-card__link {
+        gap: 10px;
+        min-height: 188px;
+        padding: 14px;
+    }
+
+    .cafe-filter-card__body strong {
+        font-size: 18px;
+    }
+
+    .cafe-filter-card__body > span,
+    .cafe-filter-card__body p {
+        font-size: 13px;
+    }
+
+    .cafe-filter-detail {
+        gap: 14px;
+    }
+
+    .cafe-filter-detail > section,
+    .cafe-filter-detail__summary {
+        padding: 16px;
+    }
+
+    .cafe-filter-detail h2 {
+        font-size: 17px;
+    }
+
+    .pour-track,
+    .pour-detail__chart {
+        min-height: 300px;
+    }
+
+    .pour-chart-svg,
+    .pour-detail__chart svg {
+        min-height: 260px;
+    }
+
+    .pour-chart-marker {
+        min-width: 82px;
+        min-height: 34px;
+        padding: 0 10px;
+        font-size: 12px;
+    }
 }
 
 @media (max-width: 460px) {
+    :root {
+        --app-gutter: 10px;
+    }
+
+    .app-header {
+        min-height: 48px;
+    }
+
+    .app-header__brand strong {
+        display: none;
+    }
+
+    .app-bottom-nav {
+        right: 10px;
+        left: 10px;
+    }
+
+    h1 {
+        font-size: 32px;
+    }
+
+    .page__header h1 {
+        font-size: 28px;
+    }
+
     .cafe-filter-list {
         grid-template-columns: 1fr;
     }
