@@ -71,15 +71,12 @@ body {
 }
 
 .app-header__logo {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     width: 34px;
     height: 34px;
     border-radius: 999px;
-    color: #fff;
-    background: #5c2e1f;
-    font-weight: 900;
+    display: block;
+    object-fit: cover;
+    box-shadow: 0 1px 2px rgba(68, 48, 31, 0.12);
 }
 
 .app-header__nav {
@@ -2365,7 +2362,6 @@ small {
     .app-header__logo {
         width: 30px;
         height: 30px;
-        font-size: 16px;
     }
 
     .app-header__nav,
