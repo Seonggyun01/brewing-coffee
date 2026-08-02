@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${brewRecord.coffeeBeanName + ' 브루잉 - BrewLog'}">브루잉 상세 - BrewLog</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='home-dashboard-20260802')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='brew-record-app-20260802')}">
 </head>
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('records')}"></header>
@@ -26,6 +26,31 @@
 
         <section class="detail">
             <span class="flavor-gradient flavor-gradient--large" th:style="${brewRecord.flavorGradientStyle}"></span>
+
+            <section class="detail__memo brew-detail-recipe">
+                <h2>레시피</h2>
+                <div class="pour-detail" th:if="${!#lists.isEmpty(brewRecord.pourSteps)}"
+                     th:attr="data-duration=${brewRecord.pourTimelineDurationSec}">
+                    <div class="pour-detail__chart" data-pour-chart th:attr="data-duration=${brewRecord.pourTimelineDurationSec}">
+                        <svg viewBox="0 0 680 300" role="img" aria-label="푸어링 레시피 그래프">
+                            <g data-pour-grid></g>
+                            <path data-pour-area></path>
+                            <path data-pour-line></path>
+                            <g data-pour-points></g>
+                            <g data-pour-labels></g>
+                        </svg>
+                        <span class="pour-detail__axis-label pour-detail__axis-label--y">누적 물량(ml)</span>
+                        <span class="pour-detail__axis-label pour-detail__axis-label--x">시간(초)</span>
+                        <span class="pour-detail__point-data"
+                              th:each="step : ${brewRecord.pourSteps}"
+                              th:attr="data-time=${step.timeSec},data-amount=${step.amountMl}"></span>
+                    </div>
+                    <div class="pour-detail__list">
+                        <span th:each="step : ${brewRecord.pourSteps}" th:text="${step.timeSec + '초 / ' + step.amountMl + 'ml'}">40초 / 80ml</span>
+                    </div>
+                </div>
+                <p th:if="${#lists.isEmpty(brewRecord.pourSteps)}">등록된 푸어링 타임라인이 없습니다.</p>
+            </section>
 
             <dl>
                 <div>
@@ -118,28 +143,6 @@
             </section>
 
             <section class="detail__memo">
-                <h2>레시피</h2>
-                <div class="pour-detail" th:if="${!#lists.isEmpty(brewRecord.pourSteps)}"
-                     th:attr="data-duration=${brewRecord.pourTimelineDurationSec}">
-                    <div class="pour-detail__chart" data-pour-chart th:attr="data-duration=${brewRecord.pourTimelineDurationSec}">
-                        <svg viewBox="0 0 680 300" role="img" aria-label="푸어링 레시피 그래프">
-                            <g data-pour-grid></g>
-                            <path data-pour-area></path>
-                            <path data-pour-line></path>
-                            <g data-pour-points></g>
-                            <g data-pour-labels></g>
-                        </svg>
-                        <span class="pour-detail__axis-label pour-detail__axis-label--y">누적 물량(ml)</span>
-                        <span class="pour-detail__axis-label pour-detail__axis-label--x">시간(초)</span>
-                        <span class="pour-detail__point-data"
-                              th:each="step : ${brewRecord.pourSteps}"
-                              th:attr="data-time=${step.timeSec},data-amount=${step.amountMl}"></span>
-                    </div>
-                    <div class="pour-detail__list">
-                        <span th:each="step : ${brewRecord.pourSteps}" th:text="${step.timeSec + '초 / ' + step.amountMl + 'ml'}">40초 / 80ml</span>
-                    </div>
-                </div>
-                <p th:if="${#lists.isEmpty(brewRecord.pourSteps)}">등록된 푸어링 타임라인이 없습니다.</p>
                 <h2>메모</h2>
                 <p th:text="${brewRecord.memo ?: '-'}">메모</p>
             </section>

@@ -1698,6 +1698,67 @@ small {
     line-height: 1.5;
 }
 
+.brew-record-timeline {
+    display: grid;
+    gap: 10px;
+}
+
+.brew-record-card .record-card__link {
+    grid-template-columns: 8px minmax(0, 1fr);
+    min-height: 116px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.brew-record-card .flavor-gradient {
+    width: 8px;
+    height: 100%;
+    min-height: 116px;
+    border-radius: 0;
+}
+
+.brew-record-card__body {
+    display: grid;
+    gap: 7px;
+    padding: 15px 16px;
+}
+
+.brew-record-card__body strong {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 19px;
+    line-height: 1.24;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.brew-record-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.brew-record-card__meta span {
+    min-height: 26px;
+    padding: 3px 8px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--accent);
+    background: var(--accent-soft);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.brew-record-card__body p {
+    display: -webkit-box;
+    overflow: hidden;
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.45;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
 .cafe-filter-page {
     --accent: #6f432a;
     --line: #e8e2de;
@@ -3648,6 +3709,38 @@ small {
     .record-card__date,
     .record-card span {
         font-size: 13px;
+    }
+
+    .brew-record-timeline {
+        gap: 8px;
+    }
+
+    .brew-record-card .record-card__link {
+        min-height: 96px;
+    }
+
+    .brew-record-card .flavor-gradient {
+        min-height: 96px;
+    }
+
+    .brew-record-card__body {
+        gap: 5px;
+        padding: 11px 12px;
+    }
+
+    .brew-record-card__body strong {
+        font-size: 16px;
+    }
+
+    .brew-record-card__meta span {
+        min-height: 22px;
+        padding: 2px 7px;
+        font-size: 11px;
+    }
+
+    .brew-record-card__body p {
+        font-size: 12px;
+        line-height: 1.35;
     }
 
     .coffee-bean-section .record-card__date,
