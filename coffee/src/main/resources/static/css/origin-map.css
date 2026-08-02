@@ -4,7 +4,6 @@
 }
 
 .origin-map-page.has-country-panel {
-    height: 100vh;
     overflow: hidden;
 }
 
@@ -45,13 +44,6 @@
     right: 18px;
     bottom: 14px;
     left: 18px;
-}
-
-.origin-map-page.has-country-panel .origin-map-shell {
-    grid-template-columns: minmax(0, 1fr);
-    height: calc(100vh - 130px);
-    overflow: hidden;
-    padding-bottom: 0;
 }
 
 .origin-map-visual {
@@ -191,27 +183,44 @@
     font-size: 30px;
 }
 
+.origin-country-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(39, 28, 22, 0.32);
+    backdrop-filter: blur(8px);
+}
+
+.origin-country-modal-backdrop[hidden] {
+    display: none;
+}
+
 .origin-country-panel {
     position: fixed;
-    top: 128px;
-    right: max(24px, calc((100vw - 1760px) / 2 + 24px));
-    z-index: 5;
+    top: 50%;
+    left: 50%;
+    z-index: 41;
     display: grid;
     grid-template-rows: auto auto auto auto auto minmax(0, 1fr);
     gap: 18px;
-    width: min(390px, calc(100vw - 48px));
-    max-height: calc(100vh - 152px);
+    width: min(520px, calc(100vw - 32px));
+    max-height: min(760px, calc(100dvh - 32px));
     min-height: 0;
     overflow: hidden;
     padding: 28px;
     border: 1px solid rgba(132, 105, 76, 0.24);
     border-radius: 8px;
-    background: rgba(255, 252, 247, 0.92);
-    box-shadow: 0 18px 42px rgba(68, 48, 31, 0.1);
+    background: rgba(255, 252, 247, 0.98);
+    box-shadow: 0 28px 80px rgba(39, 28, 22, 0.24);
+    transform: translate(-50%, -50%);
 }
 
 .origin-country-panel[hidden] {
     display: none;
+}
+
+.origin-country-panel:focus {
+    outline: none;
 }
 
 .origin-country-panel__close {
@@ -354,17 +363,6 @@
         margin-top: 18px;
     }
 
-    .origin-map-page.has-country-panel .origin-map-shell {
-        grid-template-columns: 1fr;
-        height: auto;
-        overflow: visible;
-    }
-
-    .origin-map-page.has-country-panel {
-        height: auto;
-        overflow: auto;
-    }
-
     .origin-map-visual {
         min-height: auto;
     }
@@ -392,15 +390,6 @@
 
     .origin-map-stats article:last-child {
         border-bottom: 0;
-    }
-
-    .origin-country-panel {
-        position: static;
-        width: auto;
-        min-height: auto;
-        max-height: none;
-        overflow: visible;
-        margin-top: 16px;
     }
 
     .origin-bean-preview__list {
@@ -506,7 +495,8 @@
 
     .origin-country-panel {
         gap: 14px;
-        margin-top: 12px;
+        width: min(420px, calc(100vw - 20px));
+        max-height: calc(100dvh - 20px);
         padding: 20px 16px;
     }
 

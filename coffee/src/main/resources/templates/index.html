@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BrewLog Origin Map</title>
     <link rel="stylesheet" th:href="@{/css/main.css(v='bean-card-place-20260802')}">
-    <link rel="stylesheet" th:href="@{/css/origin-map.css(v='home-dashboard-20260802')}">
+    <link rel="stylesheet" th:href="@{/css/origin-map.css(v='origin-country-modal-20260802')}">
 </head>
 <body class="origin-map-page">
     <header th:replace="~{fragments/app-header :: appHeader('home')}"></header>
@@ -121,10 +121,18 @@
             </div>
         </section>
 
-        <aside class="origin-country-panel" data-country-panel aria-live="polite" hidden>
+        <div class="origin-country-modal-backdrop" data-country-panel-backdrop hidden></div>
+        <aside class="origin-country-panel"
+               data-country-panel
+               role="dialog"
+               aria-modal="true"
+               aria-labelledby="origin-country-panel-title"
+               aria-live="polite"
+               tabindex="-1"
+               hidden>
             <button class="origin-country-panel__close" type="button" data-country-panel-close aria-label="국가 정보 닫기">×</button>
             <p class="origin-country-panel__eyebrow">Selected Country</p>
-            <h1 data-country-name>국가를 선택하세요</h1>
+            <h1 id="origin-country-panel-title" data-country-name>국가를 선택하세요</h1>
             <p data-country-summary>지도에서 색이 칠해진 산지를 선택하면 원두 기록을 볼 수 있어요.</p>
             <a class="origin-country-panel__cta" data-country-link th:href="@{/coffee-beans}">전체 원두 보기</a>
 
@@ -145,6 +153,6 @@
         </aside>
     </main>
 
-    <script th:src="@{/js/origin-map.js(v=10)}"></script>
+    <script th:src="@{/js/origin-map.js(v=11)}"></script>
 </body>
 </html>

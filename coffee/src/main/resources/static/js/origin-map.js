@@ -6,6 +6,7 @@
     const zoomResetButton = document.querySelector('[data-origin-zoom-reset]');
     const zoomLabel = document.querySelector('[data-origin-zoom-label]');
     const countryPanel = document.querySelector('[data-country-panel]');
+    const countryPanelBackdrop = document.querySelector('[data-country-panel-backdrop]');
     const countryName = countryPanel.querySelector('[data-country-name]');
     const countrySummary = countryPanel.querySelector('[data-country-summary]');
     const countryLink = countryPanel.querySelector('[data-country-link]');
@@ -25,6 +26,7 @@
     let panOffset = { x: 0, y: 0 };
     let dragStart = null;
     let didDragMap = false;
+    let lastFocusedElement = null;
 
     function clamp(value, min, max) {
         return Math.min(Math.max(value, min), max);
@@ -116,7 +118,9 @@
     }
 
     function setPanel(country) {
+        lastFocusedElement = document.activeElement;
         document.body.classList.add('has-country-panel');
+        countryPanelBackdrop.hidden = false;
         countryPanel.hidden = false;
         countries.forEach((countryShape) => countryShape.classList.toggle('is-selected', countryShape.id === country.countryCode));
         countryName.textContent = `${country.koreanCountryName} (${country.countryName})`;
@@ -125,6 +129,19 @@
         countryLink.href = `/coffee-beans?countryCode=${country.countryCode}`;
         countryMore.href = `/coffee-beans?countryCode=${country.countryCode}`;
         renderRecentBeans(country.recentBeans);
+        countryPanel.focus({ preventScroll: true });
+    }
+
+    function closePanel() {
+        document.body.classList.remove('has-country-panel');
+        countryPanelBackdrop.hidden = true;
+        countryPanel.hidden = true;
+        countries.forEach((countryShape) => countryShape.classList.remove('is-selected'));
+
+        if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+            lastFocusedElement.focus({ preventScroll: true });
+        }
+        lastFocusedElement = null;
     }
 
     function renderRecentBeans(beans) {
@@ -226,9 +243,13 @@
     zoomResetButton.addEventListener('click', resetZoom);
     applyZoom();
 
-    countryPanelClose.addEventListener('click', () => {
-        document.body.classList.remove('has-country-panel');
-        countryPanel.hidden = true;
-        countries.forEach((countryShape) => countryShape.classList.remove('is-selected'));
+    countryPanelClose.addEventListener('click', closePanel);
+    countryPanelBackdrop.addEventListener('click', closePanel);
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape' || countryPanel.hidden) {
+            return;
+        }
+
+        closePanel();
     });
 }());
