@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BrewLog Origin Map</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='home-dashboard-20260802')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='bean-card-place-20260802')}">
     <link rel="stylesheet" th:href="@{/css/origin-map.css(v='home-dashboard-20260802')}">
 </head>
 <body class="origin-map-page">
@@ -37,7 +37,10 @@
                     <a class="record-card__link" th:href="@{|/coffee-beans/${bean.id}|}">
                         <span class="flavor-gradient" th:style="${bean.flavorGradientStyle}"></span>
                         <strong th:text="${bean.name}">원두 이름</strong>
-                        <span th:text="${bean.weight != null ? bean.weight + 'g 남음' : '무게 미기록'}">100g 남음</span>
+                        <div class="coffee-bean-card__meta">
+                            <span th:text="${bean.weight != null ? bean.weight + 'g 남음' : '무게 미기록'}">100g 남음</span>
+                            <span th:text="${bean.purchasePlaceName != null ? bean.purchasePlaceName : '구매처 미기록'}">구매처 미기록</span>
+                        </div>
                     </a>
                 </article>
             </div>

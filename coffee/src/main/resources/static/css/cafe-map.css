@@ -140,6 +140,7 @@
 
 .cafe-detail-marker {
     cursor: pointer;
+    outline: none;
     pointer-events: all;
 }
 
@@ -148,7 +149,7 @@
     pointer-events: all;
 }
 
-.cafe-detail-marker path {
+.cafe-detail-marker__pin path {
     fill: #2f6f5e;
     stroke: #fffaf3;
     stroke-width: 22;
@@ -156,9 +157,39 @@
     filter: drop-shadow(0 10px 18px rgba(47, 111, 94, 0.38));
 }
 
-.cafe-detail-marker.is-active path,
-.cafe-detail-marker:hover path {
+.cafe-detail-marker.is-active .cafe-detail-marker__pin path,
+.cafe-detail-marker:hover .cafe-detail-marker__pin path,
+.cafe-detail-marker:focus-visible .cafe-detail-marker__pin path {
     fill: #1f5146;
+}
+
+.cafe-detail-marker__tooltip {
+    display: none;
+    pointer-events: none;
+    filter: drop-shadow(0 12px 22px rgba(68, 48, 31, 0.18));
+}
+
+.cafe-detail-marker__tooltip rect {
+    fill: rgba(255, 255, 255, 0.96);
+    stroke: rgba(92, 46, 31, 0.18);
+}
+
+.cafe-detail-marker__tooltip text {
+    fill: var(--text);
+    font-size: 12.5px;
+    font-weight: 850;
+}
+
+.cafe-detail-marker__tooltip text + text {
+    fill: var(--muted);
+    font-size: 10.5px;
+    font-weight: 700;
+}
+
+.cafe-detail-marker.is-active .cafe-detail-marker__tooltip,
+.cafe-detail-marker:hover .cafe-detail-marker__tooltip,
+.cafe-detail-marker:focus-visible .cafe-detail-marker__tooltip {
+    display: block;
 }
 
 .cafe-map__geo-path--subregion {

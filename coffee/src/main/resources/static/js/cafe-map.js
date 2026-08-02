@@ -30,6 +30,7 @@ const DARK_REGION_COLOR = { r: 92, g: 46, b: 31 };
 const ZOOM_STEP = 0.1;
 const DETAIL_ZOOM_THRESHOLD = 1.9;
 const OVERVIEW_ZOOM_INTERVAL_MS = 70;
+const MARKER_PIN_TIP_Y = 198;
 
 let currentCafes = [];
 let currentTopology = null;
@@ -460,44 +461,92 @@ const clampPointToGeometry = (point, topology, geometry) => {
 
 const markerPositionForCafe = (cafe, subregions) => {
     const coordinate = [cafe.longitude, cafe.latitude];
+
+    if (Number.isFinite(cafe.longitude) && Number.isFinite(cafe.latitude)) {
+        const [x, y] = projectCoordinate(coordinate);
+        return { x, y };
+    }
+
     const regionName = resolveRegionName(cafe);
     const addressSubregionName = resolveSubregionName(cafe, regionName);
     const addressSubregion = subregions.find((geometry) => geometry.properties.NAME_2 === addressSubregionName);
-    const [x, y] = projectCoordinate(coordinate);
-    const point = { x, y };
 
-    if (addressSubregion && !pointInGeometry(municipalityTopology, addressSubregion, coordinate)) {
-        return clampPointToGeometry(point, municipalityTopology, addressSubregion);
+    if (addressSubregion) {
+        return centerForGeometry(municipalityTopology, addressSubregion);
     }
 
-    return point;
+    return { x: VIEW_BOX.width / 2, y: VIEW_BOX.height / 2 };
 };
 
 const renderCafeMarker = (cafe, viewBoxSize, subregions = []) => {
     const { x, y } = markerPositionForCafe(cafe, subregions);
     const scale = clamp(viewBoxSize * 0.0001, 0.0075, 0.016);
     const marker = document.createElementNS(SVG_NS, 'g');
+    const pinGraphic = document.createElementNS(SVG_NS, 'g');
     const hitArea = document.createElementNS(SVG_NS, 'circle');
     const pin = document.createElementNS(SVG_NS, 'path');
+    const tooltip = document.createElementNS(SVG_NS, 'g');
+    const tooltipRect = document.createElementNS(SVG_NS, 'rect');
+    const tooltipName = document.createElementNS(SVG_NS, 'text');
+    const tooltipMeta = document.createElementNS(SVG_NS, 'text');
     const title = document.createElementNS(SVG_NS, 'title');
+    const tooltipWidth = clamp((cafe.cafeName || '').length * 12 + 46, 112, 220);
+    const tooltipScale = clamp(viewBoxSize * 0.00062, 0.07, 0.12);
+    const tooltipX = -(tooltipWidth * tooltipScale) / 2;
+    const tooltipY = -((MARKER_PIN_TIP_Y + 240) * scale + 52 * tooltipScale);
 
     marker.setAttribute('class', 'cafe-detail-marker');
     marker.setAttribute('data-cafe-id', String(cafe.id));
-    marker.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) scale(${scale.toFixed(4)})`);
+    marker.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)})`);
+    marker.setAttribute('tabindex', '0');
+    marker.setAttribute('role', 'button');
+    marker.setAttribute('aria-label', `${cafe.cafeName} 위치 보기`);
+
+    pinGraphic.setAttribute('class', 'cafe-detail-marker__pin');
+    pinGraphic.setAttribute('transform', `translate(0 ${(-MARKER_PIN_TIP_Y * scale).toFixed(2)}) scale(${scale.toFixed(4)})`);
 
     hitArea.setAttribute('class', 'cafe-detail-marker__hit');
     hitArea.setAttribute('cx', '0');
     hitArea.setAttribute('cy', '0');
-    hitArea.setAttribute('r', '320');
+    hitArea.setAttribute('r', String(clamp(viewBoxSize * 0.006, 2.4, 4.2)));
 
     pin.setAttribute('d', 'M0,-240 C82,-240 148,-174 148,-92 C148,16 0,198 0,198 C0,198 -148,16 -148,-92 C-148,-174 -82,-240 0,-240 Z M0,-146 C-34,-146 -62,-118 -62,-84 C-62,-50 -34,-22 0,-22 C34,-22 62,-50 62,-84 C62,-118 34,-146 0,-146 Z');
     title.textContent = cafe.cafeName;
 
-    marker.appendChild(pin);
+    tooltip.setAttribute('class', 'cafe-detail-marker__tooltip');
+    tooltip.setAttribute('transform', `translate(${tooltipX.toFixed(2)} ${tooltipY.toFixed(2)}) scale(${tooltipScale.toFixed(4)})`);
+
+    tooltipRect.setAttribute('width', tooltipWidth.toFixed(2));
+    tooltipRect.setAttribute('height', '44');
+    tooltipRect.setAttribute('rx', '8');
+    tooltipRect.setAttribute('ry', '8');
+
+    tooltipName.setAttribute('x', '12');
+    tooltipName.setAttribute('y', '18');
+    tooltipName.textContent = cafe.cafeName;
+
+    tooltipMeta.setAttribute('x', '12');
+    tooltipMeta.setAttribute('y', '34');
+    tooltipMeta.textContent = cafe.address ? cafe.address.split(' ').slice(-2).join(' ') : `방문 ${cafe.visitCount}회`;
+
+    pinGraphic.appendChild(pin);
     hitArea.addEventListener('click', () => setActiveCafe(cafe));
+    tooltip.appendChild(tooltipRect);
+    tooltip.appendChild(tooltipName);
+    tooltip.appendChild(tooltipMeta);
     marker.appendChild(hitArea);
+    marker.appendChild(pinGraphic);
+    marker.appendChild(tooltip);
     marker.appendChild(title);
     marker.addEventListener('click', () => setActiveCafe(cafe));
+    marker.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') {
+            return;
+        }
+
+        event.preventDefault();
+        setActiveCafe(cafe);
+    });
 
     return marker;
 };
