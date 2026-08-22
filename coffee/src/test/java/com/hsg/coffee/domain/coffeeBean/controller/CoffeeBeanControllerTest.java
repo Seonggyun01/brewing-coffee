@@ -6,8 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
@@ -26,6 +28,8 @@ import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanCreateForm;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
+import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanCardExtractionPhase;
+import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanCardExtractionProgressTracker;
 import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanService;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
@@ -44,6 +48,9 @@ class CoffeeBeanControllerTest {
 
     @Autowired
     private CoffeeBeanRepository coffeeBeanRepository;
+
+    @Autowired
+    private CoffeeBeanCardExtractionProgressTracker extractionProgressTracker;
 
     @Autowired
     private PurchasePlaceRepository purchasePlaceRepository;
@@ -163,7 +170,11 @@ class CoffeeBeanControllerTest {
                 "mock image".getBytes()
         );
 
-        mockMvc.perform(multipart("/coffee-beans/card-extraction").file(image))
+        String progressId = "controller-test-progress";
+
+        mockMvc.perform(multipart("/coffee-beans/card-extraction")
+                        .file(image)
+                        .param("extractionProgressId", progressId))
                 .andExpect(status().isOk())
                 .andExpect(view().name("coffee-beans/form"))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("추출된 텍스트")))
@@ -178,7 +189,36 @@ class CoffeeBeanControllerTest {
                         "purchasePlaces"
                 ));
 
+        assertEquals(
+                CoffeeBeanCardExtractionPhase.COMPLETED,
+                extractionProgressTracker.find(progressId).orElseThrow()
+        );
+
         assertEquals(0, coffeeBeanRepository.count());
+    }
+
+    @Test
+    void extractionProgressEventsFollowBackendPhases() throws Exception {
+        String progressId = "sse-progress-test";
+        MvcResult eventStream = mockMvc.perform(get(
+                        "/api/coffee-bean-card-extractions/{progressId}/events",
+                        progressId
+                ))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        extractionProgressTracker.update(progressId, CoffeeBeanCardExtractionPhase.OCR);
+        extractionProgressTracker.update(progressId, CoffeeBeanCardExtractionPhase.LLM);
+        extractionProgressTracker.update(progressId, CoffeeBeanCardExtractionPhase.PARSING);
+        extractionProgressTracker.update(progressId, CoffeeBeanCardExtractionPhase.COMPLETED);
+
+        mockMvc.perform(asyncDispatch(eventStream))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("event:connected")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"phase\":\"OCR\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"phase\":\"LLM\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"phase\":\"PARSING\"")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("\"phase\":\"COMPLETED\"")));
     }
 
     @Test

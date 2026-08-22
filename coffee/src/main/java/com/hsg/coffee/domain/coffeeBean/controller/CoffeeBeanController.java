@@ -29,6 +29,8 @@ import com.hsg.coffee.domain.coffeeBean.dto.CoffeeBeanUpdateForm;
 import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBeanStatus;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanCardExtractionService;
+import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanCardExtractionPhase;
+import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanCardExtractionProgressTracker;
 import com.hsg.coffee.domain.coffeeBean.service.CoffeeBeanService;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
 import com.hsg.coffee.domain.purchasePlace.service.PurchasePlaceService;
@@ -44,6 +46,7 @@ public class CoffeeBeanController {
 
     private final CoffeeBeanService coffeeBeanService;
     private final CoffeeBeanCardExtractionService coffeeBeanCardExtractionService;
+    private final CoffeeBeanCardExtractionProgressTracker extractionProgressTracker;
     private final PurchasePlaceService purchasePlaceService;
     private final BrewRecordService brewRecordService;
 
@@ -84,15 +87,21 @@ public class CoffeeBeanController {
     @PostMapping("/card-extraction")
     public String extractFromCard(
             @RequestParam("image") MultipartFile image,
+            @RequestParam(required = false) String extractionProgressId,
             Model model
     ) {
         CoffeeBeanCardExtractResult result;
         try {
-            result = coffeeBeanCardExtractionService.extract(image);
+            result = coffeeBeanCardExtractionService.extract(
+                    image,
+                    phase -> extractionProgressTracker.update(extractionProgressId, phase)
+            );
+            extractionProgressTracker.update(extractionProgressId, CoffeeBeanCardExtractionPhase.COMPLETED);
             model.addAttribute("coffeeBeanForm", result.getForm());
             model.addAttribute("extractedRawText", result.getRawText());
             model.addAttribute("extractionWarnings", result.getWarnings());
         } catch (IllegalArgumentException exception) {
+            extractionProgressTracker.update(extractionProgressId, CoffeeBeanCardExtractionPhase.FAILED);
             model.addAttribute("coffeeBeanForm", new CoffeeBeanCreateForm());
             model.addAttribute("extractionWarnings", List.of(exception.getMessage()));
         }

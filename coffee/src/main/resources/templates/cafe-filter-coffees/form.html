@@ -639,8 +639,13 @@
             <span class="model-wait-overlay__spinner" aria-hidden="true"></span>
             <strong data-model-wait-title>응답 대기 중입니다</strong>
             <p data-model-wait-description>이미지를 읽고 원두 정보를 정리하고 있어요.</p>
+            <ol class="model-wait-overlay__stages" data-extraction-progress hidden aria-label="자동 입력 진행 단계">
+                <li data-extraction-phase="OCR"><span>1</span>OCR 추출 중</li>
+                <li data-extraction-phase="LLM"><span>2</span>LLM 원두 정보 정리 중</li>
+                <li data-extraction-phase="PARSING"><span>3</span>결과 파싱 중</li>
+            </ol>
         </div>
     </div>
-    <script th:src="@{/js/form-wizard.js(v='form-app-20260802')}"></script>
+    <script th:src="@{/js/form-wizard.js(v='ocr-progress-20260822')}"></script>
 </body>
 </html>

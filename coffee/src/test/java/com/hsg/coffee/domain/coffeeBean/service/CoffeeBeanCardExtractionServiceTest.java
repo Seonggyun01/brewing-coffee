@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -75,6 +76,25 @@ class CoffeeBeanCardExtractionServiceTest {
         assertEquals(18000, form.getPrice());
         assertEquals(LocalDate.of(2026, 5, 1), form.getRoastedDate());
         assertTrue(result.getWarnings().isEmpty());
+    }
+
+    @Test
+    void reportExtractionPhasesInProcessingOrder() {
+        MockMultipartFile image = new MockMultipartFile(
+                "image",
+                "coffee-card.jpg",
+                "image/jpeg",
+                "mock image".getBytes()
+        );
+        List<CoffeeBeanCardExtractionPhase> phases = new ArrayList<>();
+
+        extractionService.extract(image, phases::add);
+
+        assertEquals(List.of(
+                CoffeeBeanCardExtractionPhase.OCR,
+                CoffeeBeanCardExtractionPhase.LLM,
+                CoffeeBeanCardExtractionPhase.PARSING
+        ), phases);
     }
 
     @Test

@@ -1108,6 +1108,63 @@ tr:last-child td {
     animation: model-wait-spin 0.85s linear infinite;
 }
 
+.model-wait-overlay__stages {
+    width: 100%;
+    display: grid;
+    gap: 8px;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+    text-align: left;
+}
+
+.model-wait-overlay__stages[hidden] {
+    display: none;
+}
+
+.model-wait-overlay__stages li {
+    display: grid;
+    grid-template-columns: 26px minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+    min-height: 34px;
+    color: #a0938a;
+    font-size: 14px;
+    font-weight: 700;
+    transition: color 0.2s ease;
+}
+
+.model-wait-overlay__stages li > span {
+    width: 26px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    border: 1px solid #ded4ce;
+    border-radius: 50%;
+    background: #ffffff;
+    font-size: 12px;
+}
+
+.model-wait-overlay__stages li.is-active {
+    color: var(--text);
+}
+
+.model-wait-overlay__stages li.is-active > span {
+    border-color: var(--accent);
+    color: #ffffff;
+    background: var(--accent);
+}
+
+.model-wait-overlay__stages li.is-complete {
+    color: var(--accent);
+}
+
+.model-wait-overlay__stages li.is-complete > span {
+    border-color: #cdbbb0;
+    color: var(--accent);
+    background: #f3ece8;
+}
+
 .is-model-waiting {
     cursor: progress;
 }

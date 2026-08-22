@@ -7,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -48,11 +49,24 @@ public class CoffeeBeanCardExtractionService {
     private final BeanMappingService beanMappingService;
 
     public CoffeeBeanCardExtractResult extract(MultipartFile image) {
+        return extract(image, phase -> {
+        });
+    }
+
+    public CoffeeBeanCardExtractResult extract(
+            MultipartFile image,
+            Consumer<CoffeeBeanCardExtractionPhase> progressListener
+    ) {
         validateImage(image);
 
+        progressListener.accept(CoffeeBeanCardExtractionPhase.OCR);
         String rawText = ocrService.extractText(image);
-        CoffeeBeanCardTextParseResult parseResult = textParser.parse(rawText);
+
+        progressListener.accept(CoffeeBeanCardExtractionPhase.LLM);
         LlmParsingResponse llmResult = beanMappingService.parseOcrText(rawText);
+
+        progressListener.accept(CoffeeBeanCardExtractionPhase.PARSING);
+        CoffeeBeanCardTextParseResult parseResult = textParser.parse(rawText);
 
         return new CoffeeBeanCardExtractResult(
                 rawText,

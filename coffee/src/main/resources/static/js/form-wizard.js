@@ -103,10 +103,43 @@ document.querySelectorAll('[data-form-wizard]').forEach((form) => {
     setActiveStep(0, false);
 });
 
-function showModelWaitOverlay(title, description) {
+const extractionPhaseOrder = ['OCR', 'LLM', 'PARSING'];
+
+function updateExtractionProgress(phase) {
+    const overlay = document.querySelector('[data-model-wait-overlay]');
+    const progress = overlay?.querySelector('[data-extraction-progress]');
+    const titleElement = overlay?.querySelector('[data-model-wait-title]');
+    const descriptionElement = overlay?.querySelector('[data-model-wait-description]');
+    const stages = progress?.querySelectorAll('[data-extraction-phase]') || [];
+    const currentIndex = phase === 'COMPLETED'
+        ? extractionPhaseOrder.length
+        : extractionPhaseOrder.indexOf(phase);
+
+    stages.forEach((stage, index) => {
+        stage.classList.toggle('is-complete', index < currentIndex || phase === 'COMPLETED');
+        stage.classList.toggle('is-active', index === currentIndex);
+        if (index === currentIndex) {
+            stage.setAttribute('aria-current', 'step');
+        } else {
+            stage.removeAttribute('aria-current');
+        }
+    });
+
+    if (phase === 'COMPLETED') {
+        if (titleElement) {
+            titleElement.textContent = '자동 입력을 마무리하고 있어요';
+        }
+        if (descriptionElement) {
+            descriptionElement.textContent = '정리한 결과를 등록 화면에 반영하고 있어요.';
+        }
+    }
+}
+
+function showModelWaitOverlay(title, description, showExtractionProgress = false) {
     const overlay = document.querySelector('[data-model-wait-overlay]');
     const titleElement = overlay?.querySelector('[data-model-wait-title]');
     const descriptionElement = overlay?.querySelector('[data-model-wait-description]');
+    const progressElement = overlay?.querySelector('[data-extraction-progress]');
 
     if (!overlay) {
         return;
@@ -118,22 +151,117 @@ function showModelWaitOverlay(title, description) {
     if (descriptionElement) {
         descriptionElement.textContent = description;
     }
+    if (progressElement) {
+        progressElement.hidden = !showExtractionProgress;
+    }
 
     overlay.hidden = false;
     document.body.classList.add('is-model-waiting');
 }
 
+function createExtractionProgressId() {
+    if (window.crypto?.randomUUID) {
+        return window.crypto.randomUUID();
+    }
+    return `extraction-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function startExtractionProgressStream(progressId) {
+    return new Promise((resolve, reject) => {
+        const eventSource = new EventSource(
+            `/api/coffee-bean-card-extractions/${encodeURIComponent(progressId)}/events`
+        );
+        let connected = false;
+
+        eventSource.addEventListener('connected', () => {
+            connected = true;
+            resolve(eventSource);
+        }, {once: true});
+
+        eventSource.addEventListener('progress', (event) => {
+            try {
+                const body = JSON.parse(event.data);
+                updateExtractionProgress(body.phase);
+                if (body.phase === 'COMPLETED' || body.phase === 'FAILED') {
+                    eventSource.close();
+                }
+            } catch (error) {
+                eventSource.close();
+            }
+        });
+
+        eventSource.addEventListener('error', () => {
+            if (!connected) {
+                eventSource.close();
+                reject(new Error('진행 상태 스트림 연결 실패'));
+            }
+        });
+    });
+}
+
+async function submitExtractionForm(form, submitButton, progressId) {
+    const resultUrl = window.location.href;
+    let eventSource;
+
+    try {
+        eventSource = await startExtractionProgressStream(progressId);
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            headers: {'Accept': 'text/html'}
+        });
+        if (!response.ok) {
+            throw new Error(`자동 입력 요청 실패: ${response.status}`);
+        }
+
+        const html = await response.text();
+        eventSource?.close();
+        document.open();
+        document.write(html);
+        document.close();
+        window.history.replaceState({}, '', resultUrl);
+    } catch (error) {
+        eventSource?.close();
+        form.removeAttribute('aria-busy');
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = submitButton.dataset.originalText || '사진으로 등록';
+        }
+
+        const titleElement = document.querySelector('[data-model-wait-title]');
+        const descriptionElement = document.querySelector('[data-model-wait-description]');
+        if (titleElement) {
+            titleElement.textContent = '자동 입력을 완료하지 못했어요';
+        }
+        if (descriptionElement) {
+            descriptionElement.textContent = '잠시 후 다시 시도해주세요.';
+        }
+    }
+}
+
 document.querySelectorAll('[data-card-extraction-form]').forEach((form) => {
     const submitButton = form.querySelector('button[type="submit"]');
 
-    form.addEventListener('submit', () => {
+    form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const progressId = createExtractionProgressId();
+        let progressInput = form.querySelector('input[name="extractionProgressId"]');
+        if (!progressInput) {
+            progressInput = document.createElement('input');
+            progressInput.type = 'hidden';
+            progressInput.name = 'extractionProgressId';
+            form.appendChild(progressInput);
+        }
+        progressInput.value = progressId;
+
         form.setAttribute('aria-busy', 'true');
         if (submitButton) {
             submitButton.disabled = true;
             submitButton.dataset.originalText = submitButton.textContent || '';
             submitButton.textContent = '분석 중...';
         }
-        showModelWaitOverlay('응답 대기 중입니다', '이미지를 읽고 원두 정보를 정리하고 있어요.');
+        showModelWaitOverlay('원두 카드를 분석하고 있어요', '완료될 때까지 잠시만 기다려주세요.', true);
+        submitExtractionForm(form, submitButton, progressId);
     });
 });
 
