@@ -1,0 +1,77 @@
+{
+  "baseUrl": "http://localhost:8080",
+  "capturedAt": "2026-08-04T16:39:14.706Z",
+  "viewport": "1440x1100",
+  "results": [
+    {
+      "name": "01-home-origin-map",
+      "url": "/",
+      "filePath": "/Users/home/coffee_project/brewing-coffee/docs/screenshots/2026-08-05-feature-pages/01-home-origin-map.png"
+    },
+    {
+      "name": "02-coffee-beans-list",
+      "url": "/coffee-beans",
+      "filePath": "/Users/home/coffee_project/brewing-coffee/docs/screenshots/2026-08-05-feature-pages/02-coffee-beans-list.png"
+    },
+    {
+      "name": "03-coffee-beans-new",
+      "url": "/coffee-beans/new",
+      "filePath": "/Users/home/coffee_project/brewing-coffee/docs/screenshots/2026-08-05-feature-pages/03-coffee-beans-new.png"
+    },
+    {
+      "name": "04-coffee-beans-detail",
+      "url": "/coffee-beans/8",
+      "filePath": "/Users/home/coffee_project/brewing-coffee/docs/screenshots/2026-08-05-feature-pages/04-coffee-beans-detail.png"
+    },
+    {
+      "name": "05-coffee-beans-edit",
+      "url": "/coffee-beans/8/edit",
+      "filePath": "/Users/home/coffee_project/brewing-coffee/docs/screenshots/2026-08-05-feature-pages/05-coffee-beans-edit.png"
+    },
+    {
+      "name": "06-brew-records-list",
+      "url": "/brew-records",
+      "filePath": "/Users/home/coffee_project/brewing-coffee/docs/screenshots/2026-08-05-feature-pages/06-brew-records-list.png"
+    },
+    {
+      "name": "07-brew-records-new",
+      "url": "/brew-records/new",
+      "filePath": "/Users/home/coffee_project/brewing-coffee/docs/screenshots/2026-08-05-feature-pages/07-brew-records-new.png"
+    },
+    {
+      "name": "08-brew-records-detail",
+      "url": "/brew-records/6",
+      "filePath": "/Users/home/coffee_project/brewing-coffee/docs/screenshots/2026-08-05-feature-pages/08-brew-records-detail.png"
+    },
+    {
+      "name": "09-brew-records-edit",
+      "url": "/brew-records/6/edit",
+      "filePath": "/Users/home/coffee_project/brewing-coffee/docs/screenshots/2026-08-05-feature-pages/09-brew-records-edit.png"
+    },
+    {
+      "name": "10-cafe-filter-list",
+      "url": "/cafe-filter-coffees",
+      "filePath": "/Users/home/coffee_project/brewing-coffee/docs/screenshots/2026-08-05-feature-pages/10-cafe-filter-list.png"
+    },
+    {
+      "name": "11-cafe-filter-new",
+      "url": "/cafe-filter-coffees/new",
+      "filePath": "/Users/home/coffee_project/brewing-coffee/docs/screenshots/2026-08-05-feature-pages/11-cafe-filter-new.png"
+    },
+    {
+      "name": "12-cafe-filter-detail",
+      "url": "/cafe-filter-coffees/3",
+      "filePath": "/Users/home/coffee_project/brewing-coffee/docs/screenshots/2026-08-05-feature-pages/12-cafe-filter-detail.png"
+    },
+    {
+      "name": "13-cafe-filter-edit",
+      "url": "/cafe-filter-coffees/3/edit",
+      "filePath": "/Users/home/coffee_project/brewing-coffee/docs/screenshots/2026-08-05-feature-pages/13-cafe-filter-edit.png"
+    },
+    {
+      "name": "14-cafe-map",
+      "url": "/cafes/map",
+      "filePath": "/Users/home/coffee_project/brewing-coffee/docs/screenshots/2026-08-05-feature-pages/14-cafe-map.png"
+    }
+  ]
+}

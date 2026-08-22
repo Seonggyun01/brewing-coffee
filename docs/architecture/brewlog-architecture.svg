@@ -1,0 +1,138 @@
+<svg width="1400" height="920" viewBox="0 0 1400 920" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">BrewLog Architecture</title>
+  <desc id="desc">BrewLog의 브라우저, Spring Boot 애플리케이션, 도메인 서비스, 데이터베이스, 외부 연동 구조를 보여주는 아키텍처 다이어그램</desc>
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#4A2A1B" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7A452E"/>
+    </marker>
+    <style>
+      .bg { fill: #FFFDFB; }
+      .panel { fill: #FFFFFF; stroke: #E7D8CF; stroke-width: 1.5; filter: url(#shadow); }
+      .group { fill: #FCF7F3; stroke: #E3D2C7; stroke-width: 1.5; }
+      .node { fill: #FFFFFF; stroke: #D8BDAE; stroke-width: 1.5; }
+      .node-accent { fill: #7A452E; stroke: #7A452E; }
+      .node-soft { fill: #F5ECE7; stroke: #D8BDAE; stroke-width: 1.5; }
+      .external { fill: #F9F4EE; stroke: #C89A75; stroke-width: 1.5; stroke-dasharray: 7 6; }
+      .db { fill: #FFF8EE; stroke: #B8753F; stroke-width: 1.8; }
+      .title { font: 700 34px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #2B211D; }
+      .section { font: 700 20px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #704026; }
+      .label { font: 700 17px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #2B211D; }
+      .small { font: 500 13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #796860; }
+      .tiny { font: 500 12px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #796860; }
+      .white { fill: #FFFFFF; }
+      .arrow { stroke: #7A452E; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .arrow-soft { stroke: #B48A72; stroke-width: 1.8; fill: none; marker-end: url(#arrow); stroke-dasharray: 6 6; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1400" height="920"/>
+  <text class="title" x="64" y="70">BrewLog 현재 아키텍처</text>
+  <text class="small" x="66" y="98">개인용 커피 기록 앱: 원두, 브루잉, 카페 필터커피, 산지/카페 지도, OCR/LLM 자동 입력</text>
+
+  <rect class="panel" x="54" y="130" width="1292" height="720" rx="28"/>
+
+  <rect class="group" x="86" y="174" width="250" height="214" rx="20"/>
+  <text class="section" x="112" y="210">Client</text>
+  <rect class="node" x="112" y="232" width="198" height="56" rx="14"/>
+  <text class="label" x="132" y="258">브라우저</text>
+  <text class="tiny" x="132" y="277">Desktop / Mobile / iPad</text>
+  <rect class="node-soft" x="112" y="306" width="198" height="58" rx="14"/>
+  <text class="label" x="132" y="332">Thymeleaf 화면</text>
+  <text class="tiny" x="132" y="351">HTML + CSS + Vanilla JS</text>
+
+  <rect class="group" x="382" y="154" width="510" height="430" rx="22"/>
+  <text class="section" x="410" y="192">Spring Boot Application</text>
+  <rect class="node-accent" x="410" y="216" width="200" height="70" rx="16"/>
+  <text class="label white" x="432" y="246">MVC Controller</text>
+  <text class="tiny white" x="432" y="267">페이지 라우팅 / 폼 처리 / API</text>
+
+  <rect class="node" x="656" y="216" width="200" height="70" rx="16"/>
+  <text class="label" x="678" y="246">Static Assets</text>
+  <text class="tiny" x="678" y="267">main.css, 지도/모달 JS</text>
+
+  <rect class="node" x="410" y="326" width="200" height="76" rx="16"/>
+  <text class="label" x="432" y="354">Domain Service</text>
+  <text class="tiny" x="432" y="374">원두 / 브루잉 / 카페 / 지도</text>
+  <text class="tiny" x="432" y="391">재고 차감, 중복 구매처 처리</text>
+
+  <rect class="node" x="656" y="326" width="200" height="76" rx="16"/>
+  <text class="label" x="678" y="354">AI Pipeline</text>
+  <text class="tiny" x="678" y="374">이미지 전처리, OCR</text>
+  <text class="tiny" x="678" y="391">LLM 필드 매핑, 색상 추천</text>
+
+  <rect class="node" x="410" y="442" width="200" height="74" rx="16"/>
+  <text class="label" x="432" y="470">Repository</text>
+  <text class="tiny" x="432" y="490">Spring Data JPA</text>
+
+  <rect class="node-soft" x="656" y="442" width="200" height="74" rx="16"/>
+  <text class="label" x="678" y="470">DTO / Form</text>
+  <text class="tiny" x="678" y="490">검증, 응답 모델, 화면 바인딩</text>
+
+  <rect class="group" x="952" y="174" width="332" height="214" rx="20"/>
+  <text class="section" x="978" y="210">External Services</text>
+  <rect class="external" x="978" y="232" width="254" height="48" rx="14"/>
+  <text class="label" x="998" y="262">Kakao Map SDK</text>
+  <rect class="external" x="978" y="296" width="254" height="48" rx="14"/>
+  <text class="label" x="998" y="326">Google Vision</text>
+  <rect class="external" x="978" y="360" width="254" height="48" rx="14"/>
+  <text class="label" x="998" y="390">Ollama / HF</text>
+
+  <rect class="group" x="86" y="444" width="250" height="292" rx="20"/>
+  <text class="section" x="112" y="480">User Features</text>
+  <rect class="node" x="112" y="502" width="198" height="48" rx="14"/>
+  <text class="label" x="132" y="532">원두 관리</text>
+  <rect class="node" x="112" y="566" width="198" height="48" rx="14"/>
+  <text class="label" x="132" y="596">브루잉 기록</text>
+  <rect class="node" x="112" y="630" width="198" height="48" rx="14"/>
+  <text class="label" x="132" y="660">카페 필터커피</text>
+  <rect class="node" x="112" y="694" width="198" height="48" rx="14"/>
+  <text class="label" x="132" y="724">지도 대시보드</text>
+
+  <rect class="group" x="382" y="624" width="510" height="166" rx="22"/>
+  <text class="section" x="410" y="662">Core Data Model</text>
+  <rect class="db" x="410" y="684" width="130" height="62" rx="14"/>
+  <text class="label" x="430" y="713">CoffeeBean</text>
+  <text class="tiny" x="430" y="732">CURRENT / CAFE</text>
+  <rect class="db" x="570" y="684" width="130" height="62" rx="14"/>
+  <text class="label" x="590" y="713">BrewRecord</text>
+  <text class="tiny" x="590" y="732">레시피, 맛 평가</text>
+  <rect class="db" x="730" y="684" width="130" height="62" rx="14"/>
+  <text class="label" x="750" y="713">PurchasePlace</text>
+  <text class="tiny" x="750" y="732">구매처 / 카페</text>
+
+  <rect class="group" x="952" y="444" width="332" height="292" rx="20"/>
+  <text class="section" x="978" y="480">Runtime</text>
+  <rect class="node" x="978" y="502" width="254" height="54" rx="14"/>
+  <text class="label" x="998" y="532">MySQL</text>
+  <text class="tiny" x="998" y="548">운영/로컬 영속 DB</text>
+  <rect class="node" x="978" y="574" width="254" height="54" rx="14"/>
+  <text class="label" x="998" y="604">PaddleOCR</text>
+  <text class="tiny" x="998" y="620">Python subprocess</text>
+  <rect class="node" x="978" y="646" width="254" height="54" rx="14"/>
+  <text class="label" x="998" y="676">Ollama</text>
+  <text class="tiny" x="998" y="692">gemma3:12b 기본</text>
+
+  <path class="arrow" d="M 310 260 C 340 260, 360 251, 405 251"/>
+  <path class="arrow" d="M 610 251 C 628 251, 634 251, 652 251"/>
+  <path class="arrow" d="M 510 286 L 510 321"/>
+  <path class="arrow" d="M 510 402 L 510 437"/>
+  <path class="arrow" d="M 610 364 L 652 364"/>
+  <path class="arrow" d="M 610 480 C 646 532, 714 590, 764 680"/>
+  <path class="arrow" d="M 540 714 L 565 714"/>
+  <path class="arrow" d="M 700 714 L 725 714"/>
+  <path class="arrow" d="M 540 714 C 616 760, 702 760, 778 714"/>
+  <path class="arrow" d="M 892 530 C 920 530, 944 530, 974 530"/>
+  <path class="arrow-soft" d="M 856 364 C 906 340, 940 322, 974 320"/>
+  <path class="arrow-soft" d="M 856 364 C 906 385, 940 390, 974 390"/>
+  <path class="arrow-soft" d="M 856 251 C 908 238, 940 248, 974 256"/>
+  <path class="arrow" d="M 310 526 C 346 526, 370 414, 405 364"/>
+  <path class="arrow" d="M 310 590 C 350 590, 374 504, 405 480"/>
+  <path class="arrow" d="M 310 654 C 354 654, 375 574, 410 714"/>
+  <path class="arrow" d="M 310 718 C 355 718, 378 714, 405 714"/>
+
+  <rect class="node-soft" x="86" y="796" width="1198" height="34" rx="17"/>
+  <text class="small" x="112" y="818">핵심 흐름: 카드 이미지 업로드 → OCR → LLM 매핑 → 원두 폼 자동 채움 → 저장 → MySQL 반영 → 브루잉/지도/카페 기록에서 재사용</text>
+</svg>

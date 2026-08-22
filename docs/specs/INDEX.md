@@ -6,6 +6,7 @@
 ## 문서 목록
 
 - `brewing_taste_record_ux_spec_v1.md`: 브루잉 맛 기록 UX 명세
+- `brewlog_architecture_overview_v1.md`: 현재 아키텍처, 기술 스택, 사용자 플로우, 핵심 기능 정리
 - `brewlog_erd_backend_design_v_1.md`: 백엔드 ERD 및 엔티티 설계 명세
 - `brewlog_frontend_app_redesign_plan_v1.md`: 앱형 프론트엔드 개편 계획 및 사용자 플로우 명세
 - `brewlog_frontend_design_v1.md`: 프론트엔드 디자인 명세
