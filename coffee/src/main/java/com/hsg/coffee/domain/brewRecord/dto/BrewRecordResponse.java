@@ -3,7 +3,6 @@ package com.hsg.coffee.domain.brewRecord.dto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,6 +13,7 @@ import com.hsg.coffee.domain.brewRecord.entity.BrewRecord;
 import com.hsg.coffee.domain.brewRecord.entity.BrewTemperatureType;
 import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 import com.hsg.coffee.domain.coffeeBean.dto.CustomFlavorNoteResponse;
+import com.hsg.coffee.domain.coffeeBean.dto.FlavorGradientStyle;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
 
 import lombok.Getter;
@@ -97,18 +97,7 @@ public class BrewRecordResponse {
     }
 
     public String getFlavorGradientStyle() {
-        if (flavorNotes.isEmpty() && customFlavorNoteDetails.isEmpty()) {
-            return "background: #ded4c8;";
-        }
-
-        List<String> colors = new ArrayList<>();
-        colors.addAll(flavorNotes.stream()
-                .map(FlavorNote::getColor)
-                .toList());
-        colors.addAll(customFlavorNoteDetails.stream()
-                .map(CustomFlavorNoteResponse::color)
-                .toList());
-        return "background: linear-gradient(90deg, " + String.join(", ", colors) + ");";
+        return FlavorGradientStyle.from(flavorNotes, customFlavorNoteDetails);
     }
 
     public String getFlavorNoteSummary() {

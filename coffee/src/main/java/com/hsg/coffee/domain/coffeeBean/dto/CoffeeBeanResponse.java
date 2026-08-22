@@ -2,7 +2,6 @@ package com.hsg.coffee.domain.coffeeBean.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -95,18 +94,7 @@ public class CoffeeBeanResponse {
     }
 
     public String getFlavorGradientStyle() {
-        if (flavorNotes.isEmpty() && customFlavorNoteDetails.isEmpty()) {
-            return "background: #ded4c8;";
-        }
-
-        List<String> colors = new ArrayList<>();
-        colors.addAll(flavorNotes.stream()
-                .map(FlavorNote::getColor)
-                .toList());
-        colors.addAll(customFlavorNoteDetails.stream()
-                .map(CustomFlavorNoteResponse::color)
-                .toList());
-        return "background: linear-gradient(90deg, " + String.join(", ", colors) + ");";
+        return FlavorGradientStyle.from(flavorNotes, customFlavorNoteDetails);
     }
 
     public String getFlavorNoteSummary() {

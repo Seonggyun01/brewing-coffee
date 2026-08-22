@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.hsg.coffee.domain.coffeeBean.dto.CustomFlavorNoteResponse;
+import com.hsg.coffee.domain.coffeeBean.dto.FlavorGradientStyle;
 import com.hsg.coffee.domain.coffeeBean.entity.CustomFlavorNote;
 import com.hsg.coffee.domain.coffeeBean.repository.CustomFlavorNoteRepository;
 
@@ -61,7 +62,7 @@ public class CustomFlavorNoteService {
         return cleanedNames.stream()
                 .map(name -> {
                     CustomFlavorNote note = notesByNormalizedName.get(normalize(name));
-                    String color = note != null ? note.getColor() : "#7A5038";
+                    String color = FlavorGradientStyle.normalizeColor(note != null ? note.getColor() : null);
                     return new CustomFlavorNoteResponse(name, color);
                 })
                 .toList();
