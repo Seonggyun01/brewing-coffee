@@ -12,7 +12,7 @@ BrewLog는 커피 원두, 브루잉 레시피, 맛 기록, 원산지와 카페 �
 | Persistence | Spring Data JPA |
 | Database | MySQL |
 | Validation | Bean Validation |
-| OCR | Google Cloud Vision |
+| OCR | PaddleOCR 3.7 / PP-OCRv5 (우선), Google Cloud Vision (fallback) |
 | Image Conversion | Openize.HEIC |
 | Build | Gradle |
 | Utility | Lombok |
@@ -41,7 +41,7 @@ BrewLog는 커피 원두, 브루잉 레시피, 맛 기록, 원산지와 카페 �
 - 구매처 장소 링크는 카카오맵뿐 아니라 네이버지도, 구글맵, 온라인 구매 링크까지 담을 수 있도록 범용 `placeUrl`로 저장
 - 원두 카드 이미지 업로드 후 OCR 결과를 등록 폼 후보값으로 자동 반영
 - JPG, PNG, WEBP, HEIC, HEIF 이미지 업로드 지원
-- HEIC/HEIF 이미지는 서버에서 PNG로 변환한 뒤 Google Vision OCR에 전달
+- HEIC/HEIF 이미지는 서버에서 PNG로 변환한 뒤 PaddleOCR에 우선 전달
 - OCR 결과는 자동 저장하지 않고 사용자가 확인한 뒤 최종 저장
 
 ### 브루잉 기록
@@ -68,8 +68,9 @@ BrewLog는 커피 원두, 브루잉 레시피, 맛 기록, 원산지와 카페 �
 - 서버 실행 시 개발용 더미 데이터 생성
 - MySQL 기반 로컬 데이터 영속화
 - 주요 서비스/컨트롤러 흐름 테스트
-- Google Vision OCR 사용 시 `GOOGLE_APPLICATION_CREDENTIALS` 환경 변수로 로컬 인증 파일 지정
-- 기본 실행은 Google Vision OCR을 사용하며, 테스트 환경에서만 `mock` provider를 사용
+- 기본 실행은 로컬 PaddleOCR을 사용하며, 로컬 추출 실패 시에만 Google Vision OCR을 사용
+- Google Vision OCR은 `application-local.yml`의 서비스 계정 경로 또는 `GOOGLE_APPLICATION_CREDENTIALS`로 인증
+- 테스트 환경에서는 `mock` provider를 사용
 
 ### 원산지 세계 지도
 
@@ -333,9 +334,9 @@ http://192.168.x.x:8080
    - 업로드 후 자동 입력, 수정, 기존 등록 저장 흐름 수동 확인
 
 7. 실제 OCR 연동 확장
-   - Tesseract.js, PaddleOCR, OCR.space, Google Vision OCR 중 선택
-   - `CoffeeBeanCardOcrService` 구현체만 교체할 수 있게 유지
-   - 외부 API 키는 서버 설정으로만 관리하고 프론트에 노출하지 않음
+   - 로컬 PaddleOCR을 기본 OCR 구현체로 사용
+   - 로컬 추출 실패 또는 결과 부족 시 Google Vision OCR로 fallback
+   - `CoffeeBeanCardOcrService` 인터페이스를 통해 테스트용 Mock 구현체와 분리
 
 8. 이후 LLM 구조화 확장
    - OCR rawText를 JSON 후보로 구조화

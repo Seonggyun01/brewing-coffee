@@ -35,6 +35,7 @@ public class PaddleCoffeeBeanCardOcrService implements CoffeeBeanCardOcrService 
     private final int timeoutSeconds;
     private final int minimumTextLength;
     private final boolean fallbackEnabled;
+    private final int maxInputSide;
     private final String language;
     private final String detectionModel;
     private final String recognitionModel;
@@ -49,6 +50,7 @@ public class PaddleCoffeeBeanCardOcrService implements CoffeeBeanCardOcrService 
             @Value("${brewlog.ocr.paddle.timeout-seconds:90}") int timeoutSeconds,
             @Value("${brewlog.ocr.paddle.minimum-text-length:20}") int minimumTextLength,
             @Value("${brewlog.ocr.paddle.fallback-enabled:true}") boolean fallbackEnabled,
+            @Value("${brewlog.ocr.paddle.max-input-side:1216}") int maxInputSide,
             @Value("${brewlog.ocr.paddle.language:korean}") String language,
             @Value("${brewlog.ocr.paddle.detection-model:PP-OCRv5_server_det}") String detectionModel,
             @Value("${brewlog.ocr.paddle.recognition-model:korean_PP-OCRv5_mobile_rec}") String recognitionModel
@@ -62,6 +64,7 @@ public class PaddleCoffeeBeanCardOcrService implements CoffeeBeanCardOcrService 
         this.timeoutSeconds = timeoutSeconds;
         this.minimumTextLength = minimumTextLength;
         this.fallbackEnabled = fallbackEnabled;
+        this.maxInputSide = maxInputSide;
         this.language = language;
         this.detectionModel = detectionModel;
         this.recognitionModel = recognitionModel;
@@ -100,6 +103,7 @@ public class PaddleCoffeeBeanCardOcrService implements CoffeeBeanCardOcrService 
             processBuilder.environment().put("BREWLOG_PADDLE_OCR_LANG", language);
             processBuilder.environment().put("BREWLOG_PADDLE_OCR_DETECTION_MODEL", detectionModel);
             processBuilder.environment().put("BREWLOG_PADDLE_OCR_RECOGNITION_MODEL", recognitionModel);
+            processBuilder.environment().put("BREWLOG_PADDLE_OCR_MAX_INPUT_SIDE", String.valueOf(maxInputSide));
             processBuilder.redirectErrorStream(false);
 
             log.info(
