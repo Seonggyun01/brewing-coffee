@@ -172,6 +172,8 @@ coffee_project
 
 Java 21이 필요합니다.
 
+새 PC에서 MySQL, PaddleOCR, Ollama, 로컬 비밀 설정까지 처음 준비하는 경우 [로컬 실행 준비 가이드](docs/LOCAL_SETUP_GUIDE.md)를 먼저 확인합니다.
+
 ```bash
 java -version
 ```
