@@ -156,4 +156,21 @@ class BrewRecordControllerTest {
         assertEquals(BrewTemperatureType.ICE, brewRecordService.get(id).getTemperatureType());
         assertEquals(java.util.List.of("청포도", "오렌지 껍질"), brewRecordService.get(id).getCustomFlavorNotes());
     }
+
+    @Test
+    void deleteRedirectsToListPage() throws Exception {
+        MvcResult result = mockMvc.perform(post("/brew-records")
+                        .param("coffeeBeanId", String.valueOf(coffeeBeanId))
+                        .param("brewMethod", BrewMethod.V60.name())
+                        .param("temperatureType", BrewTemperatureType.HOT.name()))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+        Long id = Long.valueOf(result.getResponse().getRedirectedUrl().replace("/brew-records/", ""));
+
+        mockMvc.perform(post("/brew-records/{id}/delete", id))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/brew-records"));
+
+        assertEquals(0, brewRecordRepository.count());
+    }
 }
