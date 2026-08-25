@@ -1,10 +1,10 @@
-# BrewLog 아키텍처/기능 정리 v1
+# BLANK 아키텍처/기능 정리 v1
 
-![BrewLog Architecture](../architecture/brewlog-architecture.svg)
+![BLANK Architecture](../architecture/brewlog-architecture.svg)
 
 ## 1. 현재 아키텍처
 
-BrewLog는 **Spring Boot MVC + Thymeleaf 기반의 서버 렌더링 웹 앱**입니다. 브라우저는 Thymeleaf 화면과 정적 JavaScript/CSS를 받아 동작하고, 서버는 컨트롤러/서비스/JPA 레이어를 통해 MySQL에 데이터를 저장합니다.
+BLANK는 **Spring Boot MVC + Thymeleaf 기반의 서버 렌더링 웹 앱**입니다. 브라우저는 Thymeleaf 화면과 정적 JavaScript/CSS를 받아 동작하고, 서버는 컨트롤러/서비스/JPA 레이어를 통해 MySQL에 데이터를 저장합니다.
 
 ```mermaid
 flowchart LR

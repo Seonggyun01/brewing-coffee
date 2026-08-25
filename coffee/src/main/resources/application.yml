@@ -1,6 +1,6 @@
 spring:
   application:
-    name: coffee
+    name: blank
 
   config:
     import: optional:classpath:application-local.yml

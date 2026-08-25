@@ -111,7 +111,7 @@ public class OllamaCustomFlavorNoteColorRecommender implements CustomFlavorNoteC
 
     private String createPrompt(String flavorNoteName) {
         return """
-                너는 BrewLog의 커피 향미 노트 색상 추천 함수다.
+                너는 BLANK의 커피 향미 노트 색상 추천 함수다.
                 새 향미를 SCA/WCR Coffee Taster's Flavor Wheel 계열과 가장 가까운 앱 색상으로 매핑한다.
 
                 규칙:

@@ -1,8 +1,8 @@
-# BrewLog 프론트엔드 분리 전환 검토 v1.0
+# BLANK 프론트엔드 분리 전환 검토 v1.0
 
 ## 1. 결론
 
-현재 BrewLog는 단기적으로 `Thymeleaf + CSS + 필요한 JavaScript` 구조를 유지한다.
+현재 BLANK는 단기적으로 `Thymeleaf + CSS + 필요한 JavaScript` 구조를 유지한다.
 
 다만 다음 화면은 상태와 인터랙션이 빠르게 복잡해지고 있으므로, 중기적으로 Vue3 island 또는 React island 형태의 부분 도입 후보로 둔다.
 
@@ -124,4 +124,4 @@
 4. 카페 장소 선택 모듈화
 5. 필요한 경우 Vue3 island 도입
 
-지금 당장은 Vue3 또는 React로 전체를 갈아엎기보다, 복잡한 인터랙션을 작은 섬처럼 분리하는 쪽이 BrewLog의 개발 속도와 유지보수에 더 맞다.
+지금 당장은 Vue3 또는 React로 전체를 갈아엎기보다, 복잡한 인터랙션을 작은 섬처럼 분리하는 쪽이 BLANK의 개발 속도와 유지보수에 더 맞다.
