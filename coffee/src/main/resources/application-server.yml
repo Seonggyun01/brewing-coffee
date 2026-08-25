@@ -1,0 +1,7 @@
+brewlog:
+  ocr:
+    provider: ${BREWLOG_OCR_PROVIDER:google-vision}
+    paddle:
+      fallback-enabled: false
+  llm:
+    provider: ${BREWLOG_LLM_PROVIDER:openrouter}

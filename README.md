@@ -200,6 +200,18 @@ http://localhost:8080/brew-records
 http://localhost:8080/cafes/map
 ```
 
+### 서버용 외부 AI 설정
+
+서버에서는 `server` 프로필을 활성화하면 Google Vision OCR과 OpenRouter LLM을 사용합니다.
+
+```bash
+export SPRING_PROFILES_ACTIVE=server
+export GOOGLE_APPLICATION_CREDENTIALS=/secure/path/google-service-account.json
+export OPENROUTER_API_KEY=발급받은_API_키
+```
+
+LLM은 OpenRouter의 `minimax/minimax-m3:free`로 고정해 호출하며 별도 모델 fallback을 사용하지 않습니다. OCR은 Google Vision만 사용하며 다른 OCR로 fallback하지 않습니다. 자세한 배포 설정은 [서버 외부 AI 설정](docs/SERVER_AI_SETUP.md)을 확인합니다.
+
 ## 빌드 및 테스트
 
 ```bash

@@ -21,3 +21,5 @@ brewlog:
     enabled: false
   ocr:
     provider: mock
+  llm:
+    provider: openrouter

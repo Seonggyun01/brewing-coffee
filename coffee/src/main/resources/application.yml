@@ -32,6 +32,7 @@ brewlog:
     enabled: ${BREWLOG_DUMMY_DATA_ENABLED:false}
   ocr:
     provider: ${BREWLOG_OCR_PROVIDER:local-best}
+    google-credentials-path: ${BREWLOG_GOOGLE_CREDENTIALS_PATH:}
     paddle:
       python-executable: ${BREWLOG_PADDLE_OCR_PYTHON:auto}
       script-path: ${BREWLOG_PADDLE_OCR_SCRIPT:scripts/paddle_ocr.py}
@@ -43,8 +44,19 @@ brewlog:
       language: ${BREWLOG_PADDLE_OCR_LANG:korean}
       detection-model: ${BREWLOG_PADDLE_OCR_DETECTION_MODEL:PP-OCRv5_server_det}
       recognition-model: ${BREWLOG_PADDLE_OCR_RECOGNITION_MODEL:korean_PP-OCRv5_mobile_rec}
+  kakao:
+    javascript-key: ${BREWLOG_KAKAO_JAVASCRIPT_KEY:}
   llm:
     provider: ${BREWLOG_LLM_PROVIDER:ollama}
+    openrouter:
+      api-key: ${OPENROUTER_API_KEY:}
+      model-url: ${BREWLOG_OPENROUTER_MODEL_URL:https://openrouter.ai/api/v1/chat/completions}
+      model-id: ${BREWLOG_OPENROUTER_MODEL_ID:minimax/minimax-m3:free}
+      timeout-seconds: ${BREWLOG_OPENROUTER_TIMEOUT_SECONDS:60}
+      max-tokens: ${BREWLOG_OPENROUTER_MAX_TOKENS:700}
+      temperature: ${BREWLOG_OPENROUTER_TEMPERATURE:0.0}
+      site-url: ${BREWLOG_OPENROUTER_SITE_URL:}
+      app-name: ${BREWLOG_OPENROUTER_APP_NAME:BLANK}
     ollama:
       model-url: ${BREWLOG_OLLAMA_MODEL_URL:http://127.0.0.1:11434/api/generate}
       model-id: ${BREWLOG_OLLAMA_MODEL_ID:gemma3:12b}

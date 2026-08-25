@@ -12,7 +12,7 @@
 | Java 21 | 필수 | Spring Boot 애플리케이션 실행 |
 | MySQL 8.x | 필수 | 원두, 브루잉, 카페 기록 저장 |
 | Python 가상환경 | 사진 자동 입력 사용 시 필수 | PaddleOCR 실행 |
-| Ollama와 `gemma3:12b` | 사진 자동 입력 및 신규 향미 색상 추천 시 필수 | OCR 결과 구조화 및 색상 추천 |
+| Ollama와 `gemma3:12b` | 로컬 AI 모드 사용 시 필수 | OCR 결과 구조화 및 색상 추천 |
 | Kakao JavaScript 키 | 지도와 장소 검색 사용 시 필수 | 카페 지도와 구매처 검색 |
 | Google Vision 서비스 계정 | OCR fallback 사용 시 선택 | PaddleOCR 실패 시 보조 OCR |
 
@@ -214,6 +214,8 @@ curl http://127.0.0.1:11434/api/tags
 ```
 
 Windows용 Ollama 앱이 이미 백그라운드에서 실행 중이라면 `ollama serve`를 중복 실행할 필요가 없다.
+
+서버에서 Google Vision OCR과 OpenRouter를 사용하는 경우 Python, PaddleOCR, Ollama는 필요하지 않다. 서버 설정은 [서버 외부 AI 설정](SERVER_AI_SETUP.md)을 참고한다.
 
 ## 7. Kakao Maps 준비
 
