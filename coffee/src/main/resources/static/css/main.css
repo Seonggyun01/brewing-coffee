@@ -6,7 +6,6 @@
     --line: #eee6e1;
     --surface: #ffffff;
     --surface-subtle: #faf8f6;
-    --card-surface: #f8f7f4;
     --accent: #6f3f28;
     --accent-pressed: #54301f;
     --accent-soft: #f6f1ee;
@@ -4284,29 +4283,4 @@ small {
     .flavor-category-wheel__center strong {
         font-size: 22px;
     }
-}
-
-/* Keep page canvases bright while giving reusable content cards a quiet layer. */
-.login-panel,
-.home-panel,
-.filter-summary,
-.table-wrap,
-.form-wizard,
-.card-extraction-section,
-.extracted-result-section,
-.form-section,
-.bean-detail-hero,
-.bean-detail-section,
-.detail__memo,
-.coffee-bean-section,
-.coffee-bean-section .record-card,
-.record-card,
-.cafe-filter-card,
-.cafe-filter-detail > section,
-.cafe-filter-detail__summary,
-.empty-panel,
-.flavor-picker__group,
-.compact-flavor-group,
-.kakao-place-search {
-    background: var(--card-surface);
 }
