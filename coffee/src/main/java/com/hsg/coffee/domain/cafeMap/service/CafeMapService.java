@@ -12,6 +12,7 @@ import com.hsg.coffee.domain.cafeMap.dto.CafeMapMarkerResponse;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
 import com.hsg.coffee.domain.purchasePlace.repository.PurchasePlaceRepository;
+import com.hsg.coffee.global.security.CurrentUserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,10 +22,16 @@ import lombok.RequiredArgsConstructor;
 public class CafeMapService {
 
     private final PurchasePlaceRepository purchasePlaceRepository;
+    private final CurrentUserService currentUserService;
 
     public List<CafeMapMarkerResponse> getCafeMarkers() {
         Map<String, PurchasePlace> uniquePlaces = new LinkedHashMap<>();
-        for (PurchasePlace purchasePlace : purchasePlaceRepository.findByTypeAndLatitudeIsNotNullAndLongitudeIsNotNullOrderByNameAsc(PurchasePlaceType.CAFE)) {
+        List<PurchasePlace> places = currentUserService.getCurrentUserId()
+                .map(ownerId -> purchasePlaceRepository.findByOwnerIdAndTypeAndLatitudeIsNotNullAndLongitudeIsNotNullOrderByNameAsc(
+                        ownerId, PurchasePlaceType.CAFE))
+                .orElseGet(() -> purchasePlaceRepository.findByTypeAndLatitudeIsNotNullAndLongitudeIsNotNullOrderByNameAsc(
+                        PurchasePlaceType.CAFE));
+        for (PurchasePlace purchasePlace : places) {
             uniquePlaces.putIfAbsent(placeKey(purchasePlace), purchasePlace);
         }
 

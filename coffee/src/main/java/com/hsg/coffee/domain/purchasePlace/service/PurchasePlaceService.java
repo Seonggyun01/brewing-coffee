@@ -12,6 +12,7 @@ import org.springframework.util.StringUtils;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlaceType;
 import com.hsg.coffee.domain.purchasePlace.repository.PurchasePlaceRepository;
+import com.hsg.coffee.global.security.CurrentUserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,17 +22,27 @@ import lombok.RequiredArgsConstructor;
 public class PurchasePlaceService {
 
     private final PurchasePlaceRepository purchasePlaceRepository;
+    private final CurrentUserService currentUserService;
 
     public List<PurchasePlace> getAll() {
-        return purchasePlaceRepository.findAllByOrderByNameAsc();
+        return currentUserService.getCurrentUserId()
+                .map(purchasePlaceRepository::findByOwnerIdOrderByNameAsc)
+                .orElseGet(purchasePlaceRepository::findAllByOrderByNameAsc);
     }
 
     public List<PurchasePlace> getCafePlacesWithFilterRecords() {
         Map<String, PurchasePlace> uniquePlaces = new LinkedHashMap<>();
-        for (PurchasePlace purchasePlace : purchasePlaceRepository.findDistinctByBrewRecordCoffeeBeanStatusAndTypeOrderByNameAsc(
-                com.hsg.coffee.domain.coffeeBean.entity.CoffeeBeanStatus.CAFE,
-                PurchasePlaceType.CAFE
-        )) {
+        List<PurchasePlace> places = currentUserService.getCurrentUserId()
+                .map(ownerId -> purchasePlaceRepository.findDistinctByOwnerAndBrewRecordCoffeeBeanStatusAndTypeOrderByNameAsc(
+                        ownerId,
+                        com.hsg.coffee.domain.coffeeBean.entity.CoffeeBeanStatus.CAFE,
+                        PurchasePlaceType.CAFE
+                ))
+                .orElseGet(() -> purchasePlaceRepository.findDistinctByBrewRecordCoffeeBeanStatusAndTypeOrderByNameAsc(
+                        com.hsg.coffee.domain.coffeeBean.entity.CoffeeBeanStatus.CAFE,
+                        PurchasePlaceType.CAFE
+                ));
+        for (PurchasePlace purchasePlace : places) {
             uniquePlaces.putIfAbsent(placeKey(purchasePlace), purchasePlace);
         }
         return List.copyOf(uniquePlaces.values());
@@ -44,7 +55,10 @@ public class PurchasePlaceService {
 
         PurchasePlace selectedPlace = getEntity(cafeId);
         String selectedKey = placeKey(selectedPlace);
-        return purchasePlaceRepository.findByTypeOrderByNameAsc(PurchasePlaceType.CAFE)
+        List<PurchasePlace> cafePlaces = currentUserService.getCurrentUserId()
+                .map(ownerId -> purchasePlaceRepository.findByOwnerIdAndTypeOrderByNameAsc(ownerId, PurchasePlaceType.CAFE))
+                .orElseGet(() -> purchasePlaceRepository.findByTypeOrderByNameAsc(PurchasePlaceType.CAFE));
+        return cafePlaces
                 .stream()
                 .filter(purchasePlace -> selectedKey.equals(placeKey(purchasePlace)))
                 .map(PurchasePlace::getId)
@@ -52,7 +66,9 @@ public class PurchasePlaceService {
     }
 
     public PurchasePlace getEntity(Long id) {
-        return purchasePlaceRepository.findById(id)
+        return currentUserService.getCurrentUserId()
+                .map(ownerId -> purchasePlaceRepository.findByIdAndOwnerId(id, ownerId))
+                .orElseGet(() -> purchasePlaceRepository.findById(id))
                 .orElseThrow(() -> new IllegalArgumentException("구매처를 찾을 수 없습니다. id=" + id));
     }
 
@@ -116,7 +132,7 @@ public class PurchasePlaceService {
             return purchasePlace;
         }
 
-        return purchasePlaceRepository.save(PurchasePlace.create(
+        PurchasePlace purchasePlace = PurchasePlace.create(
                 cleanName,
                 normalizedType,
                 cleanAddress,
@@ -124,7 +140,9 @@ public class PurchasePlaceService {
                 latitude,
                 longitude,
                 cleanMemo
-        ));
+        );
+        currentUserService.getCurrentUser().ifPresent(purchasePlace::assignOwner);
+        return purchasePlaceRepository.save(purchasePlace);
     }
 
     @Transactional
@@ -154,36 +172,40 @@ public class PurchasePlaceService {
             Double longitude
     ) {
         if (StringUtils.hasText(placeUrl)) {
-            Optional<PurchasePlace> byUrl = purchasePlaceRepository.findFirstByPlaceUrl(placeUrl);
+            Optional<PurchasePlace> byUrl = currentUserService.getCurrentUserId()
+                    .map(ownerId -> purchasePlaceRepository.findFirstByOwnerIdAndPlaceUrl(ownerId, placeUrl))
+                    .orElseGet(() -> purchasePlaceRepository.findFirstByPlaceUrl(placeUrl));
             if (byUrl.isPresent()) {
                 return byUrl;
             }
         }
 
         if (latitude != null && longitude != null) {
-            Optional<PurchasePlace> byCoordinates = purchasePlaceRepository.findFirstByTypeAndLatitudeAndLongitude(
-                    type,
-                    latitude,
-                    longitude
-            );
+            Optional<PurchasePlace> byCoordinates = currentUserService.getCurrentUserId()
+                    .map(ownerId -> purchasePlaceRepository.findFirstByOwnerIdAndTypeAndLatitudeAndLongitude(
+                            ownerId, type, latitude, longitude))
+                    .orElseGet(() -> purchasePlaceRepository.findFirstByTypeAndLatitudeAndLongitude(
+                            type, latitude, longitude));
             if (byCoordinates.isPresent()) {
                 return byCoordinates;
             }
         }
 
         if (StringUtils.hasText(address)) {
-            Optional<PurchasePlace> byNameAndAddress = purchasePlaceRepository.findFirstByTypeAndNameIgnoreCaseAndAddressIgnoreCase(
-                    type,
-                    name,
-                    address
-            );
+            Optional<PurchasePlace> byNameAndAddress = currentUserService.getCurrentUserId()
+                    .map(ownerId -> purchasePlaceRepository.findFirstByOwnerIdAndTypeAndNameIgnoreCaseAndAddressIgnoreCase(
+                            ownerId, type, name, address))
+                    .orElseGet(() -> purchasePlaceRepository.findFirstByTypeAndNameIgnoreCaseAndAddressIgnoreCase(
+                            type, name, address));
             if (byNameAndAddress.isPresent()) {
                 return byNameAndAddress;
             }
         }
 
         if (!StringUtils.hasText(address) && latitude == null && longitude == null && !StringUtils.hasText(placeUrl)) {
-            return purchasePlaceRepository.findFirstByTypeAndNameIgnoreCase(type, name);
+            return currentUserService.getCurrentUserId()
+                    .map(ownerId -> purchasePlaceRepository.findFirstByOwnerIdAndTypeAndNameIgnoreCase(ownerId, type, name))
+                    .orElseGet(() -> purchasePlaceRepository.findFirstByTypeAndNameIgnoreCase(type, name));
         }
 
         return Optional.empty();

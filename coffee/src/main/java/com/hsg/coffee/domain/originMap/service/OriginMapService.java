@@ -14,6 +14,7 @@ import com.hsg.coffee.domain.originMap.dto.OriginBeanPreviewResponse;
 import com.hsg.coffee.domain.originMap.dto.OriginCountryResponse;
 import com.hsg.coffee.domain.originMap.dto.OriginMapSummaryResponse;
 import com.hsg.coffee.global.country.CountryInfo;
+import com.hsg.coffee.global.security.CurrentUserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,10 +25,15 @@ public class OriginMapService {
 
     private final CoffeeBeanRepository coffeeBeanRepository;
     private final BrewRecordRepository brewRecordRepository;
+    private final CurrentUserService currentUserService;
 
     public OriginMapSummaryResponse getOriginMap() {
-        Map<String, Long> beanCounts = toCountMap(coffeeBeanRepository.countBeansGroupByOriginCountryCode());
-        Map<String, Long> brewRecordCounts = toCountMap(brewRecordRepository.countBrewRecordsGroupByOriginCountryCode());
+        Map<String, Long> beanCounts = toCountMap(currentUserService.getCurrentUserId()
+                .map(coffeeBeanRepository::countBeansGroupByOwnerIdAndOriginCountryCode)
+                .orElseGet(coffeeBeanRepository::countBeansGroupByOriginCountryCode));
+        Map<String, Long> brewRecordCounts = toCountMap(currentUserService.getCurrentUserId()
+                .map(brewRecordRepository::countBrewRecordsGroupByOwnerIdAndOriginCountryCode)
+                .orElseGet(brewRecordRepository::countBrewRecordsGroupByOriginCountryCode));
 
         List<OriginCountryResponse> countries = beanCounts.entrySet().stream()
                 .map(entry -> toCountryResponse(entry.getKey(), entry.getValue(), brewRecordCounts.getOrDefault(entry.getKey(), 0L)))
@@ -51,7 +57,10 @@ public class OriginMapService {
             return null;
         }
 
-        List<OriginBeanPreviewResponse> recentBeans = coffeeBeanRepository.findTop8ByOriginCountryCodeOrderByIdDesc(countryCode)
+        List<com.hsg.coffee.domain.coffeeBean.entity.CoffeeBean> beans = currentUserService.getCurrentUserId()
+                .map(ownerId -> coffeeBeanRepository.findTop8ByOwnerIdAndOriginCountryCodeOrderByIdDesc(ownerId, countryCode))
+                .orElseGet(() -> coffeeBeanRepository.findTop8ByOriginCountryCodeOrderByIdDesc(countryCode));
+        List<OriginBeanPreviewResponse> recentBeans = beans
                 .stream()
                 .map(OriginBeanPreviewResponse::from)
                 .toList();

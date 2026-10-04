@@ -18,6 +18,7 @@ import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBean;
 import com.hsg.coffee.domain.coffeeBean.entity.CoffeeBeanStatus;
 import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
 import com.hsg.coffee.domain.coffeeBean.service.CustomFlavorNoteService;
+import com.hsg.coffee.global.security.CurrentUserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,6 +32,7 @@ public class BrewRecordService {
     private final BrewRecordRepository brewRecordRepository;
     private final CoffeeBeanRepository coffeeBeanRepository;
     private final CustomFlavorNoteService customFlavorNoteService;
+    private final CurrentUserService currentUserService;
 
     @Transactional
     public Long create(BrewRecordForm form) {
@@ -68,21 +70,33 @@ public class BrewRecordService {
     }
 
     public List<BrewRecordResponse> getAll() {
-        return brewRecordRepository.findByCoffeeBeanStatusNotOrderByBrewedDateDescIdDesc(CoffeeBeanStatus.CAFE)
+        List<BrewRecord> records = currentUserService.getCurrentUserId()
+                .map(ownerId -> brewRecordRepository.findByCoffeeBeanOwnerIdAndCoffeeBeanStatusNotOrderByBrewedDateDescIdDesc(
+                        ownerId, CoffeeBeanStatus.CAFE))
+                .orElseGet(() -> brewRecordRepository.findByCoffeeBeanStatusNotOrderByBrewedDateDescIdDesc(CoffeeBeanStatus.CAFE));
+        return records
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     public List<BrewRecordResponse> getByCoffeeBean(Long coffeeBeanId) {
-        return brewRecordRepository.findByCoffeeBeanIdOrderByBrewedDateDescIdDesc(coffeeBeanId)
+        List<BrewRecord> records = currentUserService.getCurrentUserId()
+                .map(ownerId -> brewRecordRepository.findByCoffeeBeanOwnerIdAndCoffeeBeanIdOrderByBrewedDateDescIdDesc(
+                        ownerId, coffeeBeanId))
+                .orElseGet(() -> brewRecordRepository.findByCoffeeBeanIdOrderByBrewedDateDescIdDesc(coffeeBeanId));
+        return records
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
     public List<BrewRecordResponse> getCafeRecords() {
-        return brewRecordRepository.findByCoffeeBeanStatusOrderByBrewedDateDescIdDesc(CoffeeBeanStatus.CAFE)
+        List<BrewRecord> records = currentUserService.getCurrentUserId()
+                .map(ownerId -> brewRecordRepository.findByCoffeeBeanOwnerIdAndCoffeeBeanStatusOrderByBrewedDateDescIdDesc(
+                        ownerId, CoffeeBeanStatus.CAFE))
+                .orElseGet(() -> brewRecordRepository.findByCoffeeBeanStatusOrderByBrewedDateDescIdDesc(CoffeeBeanStatus.CAFE));
+        return records
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -93,10 +107,12 @@ public class BrewRecordService {
             return List.of();
         }
 
-        return brewRecordRepository.findByCoffeeBeanStatusAndCoffeeBeanPurchasePlaceIdInOrderByBrewedDateDescIdDesc(
-                        CoffeeBeanStatus.CAFE,
-                        purchasePlaceIds
-                )
+        List<BrewRecord> records = currentUserService.getCurrentUserId()
+                .map(ownerId -> brewRecordRepository.findByCoffeeBeanOwnerIdAndCoffeeBeanStatusAndCoffeeBeanPurchasePlaceIdInOrderByBrewedDateDescIdDesc(
+                        ownerId, CoffeeBeanStatus.CAFE, purchasePlaceIds))
+                .orElseGet(() -> brewRecordRepository.findByCoffeeBeanStatusAndCoffeeBeanPurchasePlaceIdInOrderByBrewedDateDescIdDesc(
+                        CoffeeBeanStatus.CAFE, purchasePlaceIds));
+        return records
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -156,12 +172,16 @@ public class BrewRecordService {
     }
 
     private BrewRecord findEntity(Long id) {
-        return brewRecordRepository.findById(id)
+        return currentUserService.getCurrentUserId()
+                .map(ownerId -> brewRecordRepository.findByIdAndCoffeeBeanOwnerId(id, ownerId))
+                .orElseGet(() -> brewRecordRepository.findById(id))
                 .orElseThrow(() -> new IllegalArgumentException("브루잉 기록을 찾을 수 없습니다. id=" + id));
     }
 
     private CoffeeBean findCoffeeBean(Long id) {
-        return coffeeBeanRepository.findById(id)
+        return currentUserService.getCurrentUserId()
+                .map(ownerId -> coffeeBeanRepository.findByIdAndOwnerId(id, ownerId))
+                .orElseGet(() -> coffeeBeanRepository.findById(id))
                 .orElseThrow(() -> new IllegalArgumentException("원두를 찾을 수 없습니다. id=" + id));
     }
 

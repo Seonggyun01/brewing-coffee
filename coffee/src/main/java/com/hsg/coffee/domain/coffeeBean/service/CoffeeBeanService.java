@@ -16,6 +16,7 @@ import com.hsg.coffee.domain.coffeeBean.repository.CoffeeBeanRepository;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
 import com.hsg.coffee.domain.purchasePlace.service.PurchasePlaceService;
 import com.hsg.coffee.global.country.CountryInfo;
+import com.hsg.coffee.global.security.CurrentUserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,6 +30,7 @@ public class CoffeeBeanService {
     private final CoffeeBeanRepository coffeeBeanRepository;
     private final PurchasePlaceService purchasePlaceService;
     private final CustomFlavorNoteService customFlavorNoteService;
+    private final CurrentUserService currentUserService;
 
     @Transactional
     public Long create(CoffeeBeanCreateForm form) {
@@ -46,7 +48,7 @@ public class CoffeeBeanService {
         String country = originCountry != null ? originCountry.getEnglishName() : clean(form.getCountry());
         List<String> customFlavorNotes = customFlavorNoteService.ensureAll(parseTags(form.getCustomFlavorNotesText()));
 
-        CoffeeBean coffeeBean = coffeeBeanRepository.save(CoffeeBean.create(
+        CoffeeBean coffeeBean = CoffeeBean.create(
                 clean(form.getName()),
                 clean(form.getRoastery()),
                 country,
@@ -65,7 +67,9 @@ public class CoffeeBeanService {
                 form.getWeight(),
                 form.getStatus(),
                 purchasePlace
-        ));
+        );
+        currentUserService.getCurrentUser().ifPresent(coffeeBean::assignOwner);
+        coffeeBeanRepository.save(coffeeBean);
         return coffeeBean.getId();
     }
 
@@ -78,12 +82,12 @@ public class CoffeeBeanService {
 
     @Transactional
     public List<CoffeeBeanResponse> getAll() {
-        return toResponsesWithSyncedStatus(coffeeBeanRepository.findAllByOrderByIdDesc());
+        return toResponsesWithSyncedStatus(findAllForCurrentUser());
     }
 
     @Transactional
     public List<CoffeeBeanResponse> getInventoryBeans() {
-        List<CoffeeBean> coffeeBeans = coffeeBeanRepository.findAllByOrderByIdDesc();
+        List<CoffeeBean> coffeeBeans = findAllForCurrentUser();
         syncStatusesWithWeight(coffeeBeans);
 
         return coffeeBeans.stream()
@@ -103,16 +107,21 @@ public class CoffeeBeanService {
 
         List<CoffeeBean> coffeeBeans;
         if (normalizedCountryCode != null && trimmedKeyword != null) {
-            coffeeBeans = coffeeBeanRepository.findByOriginCountryCodeAndNameContainingIgnoreCaseOrderByIdDesc(
-                    normalizedCountryCode,
-                    trimmedKeyword
-            );
+            coffeeBeans = currentUserService.getCurrentUserId()
+                    .map(ownerId -> coffeeBeanRepository.findByOwnerIdAndOriginCountryCodeAndNameContainingIgnoreCaseOrderByIdDesc(
+                            ownerId, normalizedCountryCode, trimmedKeyword))
+                    .orElseGet(() -> coffeeBeanRepository.findByOriginCountryCodeAndNameContainingIgnoreCaseOrderByIdDesc(
+                            normalizedCountryCode, trimmedKeyword));
         } else if (normalizedCountryCode != null) {
-            coffeeBeans = coffeeBeanRepository.findByOriginCountryCodeOrderByIdDesc(normalizedCountryCode);
+            coffeeBeans = currentUserService.getCurrentUserId()
+                    .map(ownerId -> coffeeBeanRepository.findByOwnerIdAndOriginCountryCodeOrderByIdDesc(ownerId, normalizedCountryCode))
+                    .orElseGet(() -> coffeeBeanRepository.findByOriginCountryCodeOrderByIdDesc(normalizedCountryCode));
         } else if (trimmedKeyword != null) {
-            coffeeBeans = coffeeBeanRepository.findByNameContainingIgnoreCaseOrderByIdDesc(trimmedKeyword);
+            coffeeBeans = currentUserService.getCurrentUserId()
+                    .map(ownerId -> coffeeBeanRepository.findByOwnerIdAndNameContainingIgnoreCaseOrderByIdDesc(ownerId, trimmedKeyword))
+                    .orElseGet(() -> coffeeBeanRepository.findByNameContainingIgnoreCaseOrderByIdDesc(trimmedKeyword));
         } else {
-            coffeeBeans = coffeeBeanRepository.findAllByOrderByIdDesc();
+            coffeeBeans = findAllForCurrentUser();
         }
 
         return toResponsesWithSyncedStatus(coffeeBeans);
@@ -124,9 +133,13 @@ public class CoffeeBeanService {
             return getAll();
         }
 
-        return toResponsesWithSyncedStatus(
-                coffeeBeanRepository.findByRoasteryContainingIgnoreCaseOrderByIdDesc(keyword.trim())
-        );
+        List<CoffeeBean> coffeeBeans = currentUserService.getCurrentUserId()
+                .map(ownerId -> coffeeBeanRepository.findByOwnerIdAndRoasteryContainingIgnoreCaseOrderByIdDesc(
+                        ownerId,
+                        keyword.trim()
+                ))
+                .orElseGet(() -> coffeeBeanRepository.findByRoasteryContainingIgnoreCaseOrderByIdDesc(keyword.trim()));
+        return toResponsesWithSyncedStatus(coffeeBeans);
     }
 
     @Transactional
@@ -182,12 +195,22 @@ public class CoffeeBeanService {
     }
 
     public boolean exists(Long id) {
-        return coffeeBeanRepository.existsById(id);
+        return currentUserService.getCurrentUserId()
+                .map(ownerId -> coffeeBeanRepository.existsByIdAndOwnerId(id, ownerId))
+                .orElseGet(() -> coffeeBeanRepository.existsById(id));
     }
 
     private CoffeeBean findEntity(Long id) {
-        return coffeeBeanRepository.findById(id)
+        return currentUserService.getCurrentUserId()
+                .map(ownerId -> coffeeBeanRepository.findByIdAndOwnerId(id, ownerId))
+                .orElseGet(() -> coffeeBeanRepository.findById(id))
                 .orElseThrow(() -> new IllegalArgumentException("원두를 찾을 수 없습니다. id=" + id));
+    }
+
+    private List<CoffeeBean> findAllForCurrentUser() {
+        return currentUserService.getCurrentUserId()
+                .map(coffeeBeanRepository::findByOwnerIdOrderByIdDesc)
+                .orElseGet(coffeeBeanRepository::findAllByOrderByIdDesc);
     }
 
     private CoffeeBeanResponse toResponse(CoffeeBean coffeeBean) {

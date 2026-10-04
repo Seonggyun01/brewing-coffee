@@ -23,6 +23,31 @@ spring:
       hibernate:
         format_sql: true
 
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: ${KAKAO_REST_API_KEY:${brewlog.kakao.rest-api-key:}}
+            client-secret: ${KAKAO_CLIENT_SECRET:${brewlog.kakao.KAKAO_CLIENT_SECRET:}}
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            client-name: Kakao
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+
+server:
+  servlet:
+    session:
+      timeout: ${BREWLOG_SESSION_TIMEOUT:1d}
+      cookie:
+        max-age: ${BREWLOG_SESSION_COOKIE_MAX_AGE:1d}
+
 logging:
   level:
     org.hibernate.SQL: debug
@@ -46,6 +71,8 @@ brewlog:
       recognition-model: ${BREWLOG_PADDLE_OCR_RECOGNITION_MODEL:korean_PP-OCRv5_mobile_rec}
   kakao:
     javascript-key: ${BREWLOG_KAKAO_JAVASCRIPT_KEY:}
+    rest-api-key: ${KAKAO_REST_API_KEY:}
+    client-secret: ${KAKAO_CLIENT_SECRET:}
   llm:
     provider: ${BREWLOG_LLM_PROVIDER:ollama}
     openrouter:

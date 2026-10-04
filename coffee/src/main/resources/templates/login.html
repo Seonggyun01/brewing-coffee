@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/blank-logo.svg}">
+    <title>로그인 | BLANK</title>
+    <link rel="stylesheet" th:href="@{/css/main.css(v='card-surface-20261004')}">
+</head>
+<body class="login-page">
+    <main class="login-shell">
+        <section class="login-panel" aria-labelledby="login-title">
+            <header class="login-brand">
+                <img class="login-brand__logo" th:src="@{/img/blank-logo.svg}" alt="">
+                <div>
+                    <strong>BLANK</strong>
+                    <span>Coffee journal</span>
+                </div>
+            </header>
+
+            <div class="login-panel__content">
+                <p class="login-panel__eyebrow">Welcome back</p>
+                <h1 id="login-title">커피 기록을<br>이어가세요.</h1>
+                <p class="login-panel__copy">오늘의 원두와 브루잉 경험을<br>한곳에 차분히 쌓아보세요.</p>
+
+                <p class="login-panel__notice login-panel__notice--error" th:if="${param.error}">
+                    카카오 로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.
+                </p>
+                <p class="login-panel__notice" th:if="${param.logout}">로그아웃했습니다.</p>
+
+                <a class="kakao-login-button"
+                   th:href="@{/oauth2/authorization/kakao}"
+                   aria-label="카카오 로그인">
+                    <img th:src="@{/img/kakao-login-complete-ko.svg}" alt="카카오 로그인">
+                </a>
+                <p class="login-panel__assurance">카카오 계정으로 안전하게 로그인합니다.</p>
+            </div>
+
+            <footer class="login-panel__footer">
+                <span aria-hidden="true"></span>
+                <small>나만의 커피 기록</small>
+                <span aria-hidden="true"></span>
+            </footer>
+        </section>
+    </main>
+</body>
+</html>

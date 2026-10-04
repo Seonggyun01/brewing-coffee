@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
+import com.hsg.coffee.domain.user.entity.AppUser;
 import com.hsg.coffee.global.country.CountryInfo;
 import com.hsg.coffee.global.entity.BaseTimeEntity;
 
@@ -36,6 +37,10 @@ public class CoffeeBean extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private AppUser owner;
 
     @Column(nullable = false, length = 100)
     private String name;
@@ -218,6 +223,10 @@ public class CoffeeBean extends BaseTimeEntity {
         coffeeBean.status = normalizeStatus(status, weight);
         coffeeBean.purchasePlace = purchasePlace;
         return coffeeBean;
+    }
+
+    public void assignOwner(AppUser owner) {
+        this.owner = owner;
     }
 
     public static CoffeeBean create(
