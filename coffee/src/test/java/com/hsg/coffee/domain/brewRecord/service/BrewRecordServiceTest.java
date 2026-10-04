@@ -76,6 +76,8 @@ class BrewRecordServiceTest {
         assertEquals("에티오피아 구지", response.getCoffeeBeanName());
         assertEquals(BrewMethod.V60, response.getBrewMethod());
         assertEquals(BrewTemperatureType.HOT, response.getTemperatureType());
+        assertEquals("Comandante C40 MK4", response.getGrinderModel());
+        assertEquals("22클릭", response.getGrinderSetting());
         assertEquals(4, response.getRating());
         assertEquals(4, response.getPourSteps().size());
         assertEquals(40, response.getPourSteps().getFirst().getAmountMl());
@@ -105,12 +107,16 @@ class BrewRecordServiceTest {
         updateForm.setRating(5);
         updateForm.setAcidity(5);
         updateForm.setBeanAmount(BigDecimal.valueOf(20));
+        updateForm.setGrinderModel("DF64 Gen 2");
+        updateForm.setGrinderSetting("다이얼 15");
 
         brewRecordService.update(id, updateForm);
 
         BrewRecordResponse response = brewRecordService.get(id);
         assertEquals(5, response.getRating());
         assertEquals(5, response.getAcidity());
+        assertEquals("DF64 Gen 2", response.getGrinderModel());
+        assertEquals("다이얼 15", response.getGrinderSetting());
         assertEquals(180, coffeeBeanRepository.findById(coffeeBeanId).orElseThrow().getWeight());
         assertEquals(List.of(FlavorNote.JASMINE, FlavorNote.LEMON, FlavorNote.PEACH), response.getFlavorNotes());
         assertEquals(List.of("청포도", "오렌지 껍질"), response.getCustomFlavorNotes());
@@ -179,6 +185,8 @@ class BrewRecordServiceTest {
         form.setBeanAmount(BigDecimal.valueOf(15));
         form.setWaterAmount(BigDecimal.valueOf(240));
         form.setWaterTemperature(BigDecimal.valueOf(92));
+        form.setGrinderModel("Comandante C40 MK4");
+        form.setGrinderSetting("22클릭");
         form.setGrindSizeMicron(720);
         form.setBrewTimeSec(150);
         form.setPourSteps(List.of(

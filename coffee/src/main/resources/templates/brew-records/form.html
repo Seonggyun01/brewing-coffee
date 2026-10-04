@@ -88,6 +88,18 @@
                     </label>
 
                     <label>
+                        <span>그라인더 모델</span>
+                        <input type="text" maxlength="100" th:field="*{grinderModel}" placeholder="예: Comandante C40 MK4">
+                        <small th:if="${#fields.hasErrors('grinderModel')}" th:errors="*{grinderModel}"></small>
+                    </label>
+
+                    <label>
+                        <span>그라인더 조절값</span>
+                        <input type="text" maxlength="50" th:field="*{grinderSetting}" placeholder="예: 22클릭, 다이얼 15">
+                        <small th:if="${#fields.hasErrors('grinderSetting')}" th:errors="*{grinderSetting}"></small>
+                    </label>
+
+                    <label>
                         <span>분쇄도(μm)</span>
                         <input type="number" min="1" max="5000" step="1" th:field="*{grindSizeMicron}" placeholder="예: 720">
                         <small th:if="${#fields.hasErrors('grindSizeMicron')}" th:errors="*{grindSizeMicron}"></small>

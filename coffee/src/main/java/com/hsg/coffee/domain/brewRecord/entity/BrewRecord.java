@@ -58,6 +58,12 @@ public class BrewRecord extends BaseTimeEntity {
 
     private BigDecimal waterTemperature;
 
+    @Column(length = 100)
+    private String grinderModel;
+
+    @Column(length = 50)
+    private String grinderSetting;
+
     private Integer grindSizeMicron;
 
     private Integer brewTimeSec;
@@ -119,6 +125,56 @@ public class BrewRecord extends BaseTimeEntity {
             List<String> customFeelingTags,
             String memo
     ) {
+        return create(
+                coffeeBean,
+                brewedDate,
+                brewMethod,
+                temperatureType,
+                beanAmount,
+                waterAmount,
+                waterTemperature,
+                null,
+                null,
+                grindSizeMicron,
+                brewTimeSec,
+                pourSteps,
+                rating,
+                acidity,
+                sweetness,
+                bitterness,
+                body,
+                aroma,
+                balance,
+                feelingTags,
+                customFeelingTags,
+                memo
+        );
+    }
+
+    public static BrewRecord create(
+            CoffeeBean coffeeBean,
+            LocalDate brewedDate,
+            BrewMethod brewMethod,
+            BrewTemperatureType temperatureType,
+            BigDecimal beanAmount,
+            BigDecimal waterAmount,
+            BigDecimal waterTemperature,
+            String grinderModel,
+            String grinderSetting,
+            Integer grindSizeMicron,
+            Integer brewTimeSec,
+            List<BrewPourStep> pourSteps,
+            Integer rating,
+            Integer acidity,
+            Integer sweetness,
+            Integer bitterness,
+            Integer body,
+            Integer aroma,
+            Integer balance,
+            List<BrewFeelingTag> feelingTags,
+            List<String> customFeelingTags,
+            String memo
+    ) {
         BrewRecord brewRecord = new BrewRecord();
         brewRecord.coffeeBean = coffeeBean;
         brewRecord.update(
@@ -128,6 +184,8 @@ public class BrewRecord extends BaseTimeEntity {
                 beanAmount,
                 waterAmount,
                 waterTemperature,
+                grinderModel,
+                grinderSetting,
                 grindSizeMicron,
                 brewTimeSec,
                 pourSteps,
@@ -160,6 +218,8 @@ public class BrewRecord extends BaseTimeEntity {
             BigDecimal beanAmount,
             BigDecimal waterAmount,
             BigDecimal waterTemperature,
+            String grinderModel,
+            String grinderSetting,
             Integer grindSizeMicron,
             Integer brewTimeSec,
             List<BrewPourStep> pourSteps,
@@ -180,6 +240,8 @@ public class BrewRecord extends BaseTimeEntity {
         this.beanAmount = beanAmount;
         this.waterAmount = waterAmount;
         this.waterTemperature = waterTemperature;
+        this.grinderModel = normalizeText(grinderModel);
+        this.grinderSetting = normalizeText(grinderSetting);
         this.grindSizeMicron = grindSizeMicron;
         this.brewTimeSec = brewTimeSec;
         this.pourSteps.clear();
@@ -202,5 +264,12 @@ public class BrewRecord extends BaseTimeEntity {
             this.customFeelingTags.addAll(customFeelingTags);
         }
         this.memo = memo;
+    }
+
+    private String normalizeText(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
     }
 }

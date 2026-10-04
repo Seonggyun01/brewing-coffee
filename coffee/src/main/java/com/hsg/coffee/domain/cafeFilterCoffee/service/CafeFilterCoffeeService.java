@@ -91,6 +91,8 @@ public class CafeFilterCoffeeService {
         form.setBeanAmount(record.getBeanAmount());
         form.setWaterAmount(record.getWaterAmount());
         form.setWaterTemperature(record.getWaterTemperature());
+        form.setGrinderModel(record.getGrinderModel());
+        form.setGrinderSetting(record.getGrinderSetting());
         form.setGrindSizeMicron(record.getGrindSizeMicron());
         form.setBrewTimeSec(record.getBrewTimeSec());
         form.setPourSteps(record.getPourSteps());
@@ -165,6 +167,8 @@ public class CafeFilterCoffeeService {
         brewRecordForm.setBeanAmount(form.isRecordRecipe() ? form.getBeanAmount() : null);
         brewRecordForm.setWaterAmount(form.isRecordRecipe() ? form.getWaterAmount() : null);
         brewRecordForm.setWaterTemperature(form.isRecordRecipe() ? form.getWaterTemperature() : null);
+        brewRecordForm.setGrinderModel(form.isRecordRecipe() ? form.getGrinderModel() : null);
+        brewRecordForm.setGrinderSetting(form.isRecordRecipe() ? form.getGrinderSetting() : null);
         brewRecordForm.setGrindSizeMicron(form.isRecordRecipe() ? form.getGrindSizeMicron() : null);
         brewRecordForm.setBrewTimeSec(form.isRecordRecipe() ? form.getBrewTimeSec() : null);
         brewRecordForm.setPourSteps(form.isRecordRecipe() ? form.getPourSteps() : List.of());
@@ -208,6 +212,8 @@ public class CafeFilterCoffeeService {
                 || record.getBeanAmount() != null
                 || record.getWaterAmount() != null
                 || record.getWaterTemperature() != null
+                || record.getGrinderModel() != null
+                || record.getGrinderSetting() != null
                 || record.getGrindSizeMicron() != null
                 || record.getBrewTimeSec() != null
                 || !record.getPourSteps().isEmpty();

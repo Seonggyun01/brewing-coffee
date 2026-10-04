@@ -92,7 +92,7 @@
                 <p th:if="${#lists.isEmpty(cafeFilterCoffee.feelingTags) && #lists.isEmpty(cafeFilterCoffee.customFeelingTags)}">느낌 태그가 없습니다.</p>
             </section>
 
-            <section th:if="${cafeFilterCoffee.brewMethod != null || cafeFilterCoffee.beanAmount != null || cafeFilterCoffee.waterAmount != null || cafeFilterCoffee.waterTemperature != null || cafeFilterCoffee.grindSizeMicron != null || cafeFilterCoffee.brewTimeSec != null}">
+            <section th:if="${cafeFilterCoffee.brewMethod != null || cafeFilterCoffee.beanAmount != null || cafeFilterCoffee.waterAmount != null || cafeFilterCoffee.waterTemperature != null || cafeFilterCoffee.grinderModel != null || cafeFilterCoffee.grinderSetting != null || cafeFilterCoffee.grindSizeMicron != null || cafeFilterCoffee.brewTimeSec != null}">
                 <h2>브루잉 레시피</h2>
                 <dl class="cafe-filter-detail__recipe">
                     <div>
@@ -110,6 +110,14 @@
                     <div>
                         <dt>물 온도</dt>
                         <dd th:text="${cafeFilterCoffee.waterTemperature != null ? cafeFilterCoffee.waterTemperature + '°C' : '-'}">92°C</dd>
+                    </div>
+                    <div>
+                        <dt>그라인더</dt>
+                        <dd th:text="${cafeFilterCoffee.grinderModel ?: '-'}">Comandante C40 MK4</dd>
+                    </div>
+                    <div>
+                        <dt>조절값</dt>
+                        <dd th:text="${cafeFilterCoffee.grinderSetting ?: '-'}">22클릭</dd>
                     </div>
                     <div>
                         <dt>분쇄도</dt>

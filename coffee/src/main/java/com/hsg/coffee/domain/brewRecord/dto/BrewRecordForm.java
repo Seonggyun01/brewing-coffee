@@ -43,6 +43,12 @@ public class BrewRecordForm {
     @DecimalMin(value = "0.0", inclusive = false, message = "물 온도는 0보다 커야 합니다.")
     private BigDecimal waterTemperature;
 
+    @Size(max = 100, message = "그라인더 모델은 100자 이하로 입력해주세요.")
+    private String grinderModel;
+
+    @Size(max = 50, message = "그라인더 조절값은 50자 이하로 입력해주세요.")
+    private String grinderSetting;
+
     @Min(value = 1, message = "분쇄도는 1μm 이상이어야 합니다.")
     @Max(value = 5000, message = "분쇄도는 5000μm 이하로 입력해주세요.")
     private Integer grindSizeMicron;
@@ -98,6 +104,8 @@ public class BrewRecordForm {
         form.setBeanAmount(brewRecord.getBeanAmount());
         form.setWaterAmount(brewRecord.getWaterAmount());
         form.setWaterTemperature(brewRecord.getWaterTemperature());
+        form.setGrinderModel(brewRecord.getGrinderModel());
+        form.setGrinderSetting(brewRecord.getGrinderSetting());
         form.setGrindSizeMicron(brewRecord.getGrindSizeMicron());
         form.setBrewTimeSec(brewRecord.getBrewTimeSec());
         form.setPourSteps(brewRecord.getPourSteps().stream()

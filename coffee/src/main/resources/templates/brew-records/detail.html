@@ -87,6 +87,14 @@
                     <dd th:text="${brewRecord.waterTemperature != null ? brewRecord.waterTemperature + '°C' : '-'}">92°C</dd>
                 </div>
                 <div>
+                    <dt>그라인더</dt>
+                    <dd th:text="${brewRecord.grinderModel ?: '-'}">Comandante C40 MK4</dd>
+                </div>
+                <div>
+                    <dt>조절값</dt>
+                    <dd th:text="${brewRecord.grinderSetting ?: '-'}">22클릭</dd>
+                </div>
+                <div>
                     <dt>분쇄도</dt>
                     <dd th:text="${brewRecord.grindSizeDisplay}">720 μm</dd>
                 </div>

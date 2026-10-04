@@ -3,6 +3,7 @@ package com.hsg.coffee.domain.brewRecord.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -99,6 +100,8 @@ class BrewRecordControllerTest {
                         .param("beanAmount", "15")
                         .param("waterAmount", "240")
                         .param("waterTemperature", "92")
+                        .param("grinderModel", "Comandante C40 MK4")
+                        .param("grinderSetting", "22클릭")
                         .param("grindSizeMicron", "720")
                         .param("brewTimeSec", "150")
                         .param("pourSteps[0].timeSec", "0")
@@ -125,7 +128,9 @@ class BrewRecordControllerTest {
         mockMvc.perform(get(detailUrl))
                 .andExpect(status().isOk())
                 .andExpect(view().name("brew-records/detail"))
-                .andExpect(model().attributeExists("brewRecord"));
+                .andExpect(model().attributeExists("brewRecord"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Comandante C40 MK4")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("22클릭")));
 
         Long id = Long.valueOf(detailUrl.substring(detailUrl.lastIndexOf("/") + 1));
         assertEquals("자스민, 레몬, 복숭아, 청포도, 오렌지 껍질", brewRecordService.get(id).getFlavorNoteSummary());

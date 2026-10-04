@@ -48,6 +48,9 @@ class CafeFilterCoffeeServiceTest {
         form.setCafeName("테스트 카페");
         form.setVisitedDate(LocalDate.of(2026, 8, 2));
         form.setTemperatureType(BrewTemperatureType.ICE);
+        form.setRecordRecipe(true);
+        form.setGrinderModel("EK43 S");
+        form.setGrinderSetting("다이얼 8.5");
         form.setRating(4);
         form.setAcidity(4);
         form.setSweetness(5);
@@ -62,6 +65,8 @@ class CafeFilterCoffeeServiceTest {
         assertEquals("카페 필터 테스트 원두", response.getCoffeeBeanName());
         assertEquals("테스트 카페", response.getPurchasePlaceName());
         assertEquals(BrewTemperatureType.ICE, response.getTemperatureType());
+        assertEquals("EK43 S", response.getGrinderModel());
+        assertEquals("다이얼 8.5", response.getGrinderSetting());
         assertEquals(4, response.getAcidity());
         assertEquals(5, response.getSweetness());
         assertEquals(2, response.getBitterness());

@@ -33,6 +33,8 @@ public class BrewRecordResponse {
     private final BigDecimal beanAmount;
     private final BigDecimal waterAmount;
     private final BigDecimal waterTemperature;
+    private final String grinderModel;
+    private final String grinderSetting;
     private final Integer grindSizeMicron;
     private final Integer brewTimeSec;
     private final List<BrewPourStepForm> pourSteps;
@@ -66,6 +68,8 @@ public class BrewRecordResponse {
         this.beanAmount = brewRecord.getBeanAmount();
         this.waterAmount = brewRecord.getWaterAmount();
         this.waterTemperature = brewRecord.getWaterTemperature();
+        this.grinderModel = brewRecord.getGrinderModel();
+        this.grinderSetting = brewRecord.getGrinderSetting();
         this.grindSizeMicron = brewRecord.getGrindSizeMicron();
         this.brewTimeSec = brewRecord.getBrewTimeSec();
         this.pourSteps = brewRecord.getPourSteps().stream()
