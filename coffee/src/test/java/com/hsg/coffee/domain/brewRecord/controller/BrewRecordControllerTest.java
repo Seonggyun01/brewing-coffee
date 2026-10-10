@@ -110,7 +110,7 @@ class BrewRecordControllerTest {
                         .param("pourSteps[1].amountMl", "80")
                         .param("pourSteps[2].timeSec", "85")
                         .param("pourSteps[2].amountMl", "80")
-                        .param("rating", "4")
+                        .param("rating", "4.5")
                         .param("acidity", "4")
                         .param("sweetness", "4")
                         .param("bitterness", "2")
@@ -130,7 +130,8 @@ class BrewRecordControllerTest {
                 .andExpect(view().name("brew-records/detail"))
                 .andExpect(model().attributeExists("brewRecord"))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Comandante C40 MK4")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("22클릭")));
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("22클릭")))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("4.5 / 5")));
 
         Long id = Long.valueOf(detailUrl.substring(detailUrl.lastIndexOf("/") + 1));
         assertEquals("자스민, 레몬, 복숭아, 청포도, 오렌지 껍질", brewRecordService.get(id).getFlavorNoteSummary());
@@ -143,7 +144,7 @@ class BrewRecordControllerTest {
                         .param("brewedDate", "2026-05-03")
                         .param("brewMethod", BrewMethod.V60.name())
                         .param("temperatureType", BrewTemperatureType.HOT.name())
-                        .param("rating", "4"))
+                        .param("rating", "4.2"))
                 .andExpect(status().is3xxRedirection())
                 .andReturn();
         Long id = Long.valueOf(result.getResponse().getRedirectedUrl().replace("/brew-records/", ""));
@@ -153,13 +154,26 @@ class BrewRecordControllerTest {
                         .param("brewedDate", "2026-05-04")
                         .param("brewMethod", BrewMethod.ORIGAMI.name())
                         .param("temperatureType", BrewTemperatureType.ICE.name())
-                        .param("rating", "5"))
+                        .param("rating", "4.7"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/brew-records/" + id));
 
-        assertEquals(5, brewRecordService.get(id).getRating());
+        assertEquals(new java.math.BigDecimal("4.7"), brewRecordService.get(id).getRating());
         assertEquals(BrewTemperatureType.ICE, brewRecordService.get(id).getTemperatureType());
         assertEquals(java.util.List.of("청포도", "오렌지 껍질"), brewRecordService.get(id).getCustomFlavorNotes());
+    }
+
+    @Test
+    void rejectsRatingWithMoreThanOneDecimalPlace() throws Exception {
+        mockMvc.perform(post("/brew-records")
+                        .param("coffeeBeanId", String.valueOf(coffeeBeanId))
+                        .param("temperatureType", BrewTemperatureType.HOT.name())
+                        .param("rating", "4.55"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("brew-records/form"))
+                .andExpect(model().attributeHasFieldErrors("brewRecordForm", "rating"));
+
+        assertEquals(0, brewRecordRepository.count());
     }
 
     @Test

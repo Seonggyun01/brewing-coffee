@@ -13,7 +13,9 @@ import com.hsg.coffee.domain.brewRecord.entity.FlavorNote;
 import com.hsg.coffee.domain.coffeeBean.entity.ProcessType;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -99,9 +101,10 @@ public class CafeFilterCoffeeForm {
     @Valid
     private List<BrewPourStepForm> pourSteps = new ArrayList<>();
 
-    @Min(value = 1, message = "만족도는 1점 이상이어야 합니다.")
-    @Max(value = 5, message = "만족도는 5점 이하이어야 합니다.")
-    private Integer rating;
+    @DecimalMin(value = "1.0", message = "만족도는 1점 이상이어야 합니다.")
+    @DecimalMax(value = "5.0", message = "만족도는 5점 이하이어야 합니다.")
+    @Digits(integer = 1, fraction = 1, message = "만족도는 소수점 첫째 자리까지만 입력해주세요.")
+    private BigDecimal rating;
 
     @Min(value = 1, message = "산미는 1점 이상이어야 합니다.")
     @Max(value = 5, message = "산미는 5점 이하이어야 합니다.")

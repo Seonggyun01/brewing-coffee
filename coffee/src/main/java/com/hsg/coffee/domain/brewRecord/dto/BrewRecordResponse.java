@@ -38,7 +38,7 @@ public class BrewRecordResponse {
     private final Integer grindSizeMicron;
     private final Integer brewTimeSec;
     private final List<BrewPourStepForm> pourSteps;
-    private final Integer rating;
+    private final BigDecimal rating;
     private final Integer acidity;
     private final Integer sweetness;
     private final Integer bitterness;
@@ -127,6 +127,10 @@ public class BrewRecordResponse {
         return Arrays.asList(acidity, sweetness, bitterness, body, aroma, balance).stream()
                 .map(score -> score != null ? String.valueOf(score) : "0")
                 .collect(Collectors.joining(","));
+    }
+
+    public String getRatingDisplay() {
+        return rating == null ? "-" : rating.setScale(1).toPlainString();
     }
 
     public String getGrindSizeDisplay() {

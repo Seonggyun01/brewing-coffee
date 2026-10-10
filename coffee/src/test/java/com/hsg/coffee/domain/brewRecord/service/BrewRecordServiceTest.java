@@ -78,7 +78,7 @@ class BrewRecordServiceTest {
         assertEquals(BrewTemperatureType.HOT, response.getTemperatureType());
         assertEquals("Comandante C40 MK4", response.getGrinderModel());
         assertEquals("22클릭", response.getGrinderSetting());
-        assertEquals(4, response.getRating());
+        assertEquals(new BigDecimal("4.5"), response.getRating());
         assertEquals(4, response.getPourSteps().size());
         assertEquals(40, response.getPourSteps().getFirst().getAmountMl());
         assertEquals(List.of(FlavorNote.JASMINE, FlavorNote.LEMON, FlavorNote.PEACH), response.getFlavorNotes());
@@ -104,7 +104,7 @@ class BrewRecordServiceTest {
     void update() {
         Long id = brewRecordService.create(createForm());
         BrewRecordForm updateForm = brewRecordService.getUpdateForm(id);
-        updateForm.setRating(5);
+        updateForm.setRating(new BigDecimal("4.7"));
         updateForm.setAcidity(5);
         updateForm.setBeanAmount(BigDecimal.valueOf(20));
         updateForm.setGrinderModel("DF64 Gen 2");
@@ -113,7 +113,7 @@ class BrewRecordServiceTest {
         brewRecordService.update(id, updateForm);
 
         BrewRecordResponse response = brewRecordService.get(id);
-        assertEquals(5, response.getRating());
+        assertEquals(new BigDecimal("4.7"), response.getRating());
         assertEquals(5, response.getAcidity());
         assertEquals("DF64 Gen 2", response.getGrinderModel());
         assertEquals("다이얼 15", response.getGrinderSetting());
@@ -195,7 +195,7 @@ class BrewRecordServiceTest {
                 new BrewPourStepForm(85, 80),
                 new BrewPourStepForm(125, 40)
         ));
-        form.setRating(4);
+        form.setRating(new BigDecimal("4.5"));
         form.setAcidity(4);
         form.setSweetness(4);
         form.setBitterness(2);

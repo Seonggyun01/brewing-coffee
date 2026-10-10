@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" th:href="@{/img/blank-logo.svg}">
     <title th:text="${formTitle + ' - BLANK'}">카페 필터커피 등록 - BLANK</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='form-app-20260802')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='brew-rating-decimal-20261010')}">
 </head>
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('cafe-filter')}"></header>
@@ -347,12 +347,16 @@
 
             <section class="form-section" data-wizard-step>
                 <h2>느낌</h2>
-                <div class="score-options">
-                    <label class="score-pill" th:each="score : ${tasteScores}">
-                        <input type="radio" th:field="*{rating}" th:value="${score}">
-                        <span th:text="${score}">1</span>
-                    </label>
-                </div>
+                <label class="rating-input">
+                    <span>평점</span>
+                    <span class="rating-input__control">
+                        <input type="number" min="1" max="5" step="0.1" inputmode="decimal"
+                               th:field="*{rating}" placeholder="예: 4.5">
+                        <span>/ 5</span>
+                    </span>
+                    <small>1.0부터 5.0까지, 소수점 첫째 자리로 기록할 수 있어요.</small>
+                </label>
+                <small th:if="${#fields.hasErrors('rating')}" th:errors="*{rating}"></small>
                 <div class="tag-options">
                     <label class="tag-chip tag-chip--plain" th:each="tag : ${feelingTags}">
                         <input type="checkbox" th:field="*{feelingTags}" th:value="${tag}">

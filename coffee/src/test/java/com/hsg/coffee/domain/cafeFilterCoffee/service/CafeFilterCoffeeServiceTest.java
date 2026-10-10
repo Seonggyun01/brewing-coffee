@@ -51,7 +51,7 @@ class CafeFilterCoffeeServiceTest {
         form.setRecordRecipe(true);
         form.setGrinderModel("EK43 S");
         form.setGrinderSetting("다이얼 8.5");
-        form.setRating(4);
+        form.setRating(new java.math.BigDecimal("4.5"));
         form.setAcidity(4);
         form.setSweetness(5);
         form.setBitterness(2);
@@ -90,7 +90,7 @@ class CafeFilterCoffeeServiceTest {
         updateForm.setCafeName("수정 후 카페");
         updateForm.setProcessType(ProcessType.WASHED);
         updateForm.setTemperatureType(BrewTemperatureType.ICE);
-        updateForm.setRating(5);
+        updateForm.setRating(new java.math.BigDecimal("4.8"));
         updateForm.setAcidity(2);
         updateForm.setSweetness(4);
         updateForm.setBitterness(1);
@@ -104,7 +104,7 @@ class CafeFilterCoffeeServiceTest {
         assertEquals("수정 후 원두", response.getCoffeeBeanName());
         assertEquals("수정 후 카페", response.getPurchasePlaceName());
         assertEquals(BrewTemperatureType.ICE, response.getTemperatureType());
-        assertEquals(5, response.getRating());
+        assertEquals(new java.math.BigDecimal("4.8"), response.getRating());
         assertEquals("2,4,1,3,5,4", response.getTasteChartValues());
     }
 }

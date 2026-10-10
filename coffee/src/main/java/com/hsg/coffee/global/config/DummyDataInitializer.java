@@ -414,7 +414,7 @@ public class DummyDataInitializer implements ApplicationRunner {
                                 BrewPourStep.of(85, 80),
                                 BrewPourStep.of(125, 40)
                         ),
-                        4,
+                        BigDecimal.valueOf(4.5),
                         4,
                         4,
                         2,
@@ -441,7 +441,7 @@ public class DummyDataInitializer implements ApplicationRunner {
                                 BrewPourStep.of(80, 80),
                                 BrewPourStep.of(125, 45)
                         ),
-                        5,
+                        BigDecimal.valueOf(4.8),
                         5,
                         4,
                         2,
@@ -468,7 +468,7 @@ public class DummyDataInitializer implements ApplicationRunner {
                                 BrewPourStep.of(75, 70),
                                 BrewPourStep.of(125, 65)
                         ),
-                        4,
+                        BigDecimal.valueOf(4.2),
                         3,
                         4,
                         2,
@@ -494,7 +494,7 @@ public class DummyDataInitializer implements ApplicationRunner {
                                 BrewPourStep.of(45, 70),
                                 BrewPourStep.of(95, 70)
                         ),
-                        4,
+                        BigDecimal.valueOf(4.4),
                         2,
                         5,
                         3,
@@ -521,7 +521,7 @@ public class DummyDataInitializer implements ApplicationRunner {
                                 BrewPourStep.of(70, 65),
                                 BrewPourStep.of(110, 65)
                         ),
-                        4,
+                        BigDecimal.valueOf(4.1),
                         4,
                         4,
                         2,
@@ -548,7 +548,7 @@ public class DummyDataInitializer implements ApplicationRunner {
                                 BrewPourStep.of(75, 65),
                                 BrewPourStep.of(120, 60)
                         ),
-                        5,
+                        BigDecimal.valueOf(4.9),
                         4,
                         5,
                         1,

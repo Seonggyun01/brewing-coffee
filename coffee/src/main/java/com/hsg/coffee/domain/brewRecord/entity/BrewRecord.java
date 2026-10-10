@@ -1,6 +1,7 @@
 package com.hsg.coffee.domain.brewRecord.entity;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +74,8 @@ public class BrewRecord extends BaseTimeEntity {
     @OrderColumn(name = "sort_order")
     private List<BrewPourStep> pourSteps = new ArrayList<>();
 
-    private Integer rating;
+    @Column(precision = 2, scale = 1)
+    private BigDecimal rating;
 
     private Integer acidity;
 
@@ -114,7 +116,7 @@ public class BrewRecord extends BaseTimeEntity {
             Integer grindSizeMicron,
             Integer brewTimeSec,
             List<BrewPourStep> pourSteps,
-            Integer rating,
+            BigDecimal rating,
             Integer acidity,
             Integer sweetness,
             Integer bitterness,
@@ -164,7 +166,7 @@ public class BrewRecord extends BaseTimeEntity {
             Integer grindSizeMicron,
             Integer brewTimeSec,
             List<BrewPourStep> pourSteps,
-            Integer rating,
+            BigDecimal rating,
             Integer acidity,
             Integer sweetness,
             Integer bitterness,
@@ -223,7 +225,7 @@ public class BrewRecord extends BaseTimeEntity {
             Integer grindSizeMicron,
             Integer brewTimeSec,
             List<BrewPourStep> pourSteps,
-            Integer rating,
+            BigDecimal rating,
             Integer acidity,
             Integer sweetness,
             Integer bitterness,
@@ -248,7 +250,7 @@ public class BrewRecord extends BaseTimeEntity {
         if (pourSteps != null) {
             this.pourSteps.addAll(pourSteps);
         }
-        this.rating = rating;
+        this.rating = normalizeRating(rating);
         this.acidity = acidity;
         this.sweetness = sweetness;
         this.bitterness = bitterness;
@@ -271,5 +273,9 @@ public class BrewRecord extends BaseTimeEntity {
             return null;
         }
         return value.trim();
+    }
+
+    private BigDecimal normalizeRating(BigDecimal value) {
+        return value == null ? null : value.setScale(1, RoundingMode.UNNECESSARY);
     }
 }

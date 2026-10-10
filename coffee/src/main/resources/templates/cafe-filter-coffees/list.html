@@ -50,7 +50,7 @@
                         <div>
                             <small th:text="${record.brewedDate != null ? record.brewedDate : '날짜 미기록'}">2026-07-31</small>
                             <small th:text="${record.temperatureType != null ? record.temperatureType.displayName : '핫/아이스 미기록'}">핫</small>
-                            <small th:text="${record.rating != null ? record.rating + '점' : '평점 없음'}">4점</small>
+                            <small th:text="${record.rating != null ? record.ratingDisplay + '점' : '평점 없음'}">4.5점</small>
                         </div>
                         <p th:text="${record.memo != null && !#strings.isEmpty(record.memo) ? record.memo : record.flavorNoteSummary}">카페에서 마신 느낌</p>
                     </div>

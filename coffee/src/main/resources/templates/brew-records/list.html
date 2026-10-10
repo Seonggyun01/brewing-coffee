@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" th:href="@{/img/blank-logo.svg}">
     <title>브루잉 기록 - BLANK</title>
-    <link rel="stylesheet" th:href="@{/css/main.css(v='brew-record-app-20260803-2')}">
+    <link rel="stylesheet" th:href="@{/css/main.css(v='brew-rating-spacing-20261010')}">
 </head>
 <body>
     <header th:replace="~{fragments/app-header :: appHeader('records')}"></header>
@@ -22,17 +22,41 @@
 
         <section class="brew-record-timeline" th:if="${!#lists.isEmpty(brewRecords)}">
             <article class="record-card brew-record-card" th:each="brewRecord : ${brewRecords}">
-                <a class="record-card__link" th:href="@{/brew-records/{id}(id=${brewRecord.id})}">
+                <a class="record-card__link"
+                   th:href="@{/brew-records/{id}(id=${brewRecord.id})}"
+                   th:attr="aria-label=${brewRecord.coffeeBeanName + ' 브루잉 상세 보기'}">
                     <span class="flavor-gradient" th:style="${brewRecord.flavorGradientStyle}"></span>
                     <div class="brew-record-card__body">
                         <span class="record-card__date" th:text="${brewRecord.brewedDate ?: '날짜 미기록'}">2026-05-03</span>
-                        <strong th:text="${brewRecord.coffeeBeanName}">에티오피아 구지</strong>
-                        <div class="brew-record-card__meta">
-                            <span th:text="${brewRecord.rating != null ? brewRecord.rating + ' / 5' : '만족도 미기록'}">4 / 5</span>
-                            <span th:text="${brewRecord.brewMethod != null ? brewRecord.brewMethod.displayName : '도구 미기록'}">V60</span>
-                            <span th:text="${brewRecord.temperatureType != null ? brewRecord.temperatureType.displayName : '타입 미기록'}">핫</span>
+                        <strong class="brew-record-card__name" th:text="${brewRecord.coffeeBeanName}">에티오피아 구지</strong>
+                        <div class="brew-record-card__summary">
+                            <div class="brew-record-card__taste-chart"
+                                 data-brew-card-taste-chart
+                                 th:attr="data-values=${brewRecord.tasteChartValues},aria-label=${'맛 프로파일: 산미 ' + (brewRecord.acidity ?: '미기록') + ', 단맛 ' + (brewRecord.sweetness ?: '미기록') + ', 쓴맛 ' + (brewRecord.bitterness ?: '미기록') + ', 바디감 ' + (brewRecord.body ?: '미기록') + ', 향 ' + (brewRecord.aroma ?: '미기록') + ', 밸런스 ' + (brewRecord.balance ?: '미기록')}"
+                                 role="img">
+                                <svg viewBox="0 0 150 134" aria-hidden="true">
+                                    <polygon class="brew-record-card__taste-grid" points="75,19 116.57,43 116.57,91 75,115 33.43,91 33.43,43"></polygon>
+                                    <polygon class="brew-record-card__taste-grid" points="75,43 95.78,55 95.78,79 75,91 54.22,79 54.22,55"></polygon>
+                                    <polygon class="brew-record-card__taste-value" data-brew-card-taste-value points="75,67 75,67 75,67 75,67 75,67 75,67"></polygon>
+                                    <g class="brew-record-card__taste-labels">
+                                        <text x="75" y="9">산미</text>
+                                        <text x="140" y="40">단맛</text>
+                                        <text x="140" y="97">쓴맛</text>
+                                        <text x="75" y="132">바디</text>
+                                        <text x="10" y="97">향</text>
+                                        <text x="10" y="40">밸런스</text>
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="brew-record-card__rating">
+                                <span class="brew-record-card__rating-label">만족도</span>
+                                <span class="brew-record-card__stars" aria-hidden="true"
+                                      th:attr="data-rating=${brewRecord.rating}">
+                                    <span th:each="score : ${#numbers.sequence(1, 5)}">★</span>
+                                </span>
+                                <strong th:text="${brewRecord.ratingDisplay}">4.5</strong>
+                            </div>
                         </div>
-                        <p th:text="${brewRecord.memo != null && !#strings.isEmpty(brewRecord.memo) ? brewRecord.memo : (brewRecord.flavorNoteSummary != null && !#strings.isEmpty(brewRecord.flavorNoteSummary) ? brewRecord.flavorNoteSummary : '메모 없음')}">자스민, 레몬, 복숭아</p>
                     </div>
                 </a>
             </article>
@@ -43,5 +67,6 @@
             <a class="button button--secondary" th:href="@{/brew-records/new}">첫 기록 남기기</a>
         </section>
     </main>
+    <script th:src="@{/js/brew-record-list.js(v='brew-taste-profile-large-20261010')}"></script>
 </body>
 </html>
