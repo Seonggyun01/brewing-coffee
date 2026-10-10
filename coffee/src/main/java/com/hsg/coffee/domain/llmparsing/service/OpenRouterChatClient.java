@@ -39,7 +39,7 @@ public class OpenRouterChatClient {
     public OpenRouterChatClient(
             @Value("${brewlog.llm.openrouter.api-key:${OPENROUTER_API_KEY:}}") String apiKey,
             @Value("${brewlog.llm.openrouter.model-url:https://openrouter.ai/api/v1/chat/completions}") String modelUrl,
-            @Value("${brewlog.llm.openrouter.model-id:minimax/minimax-m3:free}") String modelId,
+            @Value("${brewlog.llm.openrouter.model-id:openrouter/free}") String modelId,
             @Value("${brewlog.llm.openrouter.timeout-seconds:60}") int timeoutSeconds,
             @Value("${brewlog.llm.openrouter.max-tokens:700}") int defaultMaxTokens,
             @Value("${brewlog.llm.openrouter.temperature:0.0}") double temperature,

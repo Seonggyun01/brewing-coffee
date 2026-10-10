@@ -78,7 +78,7 @@ brewlog:
     openrouter:
       api-key: ${OPENROUTER_API_KEY:}
       model-url: ${BREWLOG_OPENROUTER_MODEL_URL:https://openrouter.ai/api/v1/chat/completions}
-      model-id: ${BREWLOG_OPENROUTER_MODEL_ID:minimax/minimax-m3:free}
+      model-id: ${BREWLOG_OPENROUTER_MODEL_ID:openrouter/free}
       timeout-seconds: ${BREWLOG_OPENROUTER_TIMEOUT_SECONDS:60}
       max-tokens: ${BREWLOG_OPENROUTER_MAX_TOKENS:700}
       temperature: ${BREWLOG_OPENROUTER_TEMPERATURE:0.0}

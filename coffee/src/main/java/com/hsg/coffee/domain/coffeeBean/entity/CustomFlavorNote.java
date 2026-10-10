@@ -42,4 +42,8 @@ public class CustomFlavorNote extends BaseTimeEntity {
         note.color = color;
         return note;
     }
+
+    public void updateColor(String color) {
+        this.color = color;
+    }
 }

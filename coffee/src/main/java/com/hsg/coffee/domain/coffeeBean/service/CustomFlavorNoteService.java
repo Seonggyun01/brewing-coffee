@@ -32,11 +32,14 @@ public class CustomFlavorNoteService {
         for (String name : cleanedNames) {
             String normalizedName = normalize(name);
             customFlavorNoteRepository.findByNormalizedName(normalizedName)
-                    .orElseGet(() -> customFlavorNoteRepository.save(CustomFlavorNote.of(
-                            name,
-                            normalizedName,
-                            colorRecommender.recommendColor(name)
-                    )));
+                    .ifPresentOrElse(
+                            note -> refreshGenericColor(note, name),
+                            () -> customFlavorNoteRepository.save(CustomFlavorNote.of(
+                                    name,
+                                    normalizedName,
+                                    colorRecommender.recommendColor(name)
+                            ))
+                    );
         }
         return cleanedNames;
     }
@@ -62,7 +65,12 @@ public class CustomFlavorNoteService {
         return cleanedNames.stream()
                 .map(name -> {
                     CustomFlavorNote note = notesByNormalizedName.get(normalize(name));
-                    String color = FlavorGradientStyle.normalizeColor(note != null ? note.getColor() : null);
+                    String color = FlavorGradientStyle.normalizeColor(
+                            FlavorNoteColorFallbackPalette.replaceGenericDefault(
+                                    name,
+                                    note != null ? note.getColor() : null
+                            )
+                    );
                     return new CustomFlavorNoteResponse(name, color);
                 })
                 .toList();
@@ -88,5 +96,15 @@ public class CustomFlavorNoteService {
 
     private String normalize(String value) {
         return value == null ? "" : value.trim().replaceAll("\\s+", "").toLowerCase();
+    }
+
+    private void refreshGenericColor(CustomFlavorNote note, String name) {
+        if (!FlavorNoteColorFallbackPalette.isGenericDefault(note.getColor())) {
+            return;
+        }
+        String recommendedColor = colorRecommender.recommendColor(name);
+        if (!FlavorNoteColorFallbackPalette.isGenericDefault(recommendedColor)) {
+            note.updateColor(FlavorGradientStyle.normalizeColor(recommendedColor));
+        }
     }
 }

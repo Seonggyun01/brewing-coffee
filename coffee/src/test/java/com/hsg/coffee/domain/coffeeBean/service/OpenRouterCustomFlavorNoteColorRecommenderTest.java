@@ -18,7 +18,7 @@ class OpenRouterCustomFlavorNoteColorRecommenderTest {
     void usesColorReturnedByOpenRouter() {
         OpenRouterChatClient chatClient = mock(OpenRouterChatClient.class);
         when(chatClient.isConfigured()).thenReturn(true);
-        when(chatClient.complete(anyString(), eq(80))).thenReturn(new OpenRouterChatClient.Completion(
+        when(chatClient.complete(anyString(), eq(500))).thenReturn(new OpenRouterChatClient.Completion(
                 "{}",
                 "{\"color\":\"#a1b2c3\"}",
                 "minimax/minimax-m3:free"
@@ -34,7 +34,7 @@ class OpenRouterCustomFlavorNoteColorRecommenderTest {
     void usesLocalPaletteWhenOpenRouterIsUnavailable() {
         OpenRouterChatClient chatClient = mock(OpenRouterChatClient.class);
         when(chatClient.isConfigured()).thenReturn(true);
-        when(chatClient.complete(anyString(), eq(80)))
+        when(chatClient.complete(anyString(), eq(500)))
                 .thenThrow(new IllegalStateException("rate limited"));
 
         OpenRouterCustomFlavorNoteColorRecommender recommender =

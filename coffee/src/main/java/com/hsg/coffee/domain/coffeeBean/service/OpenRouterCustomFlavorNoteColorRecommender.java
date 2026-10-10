@@ -20,6 +20,7 @@ public class OpenRouterCustomFlavorNoteColorRecommender implements CustomFlavorN
 
     private static final Logger log = LoggerFactory.getLogger(OpenRouterCustomFlavorNoteColorRecommender.class);
     private static final Pattern HEX_COLOR = Pattern.compile("^#[0-9A-Fa-f]{6}$");
+    private static final int COLOR_RECOMMENDATION_MAX_TOKENS = 500;
 
     private final OpenRouterChatClient chatClient;
     private final ObjectMapper objectMapper;
@@ -40,7 +41,10 @@ public class OpenRouterCustomFlavorNoteColorRecommender implements CustomFlavorN
         }
 
         try {
-            OpenRouterChatClient.Completion completion = chatClient.complete(createPrompt(flavorNoteName), 80);
+            OpenRouterChatClient.Completion completion = chatClient.complete(
+                    createPrompt(flavorNoteName),
+                    COLOR_RECOMMENDATION_MAX_TOKENS
+            );
             String json = extractJson(completion.content());
             JsonNode root = objectMapper.readTree(json);
             String color = root.path("color").asText();
