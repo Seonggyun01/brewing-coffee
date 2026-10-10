@@ -20,7 +20,6 @@
     const MIN_ZOOM = 1;
     const MAX_ZOOM = 4;
     const ZOOM_BUTTON_STEP = 0.24;
-    const ZOOM_WHEEL_STEP = 0.08;
     let zoomLevel = 1;
     let zoomOrigin = { x: 50, y: 50 };
     let panOffset = { x: 0, y: 0 };
@@ -39,23 +38,7 @@
         zoomLabel.textContent = `${Math.round(zoomLevel * 100)}%`;
     }
 
-    function setZoomOriginFromEvent(event) {
-        const rect = worldMap.getBoundingClientRect();
-        if (rect.width === 0 || rect.height === 0) {
-            return;
-        }
-
-        zoomOrigin = {
-            x: clamp(((event.clientX - rect.left) / rect.width) * 100, 0, 100),
-            y: clamp(((event.clientY - rect.top) / rect.height) * 100, 0, 100),
-        };
-    }
-
-    function zoomMap(delta, event) {
-        if (event) {
-            setZoomOriginFromEvent(event);
-        }
-
+    function zoomMap(delta) {
         zoomLevel = clamp(zoomLevel + delta, MIN_ZOOM, MAX_ZOOM);
         if (zoomLevel === MIN_ZOOM) {
             panOffset = { x: 0, y: 0 };
@@ -212,11 +195,6 @@
             setPanel(country);
         });
     });
-
-    worldMap.addEventListener('wheel', (event) => {
-        event.preventDefault();
-        zoomMap(event.deltaY < 0 ? ZOOM_WHEEL_STEP : -ZOOM_WHEEL_STEP, event);
-    }, { passive: false });
 
     worldMap.addEventListener('click', (event) => {
         if (!didDragMap) {

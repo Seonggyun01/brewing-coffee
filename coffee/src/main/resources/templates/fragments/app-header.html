@@ -24,8 +24,6 @@
         </nav>
         <div class="app-header__actions">
             <span class="app-header__user" th:if="${signedInUser != null}" th:text="${signedInUser.nickname}">사용자</span>
-            <a class="button button--secondary" th:href="@{/cafe-filter-coffees/new}">카페 필터</a>
-            <a class="button button--primary" th:href="@{/coffee-beans/new}">새 원두</a>
             <form class="app-header__logout" th:if="${signedInUser != null}" th:action="@{/logout}" method="post">
                 <button class="button button--ghost" type="submit">로그아웃</button>
             </form>
