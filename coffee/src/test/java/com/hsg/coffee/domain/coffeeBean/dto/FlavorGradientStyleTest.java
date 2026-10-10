@@ -36,7 +36,33 @@ class FlavorGradientStyleTest {
         );
 
         assertEquals(
-                "background: linear-gradient(90deg, #C8A2C8, #F6C945, #7A5038);",
+                "background: linear-gradient(90deg, #7A5038, #F6C945, #C8A2C8);",
+                style
+        );
+    }
+
+    @Test
+    void colorsAreOrderedByNearestRgbDistance() {
+        String style = FlavorGradientStyle.from(
+                List.of(FlavorNote.GRAPEFRUIT, FlavorNote.BLUEBERRY, FlavorNote.HIBISCUS),
+                List.of(new CustomFlavorNoteResponse("다크 베리", "#5A174A"))
+        );
+
+        assertEquals(
+                "background: linear-gradient(90deg, #4C3A8C, #5A174A, #C94F7C, #F06F61);",
+                style
+        );
+    }
+
+    @Test
+    void duplicateColorsAreRenderedOnlyOnce() {
+        String style = FlavorGradientStyle.from(
+                List.of(FlavorNote.LAVENDER, FlavorNote.JASMINE),
+                List.of(new CustomFlavorNoteResponse("같은 라벤더", "#B497D6"))
+        );
+
+        assertEquals(
+                "background: linear-gradient(90deg, #B497D6, #C8A2C8);",
                 style
         );
     }
