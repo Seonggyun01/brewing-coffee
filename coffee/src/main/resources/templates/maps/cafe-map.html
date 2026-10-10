@@ -6,7 +6,7 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/img/blank-logo.svg}">
     <title>카페 지도 - BLANK</title>
     <link rel="stylesheet" th:href="@{/css/main.css(v='map-app-20260802')}">
-    <link rel="stylesheet" th:href="@{/css/cafe-map.css(v=35)}">
+    <link rel="stylesheet" th:href="@{/css/cafe-map.css(v=36)}">
 </head>
 <body class="cafe-map-page">
     <header th:replace="~{fragments/app-header :: appHeader('cafes')}"></header>
@@ -62,6 +62,6 @@
 
     <script th:if="${hasKakaoMapKey}"
             th:src="@{'https://dapi.kakao.com/v2/maps/sdk.js'(appkey=${kakaoJavascriptKey},libraries='services',autoload='false')}"></script>
-    <script th:src="@{/js/cafe-map.js(v=32)}"></script>
+    <script th:src="@{/js/cafe-map.js(v=33)}"></script>
 </body>
 </html>

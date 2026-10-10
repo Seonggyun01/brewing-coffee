@@ -172,7 +172,9 @@
 .cafe-map-panel {
     display: grid;
     grid-template-rows: auto auto minmax(0, 1fr);
+    height: clamp(520px, 68vh, 760px);
     min-height: 0;
+    overflow: hidden;
     padding: 22px;
 }
 
@@ -234,6 +236,22 @@
     min-height: 0;
     overflow: auto;
     padding-right: 6px;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+}
+
+.cafe-map-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.cafe-map-list::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background: rgba(220, 203, 185, 0.34);
+}
+
+.cafe-map-list::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(143, 98, 55, 0.42);
 }
 
 .cafe-list-card {

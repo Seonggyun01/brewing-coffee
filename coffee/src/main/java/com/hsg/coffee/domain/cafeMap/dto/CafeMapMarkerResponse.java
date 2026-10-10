@@ -1,5 +1,7 @@
 package com.hsg.coffee.domain.cafeMap.dto;
 
+import java.time.LocalDate;
+
 import com.hsg.coffee.domain.purchasePlace.entity.PurchasePlace;
 
 public record CafeMapMarkerResponse(
@@ -9,20 +11,24 @@ public record CafeMapMarkerResponse(
         Double latitude,
         Double longitude,
         int visitCount,
-        String latestVisitDate,
+        LocalDate latestVisitDate,
         Double averageRating,
         String memo
 ) {
 
-    public static CafeMapMarkerResponse from(PurchasePlace purchasePlace) {
+    public static CafeMapMarkerResponse from(
+            PurchasePlace purchasePlace,
+            int visitCount,
+            LocalDate latestVisitDate
+    ) {
         return new CafeMapMarkerResponse(
                 purchasePlace.getId(),
                 purchasePlace.getName(),
                 purchasePlace.getAddress(),
                 purchasePlace.getLatitude(),
                 purchasePlace.getLongitude(),
-                1,
-                null,
+                visitCount,
+                latestVisitDate,
                 null,
                 purchasePlace.getMemo()
         );

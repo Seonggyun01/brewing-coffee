@@ -34,6 +34,8 @@ const hasCoordinate = (cafe) => {
     return Number.isFinite(Number(cafe.latitude)) && Number.isFinite(Number(cafe.longitude));
 };
 
+const formatVisitDate = (value) => value ? String(value).replaceAll('-', '.') : '미기록';
+
 const setStatus = (title, message, isHidden = false) => {
     cafeMapStatus.classList.toggle('is-hidden', isHidden);
     cafeMapStatus.innerHTML = `
@@ -48,16 +50,14 @@ const setVisibleCafeStatus = (message) => {
 };
 
 const selectedCafeHtml = (cafe) => {
-    const address = cafe.address || '주소 미기록';
-    const visitCount = cafe.visitCount || 1;
-    const latestVisit = cafe.latestVisitDate ? `<small>최근 방문 ${escapeHtml(cafe.latestVisitDate)}</small>` : '';
+    const visitCount = cafe.visitCount || 0;
+    const latestVisitDate = formatVisitDate(cafe.latestVisitDate);
 
     return `
         <span>선택 카페</span>
         <strong>${escapeHtml(cafe.cafeName)}</strong>
-        <p>${escapeHtml(address)}</p>
+        <p>최근 방문 ${escapeHtml(latestVisitDate)}</p>
         <small>방문 ${visitCount}회</small>
-        ${latestVisit}
     `;
 };
 
@@ -115,8 +115,8 @@ const renderCafeList = () => {
     cafeListElement.innerHTML = cafes.map((cafe) => `
         <button class="cafe-list-card" type="button" data-cafe-id="${cafe.id}">
             <strong>${escapeHtml(cafe.cafeName)}</strong>
-            <span>${escapeHtml(cafe.address || '주소 미기록')}</span>
-            <small>방문 ${cafe.visitCount || 1}회</small>
+            <span>최근 방문 ${escapeHtml(formatVisitDate(cafe.latestVisitDate))}</span>
+            <small>방문 ${cafe.visitCount || 0}회</small>
         </button>
     `).join('');
 
