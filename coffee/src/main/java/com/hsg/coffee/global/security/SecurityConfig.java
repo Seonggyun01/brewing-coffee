@@ -28,10 +28,18 @@ public class SecurityConfig {
 
         return http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/error", "/css/**", "/img/**", "/js/**").permitAll()
+                        .requestMatchers("/api/front/session", "/login", "/error", "/css/**", "/img/**", "/js/**", "/vendor/**").permitAll()
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, exception) -> {
+                    if (request.getRequestURI().startsWith("/api/")) {
+                        response.sendError(401);
+                    } else {
+                        new org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint("/login")
+                                .commence(request, response, exception);
+                    }
+                }))
                 .oauth2Login(oauth -> oauth
                         .loginPage("/login")
                         .userInfoEndpoint(userInfo -> userInfo.userService(kakaoOAuth2UserService))

@@ -19,6 +19,8 @@ class GroqConfigurationTest {
     void selectsGroqProviderAndDefaultsWithoutExternalCalls() {
         assertThat(service).isInstanceOf(GroqBeanMappingService.class);
         assertThat(context.getBeansOfType(BeanMappingService.class)).hasSize(1);
+        assertThat(context.getBean(com.hsg.coffee.domain.coffeeBean.service.CustomFlavorNoteColorRecommender.class))
+                .isInstanceOf(com.hsg.coffee.domain.coffeeBean.service.GroqCustomFlavorNoteColorRecommender.class);
         assertThat(client.isConfigured()).isTrue();
         assertThat(client.modelId()).isEqualTo("qwen/qwen3.8-27b");
         assertThat(client.modelUrl()).isEqualTo("https://api.groq.com/openai/v1/chat/completions");

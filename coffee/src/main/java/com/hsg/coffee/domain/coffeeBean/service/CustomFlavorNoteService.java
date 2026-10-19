@@ -29,17 +29,26 @@ public class CustomFlavorNoteService {
     @Transactional
     public List<String> ensureAll(Collection<String> names) {
         List<String> cleanedNames = cleanNames(names);
+        Map<String, CustomFlavorNote> existing = new LinkedHashMap<>();
+        List<String> pending = new java.util.ArrayList<>();
         for (String name : cleanedNames) {
-            String normalizedName = normalize(name);
-            customFlavorNoteRepository.findByNormalizedName(normalizedName)
-                    .ifPresentOrElse(
-                            note -> refreshGenericColor(note, name),
-                            () -> customFlavorNoteRepository.save(CustomFlavorNote.of(
-                                    name,
-                                    normalizedName,
-                                    colorRecommender.recommendColor(name)
-                            ))
-                    );
+            var note = customFlavorNoteRepository.findByNormalizedName(normalize(name));
+            note.ifPresent(value -> existing.put(name, value));
+            if (note.isEmpty() || FlavorNoteColorFallbackPalette.isGenericDefault(note.get().getColor())) {
+                pending.add(name);
+            }
+        }
+        if (pending.isEmpty()) return cleanedNames;
+        Map<String, String> recommended = colorRecommender.recommendColors(pending);
+        for (String name : pending) {
+            String color = FlavorGradientStyle.normalizeColor(recommended.getOrDefault(name,
+                    FlavorNoteColorFallbackPalette.resolve(name)));
+            CustomFlavorNote note = existing.get(name);
+            if (note == null) {
+                customFlavorNoteRepository.save(CustomFlavorNote.of(name, normalize(name), color));
+            } else if (!FlavorNoteColorFallbackPalette.isGenericDefault(color)) {
+                note.updateColor(color);
+            }
         }
         return cleanedNames;
     }
@@ -82,12 +91,13 @@ public class CustomFlavorNoteService {
         }
 
         Set<String> cleanedNames = new LinkedHashSet<>();
+        Set<String> normalizedNames = new LinkedHashSet<>();
         for (String name : names) {
             if (!StringUtils.hasText(name)) {
                 continue;
             }
             String cleanedName = name.trim().replaceAll("\\s+", " ");
-            if (!cleanedName.isBlank()) {
+            if (!cleanedName.isBlank() && normalizedNames.add(normalize(cleanedName))) {
                 cleanedNames.add(cleanedName);
             }
         }
@@ -98,13 +108,4 @@ public class CustomFlavorNoteService {
         return value == null ? "" : value.trim().replaceAll("\\s+", "").toLowerCase();
     }
 
-    private void refreshGenericColor(CustomFlavorNote note, String name) {
-        if (!FlavorNoteColorFallbackPalette.isGenericDefault(note.getColor())) {
-            return;
-        }
-        String recommendedColor = colorRecommender.recommendColor(name);
-        if (!FlavorNoteColorFallbackPalette.isGenericDefault(recommendedColor)) {
-            note.updateColor(FlavorGradientStyle.normalizeColor(recommendedColor));
-        }
-    }
 }

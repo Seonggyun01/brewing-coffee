@@ -1,0 +1,830 @@
+{
+  "flavors": [
+    {
+      "value": "JASMINE",
+      "label": "자스민",
+      "category": "FLORAL",
+      "color": "#C8A2C8"
+    },
+    {
+      "value": "ROSE",
+      "label": "장미",
+      "category": "FLORAL",
+      "color": "#D9A0B8"
+    },
+    {
+      "value": "LAVENDER",
+      "label": "라벤더",
+      "category": "FLORAL",
+      "color": "#B497D6"
+    },
+    {
+      "value": "ORANGE_BLOSSOM",
+      "label": "오렌지 블라썸",
+      "category": "FLORAL",
+      "color": "#F4C27A"
+    },
+    {
+      "value": "CHAMOMILE",
+      "label": "캐모마일",
+      "category": "FLORAL",
+      "color": "#E8D889"
+    },
+    {
+      "value": "HIBISCUS",
+      "label": "히비스커스",
+      "category": "FLORAL",
+      "color": "#C94F7C"
+    },
+    {
+      "value": "LEMON",
+      "label": "레몬",
+      "category": "CITRUS",
+      "color": "#F6C945"
+    },
+    {
+      "value": "LIME",
+      "label": "라임",
+      "category": "CITRUS",
+      "color": "#B7D968"
+    },
+    {
+      "value": "ORANGE",
+      "label": "오렌지",
+      "category": "CITRUS",
+      "color": "#F79A3E"
+    },
+    {
+      "value": "GRAPEFRUIT",
+      "label": "자몽",
+      "category": "CITRUS",
+      "color": "#F06F61"
+    },
+    {
+      "value": "YUZU",
+      "label": "유자",
+      "category": "CITRUS",
+      "color": "#F7D84A"
+    },
+    {
+      "value": "TANGERINE",
+      "label": "귤",
+      "category": "CITRUS",
+      "color": "#F58B3C"
+    },
+    {
+      "value": "STRAWBERRY",
+      "label": "딸기",
+      "category": "BERRY",
+      "color": "#D94B6A"
+    },
+    {
+      "value": "RASPBERRY",
+      "label": "라즈베리",
+      "category": "BERRY",
+      "color": "#C72D62"
+    },
+    {
+      "value": "BLUEBERRY",
+      "label": "블루베리",
+      "category": "BERRY",
+      "color": "#4C3A8C"
+    },
+    {
+      "value": "BLACKBERRY",
+      "label": "블랙베리",
+      "category": "BERRY",
+      "color": "#3E244C"
+    },
+    {
+      "value": "CRANBERRY",
+      "label": "크랜베리",
+      "category": "BERRY",
+      "color": "#B21F45"
+    },
+    {
+      "value": "BLACKCURRANT",
+      "label": "블랙커런트",
+      "category": "BERRY",
+      "color": "#5A174A"
+    },
+    {
+      "value": "CHERRY",
+      "label": "체리",
+      "category": "BERRY",
+      "color": "#B5233F"
+    },
+    {
+      "value": "PEACH",
+      "label": "복숭아",
+      "category": "STONE_FRUIT",
+      "color": "#F4A261"
+    },
+    {
+      "value": "APRICOT",
+      "label": "살구",
+      "category": "STONE_FRUIT",
+      "color": "#F5B66A"
+    },
+    {
+      "value": "PLUM",
+      "label": "자두",
+      "category": "STONE_FRUIT",
+      "color": "#7D416A"
+    },
+    {
+      "value": "NECTARINE",
+      "label": "천도복숭아",
+      "category": "STONE_FRUIT",
+      "color": "#E97752"
+    },
+    {
+      "value": "YELLOW_PEACH",
+      "label": "황도",
+      "category": "STONE_FRUIT",
+      "color": "#F7C75D"
+    },
+    {
+      "value": "WHITE_PEACH",
+      "label": "백도",
+      "category": "STONE_FRUIT",
+      "color": "#F8C7B8"
+    },
+    {
+      "value": "MANGO",
+      "label": "망고",
+      "category": "TROPICAL_FRUIT",
+      "color": "#F9A03F"
+    },
+    {
+      "value": "PINEAPPLE",
+      "label": "파인애플",
+      "category": "TROPICAL_FRUIT",
+      "color": "#EBC84A"
+    },
+    {
+      "value": "PASSION_FRUIT",
+      "label": "패션프루트",
+      "category": "TROPICAL_FRUIT",
+      "color": "#F28C28"
+    },
+    {
+      "value": "PAPAYA",
+      "label": "파파야",
+      "category": "TROPICAL_FRUIT",
+      "color": "#F4A146"
+    },
+    {
+      "value": "GUAVA",
+      "label": "구아바",
+      "category": "TROPICAL_FRUIT",
+      "color": "#F07C78"
+    },
+    {
+      "value": "LYCHEE",
+      "label": "리치",
+      "category": "TROPICAL_FRUIT",
+      "color": "#F2B8AA"
+    },
+    {
+      "value": "BANANA",
+      "label": "바나나",
+      "category": "TROPICAL_FRUIT",
+      "color": "#E8D25A"
+    },
+    {
+      "value": "APPLE",
+      "label": "사과",
+      "category": "APPLE_PEAR",
+      "color": "#C9D96A"
+    },
+    {
+      "value": "GREEN_APPLE",
+      "label": "청사과",
+      "category": "APPLE_PEAR",
+      "color": "#9CCB5B"
+    },
+    {
+      "value": "RED_APPLE",
+      "label": "빨간 사과",
+      "category": "APPLE_PEAR",
+      "color": "#C84D4D"
+    },
+    {
+      "value": "PEAR",
+      "label": "배",
+      "category": "APPLE_PEAR",
+      "color": "#D7D987"
+    },
+    {
+      "value": "GRAPE",
+      "label": "포도",
+      "category": "APPLE_PEAR",
+      "color": "#7E5AA6"
+    },
+    {
+      "value": "HONEY",
+      "label": "꿀",
+      "category": "SWEET",
+      "color": "#D6A04D"
+    },
+    {
+      "value": "BROWN_SUGAR",
+      "label": "흑설탕",
+      "category": "SWEET",
+      "color": "#A96F3D"
+    },
+    {
+      "value": "MAPLE_SYRUP",
+      "label": "메이플 시럽",
+      "category": "SWEET",
+      "color": "#B87936"
+    },
+    {
+      "value": "CARAMEL",
+      "label": "카라멜",
+      "category": "SWEET",
+      "color": "#C47A32"
+    },
+    {
+      "value": "VANILLA",
+      "label": "바닐라",
+      "category": "SWEET",
+      "color": "#E0C176"
+    },
+    {
+      "value": "TOFFEE",
+      "label": "토피",
+      "category": "SWEET",
+      "color": "#B66A32"
+    },
+    {
+      "value": "MILK_CHOCOLATE",
+      "label": "밀크 초콜릿",
+      "category": "CHOCOLATE",
+      "color": "#7B4B37"
+    },
+    {
+      "value": "DARK_CHOCOLATE",
+      "label": "다크 초콜릿",
+      "category": "CHOCOLATE",
+      "color": "#5C3A2E"
+    },
+    {
+      "value": "CACAO",
+      "label": "카카오",
+      "category": "CHOCOLATE",
+      "color": "#4B2E26"
+    },
+    {
+      "value": "COCOA",
+      "label": "코코아",
+      "category": "CHOCOLATE",
+      "color": "#6A4636"
+    },
+    {
+      "value": "BROWNIE",
+      "label": "브라우니",
+      "category": "CHOCOLATE",
+      "color": "#4A3028"
+    },
+    {
+      "value": "ALMOND",
+      "label": "아몬드",
+      "category": "NUTTY",
+      "color": "#A47148"
+    },
+    {
+      "value": "HAZELNUT",
+      "label": "헤이즐넛",
+      "category": "NUTTY",
+      "color": "#8E5E3C"
+    },
+    {
+      "value": "PEANUT",
+      "label": "땅콩",
+      "category": "NUTTY",
+      "color": "#B88A56"
+    },
+    {
+      "value": "WALNUT",
+      "label": "호두",
+      "category": "NUTTY",
+      "color": "#7A5038"
+    },
+    {
+      "value": "CHESTNUT",
+      "label": "밤",
+      "category": "NUTTY",
+      "color": "#A86E45"
+    },
+    {
+      "value": "TOAST",
+      "label": "토스트",
+      "category": "ROASTED_SMOKY",
+      "color": "#8A5A3C"
+    },
+    {
+      "value": "ROASTED_NUTS",
+      "label": "구운 견과",
+      "category": "ROASTED_SMOKY",
+      "color": "#6C4630"
+    },
+    {
+      "value": "SMOKE",
+      "label": "스모크",
+      "category": "ROASTED_SMOKY",
+      "color": "#3B2F2F"
+    },
+    {
+      "value": "TOBACCO",
+      "label": "담배",
+      "category": "ROASTED_SMOKY",
+      "color": "#5A4636"
+    },
+    {
+      "value": "BAKED_BREAD",
+      "label": "구운 빵",
+      "category": "ROASTED_SMOKY",
+      "color": "#A16F42"
+    },
+    {
+      "value": "CINNAMON",
+      "label": "시나몬",
+      "category": "SPICE",
+      "color": "#B5532F"
+    },
+    {
+      "value": "CLOVE",
+      "label": "정향",
+      "category": "SPICE",
+      "color": "#7B3B2F"
+    },
+    {
+      "value": "NUTMEG",
+      "label": "넛맥",
+      "category": "SPICE",
+      "color": "#9D5C3A"
+    },
+    {
+      "value": "CARDAMOM",
+      "label": "카다멈",
+      "category": "SPICE",
+      "color": "#7F9F6B"
+    },
+    {
+      "value": "BLACK_PEPPER",
+      "label": "흑후추",
+      "category": "SPICE",
+      "color": "#3F352E"
+    },
+    {
+      "value": "GINGER",
+      "label": "생강",
+      "category": "SPICE",
+      "color": "#D39A4A"
+    },
+    {
+      "value": "BLACK_TEA",
+      "label": "홍차",
+      "category": "TEA_LIKE",
+      "color": "#8A5A3B"
+    },
+    {
+      "value": "GREEN_TEA",
+      "label": "녹차",
+      "category": "TEA_LIKE",
+      "color": "#8A9A5B"
+    },
+    {
+      "value": "EARL_GREY",
+      "label": "얼그레이",
+      "category": "TEA_LIKE",
+      "color": "#66728C"
+    },
+    {
+      "value": "OOLONG",
+      "label": "우롱차",
+      "category": "TEA_LIKE",
+      "color": "#947449"
+    },
+    {
+      "value": "JASMINE_TEA",
+      "label": "자스민 차",
+      "category": "TEA_LIKE",
+      "color": "#B8B877"
+    },
+    {
+      "value": "HERBAL_TEA",
+      "label": "허브티",
+      "category": "TEA_LIKE",
+      "color": "#7A9860"
+    },
+    {
+      "value": "RED_WINE",
+      "label": "레드 와인",
+      "category": "WINEY_FERMENTED",
+      "color": "#7B2D43"
+    },
+    {
+      "value": "WHITE_WINE",
+      "label": "화이트 와인",
+      "category": "WINEY_FERMENTED",
+      "color": "#D7C978"
+    },
+    {
+      "value": "BRANDY",
+      "label": "브랜디",
+      "category": "WINEY_FERMENTED",
+      "color": "#9B5635"
+    },
+    {
+      "value": "FERMENTED_FRUIT",
+      "label": "발효 과일",
+      "category": "WINEY_FERMENTED",
+      "color": "#8F3D54"
+    },
+    {
+      "value": "RAISIN",
+      "label": "건포도",
+      "category": "WINEY_FERMENTED",
+      "color": "#5B3144"
+    },
+    {
+      "value": "DRIED_FRUIT",
+      "label": "말린 과일",
+      "category": "WINEY_FERMENTED",
+      "color": "#9E5D3D"
+    },
+    {
+      "value": "HERBAL",
+      "label": "허브",
+      "category": "EARTHY_HERBAL",
+      "color": "#6B705C"
+    },
+    {
+      "value": "GRASS",
+      "label": "풀",
+      "category": "EARTHY_HERBAL",
+      "color": "#7FA35A"
+    },
+    {
+      "value": "EARTH",
+      "label": "흙",
+      "category": "EARTHY_HERBAL",
+      "color": "#6B5A48"
+    },
+    {
+      "value": "CEDAR",
+      "label": "시더우드",
+      "category": "EARTHY_HERBAL",
+      "color": "#8A5D3B"
+    },
+    {
+      "value": "PINE",
+      "label": "소나무",
+      "category": "EARTHY_HERBAL",
+      "color": "#4F7654"
+    },
+    {
+      "value": "MINT",
+      "label": "민트",
+      "category": "EARTHY_HERBAL",
+      "color": "#72A980"
+    }
+  ],
+  "categories": [
+    {
+      "value": "FLORAL",
+      "label": "꽃",
+      "color": "#C8A2C8"
+    },
+    {
+      "value": "CITRUS",
+      "label": "시트러스",
+      "color": "#F6C945"
+    },
+    {
+      "value": "BERRY",
+      "label": "베리",
+      "color": "#9B1B5A"
+    },
+    {
+      "value": "STONE_FRUIT",
+      "label": "핵과류",
+      "color": "#F4A261"
+    },
+    {
+      "value": "TROPICAL_FRUIT",
+      "label": "열대과일",
+      "color": "#F9A03F"
+    },
+    {
+      "value": "APPLE_PEAR",
+      "label": "사과/배",
+      "color": "#B7D968"
+    },
+    {
+      "value": "SWEET",
+      "label": "단맛",
+      "color": "#D6A04D"
+    },
+    {
+      "value": "CHOCOLATE",
+      "label": "초콜릿",
+      "color": "#5C3A2E"
+    },
+    {
+      "value": "NUTTY",
+      "label": "견과류",
+      "color": "#A47148"
+    },
+    {
+      "value": "ROASTED_SMOKY",
+      "label": "로스티드",
+      "color": "#3B2F2F"
+    },
+    {
+      "value": "SPICE",
+      "label": "향신료",
+      "color": "#B5532F"
+    },
+    {
+      "value": "TEA_LIKE",
+      "label": "차",
+      "color": "#8A9A5B"
+    },
+    {
+      "value": "WINEY_FERMENTED",
+      "label": "발효/와인",
+      "color": "#7B2D43"
+    },
+    {
+      "value": "EARTHY_HERBAL",
+      "label": "흙/허브",
+      "color": "#6B705C"
+    }
+  ],
+  "feelings": [
+    {
+      "value": "CLEAN",
+      "label": "깔끔함"
+    },
+    {
+      "value": "JUICY",
+      "label": "쥬시함"
+    },
+    {
+      "value": "SMOOTH",
+      "label": "부드러움"
+    },
+    {
+      "value": "BRIGHT",
+      "label": "밝음"
+    },
+    {
+      "value": "RICH",
+      "label": "풍성함"
+    },
+    {
+      "value": "CREAMY",
+      "label": "크리미함"
+    },
+    {
+      "value": "SILKY",
+      "label": "실키함"
+    },
+    {
+      "value": "LIGHT",
+      "label": "가벼움"
+    },
+    {
+      "value": "HEAVY",
+      "label": "묵직함"
+    },
+    {
+      "value": "DRY",
+      "label": "드라이함"
+    },
+    {
+      "value": "LONG_AFTERTASTE",
+      "label": "긴 여운"
+    },
+    {
+      "value": "SWEET_FINISH",
+      "label": "달콤한 마무리"
+    },
+    {
+      "value": "UNDER_EXTRACTED",
+      "label": "과소추출 느낌"
+    },
+    {
+      "value": "OVER_EXTRACTED",
+      "label": "과다추출 느낌"
+    }
+  ],
+  "methods": [
+    {
+      "value": "KALITA",
+      "label": "칼리타"
+    },
+    {
+      "value": "ORIGAMI",
+      "label": "오리가미"
+    },
+    {
+      "value": "CHEMEX",
+      "label": "케멕스"
+    },
+    {
+      "value": "AEROPRESS",
+      "label": "에어로프레스"
+    },
+    {
+      "value": "FRENCH_PRESS",
+      "label": "프렌치프레스"
+    },
+    {
+      "value": "ESPRESSO",
+      "label": "에스프레소"
+    },
+    {
+      "value": "COLD_BREW",
+      "label": "콜드브루"
+    },
+    {
+      "value": "OTHER",
+      "label": "기타"
+    }
+  ],
+  "countries": [
+    {
+      "value": "ET",
+      "label": "에티오피아"
+    },
+    {
+      "value": "CO",
+      "label": "콜롬비아"
+    },
+    {
+      "value": "BR",
+      "label": "브라질"
+    },
+    {
+      "value": "KE",
+      "label": "케냐"
+    },
+    {
+      "value": "GT",
+      "label": "과테말라"
+    },
+    {
+      "value": "CR",
+      "label": "코스타리카"
+    },
+    {
+      "value": "PA",
+      "label": "파나마"
+    },
+    {
+      "value": "RW",
+      "label": "르완다"
+    },
+    {
+      "value": "BI",
+      "label": "부룬디"
+    },
+    {
+      "value": "UG",
+      "label": "우간다"
+    },
+    {
+      "value": "HN",
+      "label": "온두라스"
+    },
+    {
+      "value": "SV",
+      "label": "엘살바도르"
+    },
+    {
+      "value": "NI",
+      "label": "니카라과"
+    },
+    {
+      "value": "PE",
+      "label": "페루"
+    },
+    {
+      "value": "BO",
+      "label": "볼리비아"
+    },
+    {
+      "value": "EC",
+      "label": "에콰도르"
+    },
+    {
+      "value": "VE",
+      "label": "베네수엘라"
+    },
+    {
+      "value": "ID",
+      "label": "인도네시아"
+    },
+    {
+      "value": "VN",
+      "label": "베트남"
+    },
+    {
+      "value": "TH",
+      "label": "태국"
+    },
+    {
+      "value": "LA",
+      "label": "라오스"
+    },
+    {
+      "value": "MM",
+      "label": "미얀마"
+    },
+    {
+      "value": "CN",
+      "label": "중국"
+    },
+    {
+      "value": "TW",
+      "label": "대만"
+    },
+    {
+      "value": "IN",
+      "label": "인도"
+    },
+    {
+      "value": "PH",
+      "label": "필리핀"
+    },
+    {
+      "value": "PG",
+      "label": "파푸아뉴기니"
+    },
+    {
+      "value": "NP",
+      "label": "네팔"
+    },
+    {
+      "value": "YE",
+      "label": "예멘"
+    },
+    {
+      "value": "MX",
+      "label": "멕시코"
+    },
+    {
+      "value": "TZ",
+      "label": "탄자니아"
+    },
+    {
+      "value": "MW",
+      "label": "말라위"
+    },
+    {
+      "value": "ZM",
+      "label": "잠비아"
+    },
+    {
+      "value": "ZW",
+      "label": "짐바브웨"
+    },
+    {
+      "value": "CM",
+      "label": "카메룬"
+    },
+    {
+      "value": "AO",
+      "label": "앙골라"
+    },
+    {
+      "value": "MG",
+      "label": "마다가스카르"
+    },
+    {
+      "value": "CD",
+      "label": "콩고민주공화국"
+    },
+    {
+      "value": "DO",
+      "label": "도미니카공화국"
+    },
+    {
+      "value": "JM",
+      "label": "자메이카"
+    },
+    {
+      "value": "CU",
+      "label": "쿠바"
+    },
+    {
+      "value": "HT",
+      "label": "아이티"
+    }
+  ]
+}

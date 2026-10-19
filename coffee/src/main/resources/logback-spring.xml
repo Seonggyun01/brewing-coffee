@@ -2,7 +2,7 @@
 <configuration>
   <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
   <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
-  <springProperty scope="context" name="TRACE_DIR" source="brewlog.trace.directory" defaultValue="../../logs"/>
+  <springProperty scope="context" name="TRACE_DIR" source="brewlog.trace.directory" defaultValue="../logs"/>
   <appender name="EXTRACTION" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>${TRACE_DIR}/bean-extraction.jsonl</file>
     <encoder><pattern>%msg%n</pattern><charset>UTF-8</charset></encoder>

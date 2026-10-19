@@ -42,6 +42,7 @@ spring:
             user-name-attribute: id
 
 server:
+  forward-headers-strategy: framework
   servlet:
     session:
       timeout: ${BREWLOG_SESSION_TIMEOUT:1d}
@@ -55,6 +56,8 @@ logging:
 brewlog:
   dummy-data:
     enabled: ${BREWLOG_DUMMY_DATA_ENABLED:false}
+  taste-space:
+    backfill-enabled: ${BREWLOG_TASTE_SPACE_BACKFILL_ENABLED:false}
   ocr:
     provider: ${BREWLOG_OCR_PROVIDER:local-best}
     google-credentials-path: ${BREWLOG_GOOGLE_CREDENTIALS_PATH:}
@@ -93,6 +96,10 @@ brewlog:
       temperature: ${BREWLOG_OPENROUTER_TEMPERATURE:0.0}
       site-url: ${BREWLOG_OPENROUTER_SITE_URL:}
       app-name: ${BREWLOG_OPENROUTER_APP_NAME:BLANK}
+    embedding:
+      model-url: ${BREWLOG_EMBEDDING_MODEL_URL:https://openrouter.ai/api/v1/embeddings}
+      model-id: ${BREWLOG_EMBEDDING_MODEL_ID:nvidia/nemotron-3-embed-1b:free}
+      timeout-seconds: ${BREWLOG_EMBEDDING_TIMEOUT_SECONDS:90}
     ollama:
       model-url: ${BREWLOG_OLLAMA_MODEL_URL:http://127.0.0.1:11434/api/generate}
       model-id: ${BREWLOG_OLLAMA_MODEL_ID:gemma3:12b}

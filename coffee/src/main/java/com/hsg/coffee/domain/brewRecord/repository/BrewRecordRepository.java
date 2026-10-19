@@ -25,6 +25,8 @@ public interface BrewRecordRepository extends JpaRepository<BrewRecord, Long> {
 
     List<BrewRecord> findByCoffeeBeanOwnerIdAndCoffeeBeanIdOrderByBrewedDateDescIdDesc(Long ownerId, Long coffeeBeanId);
 
+    List<BrewRecord> findByCoffeeBeanOwnerIdOrderByBrewedDateDescIdDesc(Long ownerId);
+
     List<BrewRecord> findByCoffeeBeanStatusOrderByBrewedDateDescIdDesc(CoffeeBeanStatus status);
 
     List<BrewRecord> findByCoffeeBeanOwnerIdAndCoffeeBeanStatusOrderByBrewedDateDescIdDesc(

@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1160" viewBox="0 0 1600 1160" role="img" aria-labelledby="title desc">
+<title id="title">BLANK 서비스 아키텍처</title>
+<desc id="desc">Vue Nuxt SSR 프론트가 API 프록시를 통해 Spring 백엔드에 연결됩니다. 백엔드는 MySQL로 기록을 관리하고 PaddleOCR 또는 Google Vision, Groq Qwen 모델로 원두 정보를 정리합니다. 취향 공간은 별도 OpenRouter 임베딩을 사용합니다. AI 결과는 사용자가 확인한 뒤 저장합니다.</desc>
+<defs>
+<marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto-start-reverse"><path d="M0,0 L8,4.5 L0,9" fill="none" stroke="#9c826c" stroke-width="1.5"/></marker>
+<style>
+text{font-family:"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;fill:#332b25}
+.title{font-size:36px;font-weight:700;letter-spacing:-1px}
+.subtitle{font-size:20px;fill:#7b6d62}
+.section{font-size:23px;font-weight:700}
+.label{font-size:22px;font-weight:700}
+.body{font-size:18px;fill:#796c60}
+.small{font-size:16px;fill:#8a7a6b}
+.line{fill:none;stroke:#9c826c;stroke-width:2;marker-end:url(#arrow)}
+</style>
+</defs>
+<rect width="1600" height="1160" fill="#f8f5ef"/>
+<rect x="40" y="40" width="7" height="67" rx="3.5" fill="#805038"/>
+<text x="65" y="72" class="title">BLANK · 서비스 아키텍처</text>
+<text x="65" y="107" class="subtitle">사진 입력은 가볍게, 기록은 정확하게 — AI가 만든 초안을 사용자가 확인하고 저장합니다.</text>
+
+<rect x="40" y="160" width="300" height="690" rx="22" fill="#f0ebe3" stroke="#e6ddd0"/>
+<text x="64" y="204" class="section">01  프론트엔드</text>
+<text x="64" y="231" class="small">사용자 입력과 시각화</text>
+<rect x="380" y="160" width="740" height="690" rx="22" fill="#f0ebe3" stroke="#e6ddd0"/>
+<text x="404" y="204" class="section">02  백엔드</text>
+<text x="404" y="231" class="small">Spring Boot · 도메인별 계층 구조</text>
+<rect x="1160" y="160" width="400" height="690" rx="22" fill="#f0ebe3" stroke="#e6ddd0"/>
+<text x="1184" y="204" class="section">03  외부 AI 서비스</text>
+<text x="1184" y="231" class="small">기능별 모델과 인증 분리</text>
+<rect x="62" y="265" width="256" height="105" rx="16" fill="#fff" stroke="#e1d9cf"/>
+<text x="83" y="297" class="label">사용자 · 브라우저</text>
+<text x="83" y="326" class="body">사진 / 원두 / 브루잉</text>
+<text x="83" y="351" class="body">카페 경험 / 지도 / 3D</text>
+<rect x="62" y="414" width="256" height="118" rx="16" fill="#fff" stroke="#e1d9cf"/>
+<text x="83" y="446" class="label">Vue 3 · Nuxt SSR</text>
+<text x="83" y="475" class="body">반응형 컴포넌트</text>
+<text x="83" y="500" class="body">동일 출처 API 프록시</text>
+<text x="83" y="525" class="body">세션 전달 · CSRF 토큰</text>
+<rect x="62" y="578" width="256" height="112" rx="16" fill="#fff" stroke="#e1d9cf"/>
+<text x="83" y="610" class="label">상태를 보여주는 UI</text>
+<text x="83" y="639" class="body">OCR · LLM 진행 단계</text>
+<text x="83" y="664" class="body">후보값 확인과 직접 수정</text>
+<text x="62" y="748" class="body">초기 HTML은 SSR</text>
+<text x="62" y="777" class="small">지도·3D는 브라우저에서 실행</text>
+<text x="62" y="811" class="small">Groq 키는 백엔드에 보관</text>
+<rect x="412" y="265" width="304" height="105" rx="16" fill="#fff" stroke="#e1d9cf"/>
+<text x="433" y="297" class="label">Controller · 인증</text>
+<text x="433" y="326" class="body">JSON API / 기존 MVC</text>
+<text x="433" y="351" class="body">카카오 OAuth2 · 세션</text>
+<rect x="412" y="414" width="304" height="118" rx="16" fill="#fff" stroke="#e1d9cf"/>
+<text x="433" y="446" class="label">도메인 서비스</text>
+<text x="433" y="475" class="body">원두 / 브루잉 / 카페 기록</text>
+<text x="433" y="500" class="body">소유자 확인 · 입력 검증</text>
+<text x="433" y="525" class="body">재고 차감·복원 · 트랜잭션</text>
+<rect x="764" y="265" width="324" height="267" rx="16" fill="#fff" stroke="#805038"/>
+<rect x="764" y="283" width="4" height="231" rx="2" fill="#805038"/>
+<text x="785" y="297" class="label">원두 사진 분석</text>
+<text x="785" y="326" class="body">이미지 검증 · 형식 변환</text>
+<text x="785" y="351" class="body">OCR 원문 추출</text>
+<text x="785" y="376" class="body">Groq JSON 구조화</text>
+<text x="785" y="401" class="body">필드 검증 · 향미 정규화</text>
+<text x="785" y="426" class="body">수정 가능한 후보 폼 반환</text>
+<text x="785" y="509" class="small">※ 이 단계에서는 DB에 저장하지 않음</text>
+<rect x="764" y="578" width="324" height="112" rx="16" fill="#fff" stroke="#e1d9cf"/>
+<text x="785" y="610" class="label">취향 공간 서비스</text>
+<text x="785" y="639" class="body">기록 문서 · 벡터 재사용</text>
+<text x="785" y="664" class="body">임베딩 → PCA → 3D 좌표</text>
+<rect x="412" y="735" width="676" height="83" rx="16" fill="#fff" stroke="#acb5a3"/>
+<text x="435" y="768" class="label">Repository · MySQL</text>
+<text x="435" y="796" class="body">사용자 · 원두 · 브루잉 · 장소 · 향미 색상 · 취향 좌표</text>
+<rect x="1184" y="265" width="352" height="105" rx="16" fill="#fff" stroke="#e1d9cf"/>
+<text x="1205" y="297" class="label">OCR · 글자 읽기</text>
+<text x="1205" y="326" class="body">PaddleOCR / Google Vision</text>
+<text x="1205" y="351" class="body">이미지 → OCR 텍스트</text>
+<rect x="1184" y="414" width="352" height="118" rx="16" fill="#fff" stroke="#805038"/>
+<rect x="1184" y="432" width="4" height="82" rx="2" fill="#805038"/>
+<text x="1205" y="446" class="label">Groq · 원두 정보 정리</text>
+<text x="1205" y="475" class="body">Qwen 3.8 27B</text>
+<text x="1205" y="500" class="body">추론 끄기 · JSON 응답</text>
+<text x="1205" y="525" class="body">최대 출력 768토큰</text>
+<rect x="1184" y="578" width="352" height="112" rx="16" fill="#fff" stroke="#e1d9cf"/>
+<text x="1205" y="610" class="label">OpenRouter · 임베딩</text>
+<text x="1205" y="639" class="body">Nemotron 3 Embed 1B</text>
+<text x="1205" y="664" class="body">취향 기록 → 벡터</text>
+<rect x="1184" y="730" width="352" height="88" rx="16" fill="#f8f5ef" stroke="#e1d9cf" stroke-dasharray="6 5"/>
+<text x="1204" y="761" class="label">향미 색상 추천 · 별도 경로</text>
+<text x="1204" y="791" class="small">Groq · 일괄 요청 / 향미 수별 출력 상한</text>
+<path d="M190 370 V414" class="line"/>
+<path d="M190 532 V578" class="line"/>
+<path d="M318 470 H357 V317 H412" class="line"/>
+<path d="M564 370 V414" class="line"/>
+<path d="M716 317 H764" class="line"/>
+<path d="M1088 317 H1184" class="line"/>
+<path d="M1088 473 H1184" class="line"/>
+<path d="M1088 634 H1184" class="line"/>
+<path d="M716 500 H740 V735" class="line"/>
+<text x="435" y="627" class="body">업무 규칙은 일반 코드로 처리</text>
+<text x="435" y="658" class="small">AI 호출과 확정 저장을 구분</text>
+<path d="M926 690 V735" class="line"/>
+<rect x="40" y="873" width="1520" height="57" rx="14" fill="#eae4da" stroke="#eae4da"/>
+<text x="62" y="908" class="label">관측 · 진단</text>
+<text x="218" y="908" class="body">requestId로 OCR 원문 → 모델 응답 → 검증값 → 최종 폼을 연결 · 오류와 토큰 사용량 기록</text>
+<text x="40" y="973" class="section">사진 등록의 데이터 흐름</text>
+<rect x="40" y="997" width="235" height="88" rx="16" fill="#fff" stroke="#e1d9cf"/>
+<text x="58" y="1025" class="small">01</text>
+<text x="58" y="1060" class="label">사진 선택</text>
+<path d="M277 1042 H293" class="line"/>
+<rect x="297" y="997" width="235" height="88" rx="16" fill="#fff" stroke="#e1d9cf"/>
+<text x="315" y="1025" class="small">02</text>
+<text x="315" y="1060" class="label">OCR 원문</text>
+<path d="M534 1042 H550" class="line"/>
+<rect x="554" y="997" width="235" height="88" rx="16" fill="#fff" stroke="#e1d9cf"/>
+<text x="572" y="1025" class="small">03</text>
+<text x="572" y="1060" class="label">LLM JSON</text>
+<path d="M791 1042 H807" class="line"/>
+<rect x="811" y="997" width="235" height="88" rx="16" fill="#fff" stroke="#e1d9cf"/>
+<text x="829" y="1025" class="small">04</text>
+<text x="829" y="1060" class="label">검증 · 후보 폼</text>
+<path d="M1048 1042 H1064" class="line"/>
+<rect x="1068" y="997" width="235" height="88" rx="16" fill="#805038" stroke="#805038"/>
+<text x="1086" y="1025" class="small" style="fill:#e8c7af">05</text>
+<text x="1086" y="1060" class="label" style="fill:#fff">사용자 확인</text>
+<path d="M1305 1042 H1321" class="line"/>
+<rect x="1325" y="997" width="235" height="88" rx="16" fill="#fff" stroke="#e1d9cf"/>
+<text x="1343" y="1025" class="small">06</text>
+<text x="1343" y="1060" class="label">확정 저장</text>
+<text x="40" y="1124" class="small">원두 파싱: Groq  |  취향 임베딩: OpenRouter  |  AI 결과는 초안이며, 사용자 저장 요청으로만 기록을 확정합니다.</text>
+</svg>

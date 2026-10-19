@@ -43,7 +43,7 @@ public class OpenRouterCustomFlavorNoteColorRecommender implements CustomFlavorN
         try {
             OpenRouterChatClient.Completion completion = chatClient.complete(
                     createPrompt(flavorNoteName),
-                    COLOR_RECOMMENDATION_MAX_TOKENS
+                    maxTokens()
             );
             String json = extractJson(completion.content());
             JsonNode root = objectMapper.readTree(json);
@@ -53,13 +53,22 @@ public class OpenRouterCustomFlavorNoteColorRecommender implements CustomFlavorN
             }
         } catch (Exception exception) {
             log.warn(
-                    "OpenRouter 향미 색상 추천 실패. note={}, fallback={}, reason={}",
+                    "{} 향미 색상 추천 실패. note={}, fallback={}, reason={}",
+                    providerName(),
                     flavorNoteName,
                     fallbackColor,
                     exception.getMessage()
             );
         }
         return fallbackColor;
+    }
+
+    protected int maxTokens() {
+        return COLOR_RECOMMENDATION_MAX_TOKENS;
+    }
+
+    protected String providerName() {
+        return "OpenRouter";
     }
 
     private String createPrompt(String flavorNoteName) {

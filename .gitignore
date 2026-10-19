@@ -34,3 +34,13 @@ out/
 
 # Generated extraction traces
 *.jsonl
+
+# Unified project: runtime dependencies and local analysis output
+**/node_modules/
+**/.nuxt/
+**/.output/
+**/test-results/
+**/playwright-report/
+logs/*
+!logs/.gitignore
+!logs/README.md
