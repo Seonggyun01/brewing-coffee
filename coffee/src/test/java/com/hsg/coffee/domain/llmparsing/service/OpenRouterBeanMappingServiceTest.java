@@ -1,6 +1,7 @@
 package com.hsg.coffee.domain.llmparsing.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -73,5 +74,18 @@ class OpenRouterBeanMappingServiceTest {
         assertThat(result.originCountry()).isEqualTo("인도네시아");
         assertThat(result.process()).isEqualTo("ANAEROBIC");
         assertThat(result.flavorNotes()).containsExactly("Dried Berry", "크랜베리", "시나몬", "포도");
+    }
+
+    @Test
+    void propagatesProviderFailureInsteadOfReturningEmptyResult() {
+        OpenRouterChatClient client = mock(OpenRouterChatClient.class);
+        when(client.isConfigured()).thenReturn(true);
+        when(client.complete(anyString())).thenThrow(new IllegalStateException("출력 한도 초과"));
+        var service = new OpenRouterBeanMappingService(client, new ObjectMapper(),
+                new BeanOcrMappingValidator(), new BeanMappingPromptFactory(new OcrTextPreprocessor()));
+        assertThatThrownBy(() -> service.parseOcrText("에티오피아 구지"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("다시 시도")
+                .hasRootCauseMessage("출력 한도 초과");
     }
 }

@@ -96,6 +96,7 @@ public class BeanOcrMappingValidator {
 
         String name = clean(response.name());
         String roastery = clean(response.roastery());
+        if (roastery.codePointCount(0, roastery.length()) < 2) roastery = "";
         String originCountry = cleanCountry(response.originCountry());
         if (originCountry.isBlank()) {
             originCountry = findCountryCandidate(preprocessResult);
@@ -127,7 +128,7 @@ public class BeanOcrMappingValidator {
             farmOrStation = "";
         }
 
-        return new LlmParsingResponse(
+        var sanitized = new LlmParsingResponse(
                 name,
                 roastery,
                 originCountry,
@@ -141,8 +142,10 @@ public class BeanOcrMappingValidator {
                 cleanDate(response.purchasedAt()),
                 digitsOnly(response.price()),
                 digitsOnly(response.remainingWeightGram()),
-                cleanFlavorNotes(response.flavorNotes())
+                cleanFlavorNotes(response.flavorNotes(), response)
         );
+        com.hsg.coffee.global.logging.ExtractionTrace.record("llm.validated", sanitized);
+        return sanitized;
     }
 
     private String clean(String value) {
@@ -227,7 +230,7 @@ public class BeanOcrMappingValidator {
         return date.matches("\\d{4}-\\d{2}-\\d{2}") ? date : "";
     }
 
-    private List<String> cleanFlavorNotes(List<String> flavorNotes) {
+    private List<String> cleanFlavorNotes(List<String> flavorNotes, LlmParsingResponse response) {
         if (flavorNotes == null) {
             return List.of();
         }
@@ -235,6 +238,10 @@ public class BeanOcrMappingValidator {
         LinkedHashSet<String> cleanedNotes = flavorNotes.stream()
                 .map(this::clean)
                 .filter(note -> !note.isBlank())
+                .flatMap(note -> java.util.Arrays.stream(note.split("[,，;·|]")))
+                .map(this::clean)
+                .filter(note -> !note.isBlank())
+                .filter(note -> !isMetadataFlavor(note, response))
                 .flatMap(note -> normalizeFlavorNote(note).stream())
                 .collect(LinkedHashSet::new, LinkedHashSet::add, LinkedHashSet::addAll);
 
@@ -243,8 +250,20 @@ public class BeanOcrMappingValidator {
                 .toList();
     }
 
+    private boolean isMetadataFlavor(String note, LlmParsingResponse response) {
+        String normalized = note.replaceAll("[\\s:：,，/·|;.-]", "").toLowerCase(Locale.ROOT);
+        if (isCountry(note) || REGION_ALIASES.containsKey(normalizeRegion(note)) || isProcessText(note)
+                || normalized.matches("[0-9]+") || note.matches(".*(?:지역|산지|농장|품종|고도|워싱스테이션)\\s*[:：].*")) return true;
+        for (String field : List.of(clean(response.region()), clean(response.farmOrStation()), clean(response.variety()), clean(response.roastery()))) {
+            for (String token : field.split("[,，/·|;]")) {
+                if (!token.isBlank() && normalized.equals(token.replaceAll("[\\s:：,，/·|;.-]", "").toLowerCase(Locale.ROOT))) return true;
+            }
+        }
+        return false;
+    }
+
     private List<String> normalizeFlavorNote(String value) {
-        List<FlavorNote> mappedNotes = FlavorNoteTextMapper.findFlavorNotes(value);
+        List<FlavorNote> mappedNotes = FlavorNoteTextMapper.findExactFlavorNotes(value);
         if (mappedNotes.isEmpty()) {
             return List.of(value);
         }

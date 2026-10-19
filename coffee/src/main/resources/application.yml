@@ -75,12 +75,21 @@ brewlog:
     client-secret: ${KAKAO_CLIENT_SECRET:}
   llm:
     provider: ${BREWLOG_LLM_PROVIDER:ollama}
+    groq:
+      api-key: ${GROQ_API_KEY:}
+      model-url: ${BREWLOG_GROQ_MODEL_URL:https://api.groq.com/openai/v1/chat/completions}
+      model-id: ${BREWLOG_GROQ_MODEL_ID:qwen/qwen3.8-27b}
+      timeout-seconds: ${BREWLOG_GROQ_TIMEOUT_SECONDS:60}
+      max-tokens: ${BREWLOG_GROQ_MAX_TOKENS:768}
+      temperature: ${BREWLOG_GROQ_TEMPERATURE:0.0}
     openrouter:
       api-key: ${OPENROUTER_API_KEY:}
       model-url: ${BREWLOG_OPENROUTER_MODEL_URL:https://openrouter.ai/api/v1/chat/completions}
-      model-id: ${BREWLOG_OPENROUTER_MODEL_ID:openrouter/free}
+      model-id: ${BREWLOG_OPENROUTER_MODEL_ID:google/gemma-4-31b-it:free}
       timeout-seconds: ${BREWLOG_OPENROUTER_TIMEOUT_SECONDS:60}
-      max-tokens: ${BREWLOG_OPENROUTER_MAX_TOKENS:700}
+      max-tokens: ${BREWLOG_OPENROUTER_MAX_TOKENS:2048}
+      reasoning-enabled: ${BREWLOG_OPENROUTER_REASONING_ENABLED:false}
+      reasoning-effort: ${BREWLOG_OPENROUTER_REASONING_EFFORT:minimal}
       temperature: ${BREWLOG_OPENROUTER_TEMPERATURE:0.0}
       site-url: ${BREWLOG_OPENROUTER_SITE_URL:}
       app-name: ${BREWLOG_OPENROUTER_APP_NAME:BLANK}

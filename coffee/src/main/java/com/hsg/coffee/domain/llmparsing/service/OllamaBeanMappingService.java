@@ -85,9 +85,11 @@ public class OllamaBeanMappingService implements BeanMappingService {
             LlmParsingResponse parsed = objectMapper.readValue(json, LlmParsingResponse.class);
             return validator.sanitize(parsed, preprocessResult);
         } catch (RuntimeException exception) {
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.failure", java.util.Map.of("provider", "OllamaBeanMappingService", "type", exception.getClass().getSimpleName(), "message", String.valueOf(exception.getMessage())));
             log.warn("Ollama OCR 매핑 처리 실패: {}", exception.getMessage());
             return LlmParsingResponse.empty();
         } catch (Exception exception) {
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.failure", java.util.Map.of("provider", "OllamaBeanMappingService", "type", exception.getClass().getSimpleName(), "message", String.valueOf(exception.getMessage())));
             log.warn("Ollama OCR 매핑 JSON 파싱 실패: {}", exception.getMessage());
             return LlmParsingResponse.empty();
         }
@@ -110,8 +112,10 @@ public class OllamaBeanMappingService implements BeanMappingService {
             LlmParsingResponse parsedResponse = parseAndSanitize(json, preprocessResult);
             return new LlmParsingDebugResponse(modelUrl, modelId, "OK", "", response, generatedText, json, parsedResponse);
         } catch (RuntimeException exception) {
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.failure", java.util.Map.of("provider", "OllamaBeanMappingService", "type", exception.getClass().getSimpleName(), "message", String.valueOf(exception.getMessage())));
             return new LlmParsingDebugResponse(modelUrl, modelId, "ERROR", exception.getMessage(), "", "", "", LlmParsingResponse.empty());
         } catch (Exception exception) {
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.failure", java.util.Map.of("provider", "OllamaBeanMappingService", "type", exception.getClass().getSimpleName(), "message", String.valueOf(exception.getMessage())));
             return new LlmParsingDebugResponse(modelUrl, modelId, "ERROR", exception.getMessage(), "", "", "", LlmParsingResponse.empty());
         }
     }
@@ -139,6 +143,7 @@ public class OllamaBeanMappingService implements BeanMappingService {
                     .build();
 
             HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.http.response", java.util.Map.of("provider", "OllamaBeanMappingService", "status", response.statusCode(), "body", response.body()));
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 throw new IllegalStateException("Ollama API responded with status "
                         + response.statusCode()

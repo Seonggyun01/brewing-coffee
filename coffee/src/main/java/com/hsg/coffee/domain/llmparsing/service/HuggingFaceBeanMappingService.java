@@ -96,9 +96,11 @@ public class HuggingFaceBeanMappingService implements BeanMappingService {
                     abbreviate(exception.getResponseBody()));
             return LlmParsingResponse.empty();
         } catch (RuntimeException exception) {
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.failure", java.util.Map.of("provider", "HuggingFaceBeanMappingService", "type", exception.getClass().getSimpleName(), "message", String.valueOf(exception.getMessage())));
             log.warn("Hugging Face OCR 매핑 처리 실패: {}", exception.getMessage());
             return LlmParsingResponse.empty();
         } catch (Exception exception) {
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.failure", java.util.Map.of("provider", "HuggingFaceBeanMappingService", "type", exception.getClass().getSimpleName(), "message", String.valueOf(exception.getMessage())));
             log.warn("Hugging Face OCR 매핑 JSON 파싱 실패: {}", exception.getMessage());
             return LlmParsingResponse.empty();
         }
@@ -162,6 +164,7 @@ public class HuggingFaceBeanMappingService implements BeanMappingService {
                     LlmParsingResponse.empty()
             );
         } catch (RuntimeException exception) {
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.failure", java.util.Map.of("provider", "HuggingFaceBeanMappingService", "type", exception.getClass().getSimpleName(), "message", String.valueOf(exception.getMessage())));
             return new LlmParsingDebugResponse(
                     modelUrl,
                     modelId,
@@ -173,6 +176,7 @@ public class HuggingFaceBeanMappingService implements BeanMappingService {
                     LlmParsingResponse.empty()
             );
         } catch (Exception exception) {
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.failure", java.util.Map.of("provider", "HuggingFaceBeanMappingService", "type", exception.getClass().getSimpleName(), "message", String.valueOf(exception.getMessage())));
             return new LlmParsingDebugResponse(
                     modelUrl,
                     modelId,
@@ -222,6 +226,7 @@ public class HuggingFaceBeanMappingService implements BeanMappingService {
             }
 
             HttpResponse<String> response = httpClient.send(requestBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.http.response", java.util.Map.of("provider", "HuggingFaceBeanMappingService", "status", response.statusCode(), "body", response.body()));
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 throw new HuggingFaceApiException(response.statusCode(), response.body());
             }

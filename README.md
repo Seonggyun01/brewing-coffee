@@ -13,6 +13,7 @@ BLANK는 커피 원두, 브루잉 레시피, 맛 기록, 원산지와 카페 방
 | Database | MySQL |
 | Validation | Bean Validation |
 | OCR | PaddleOCR 3.7 / PP-OCRv5 (우선), Google Cloud Vision (fallback) |
+| LLM (로컬 원두 OCR 파싱) | Groq API / Qwen 3.8 27B |
 | Image Conversion | Openize.HEIC |
 | Build | Gradle |
 | Utility | Lombok |
@@ -200,17 +201,93 @@ http://localhost:8080/brew-records
 http://localhost:8080/cafes/map
 ```
 
+### 원두 카드 OCR → LLM 파싱 설정
+
+현재 로컬 환경의 LLM 공급자는 **Groq**, 모델은 **Qwen 3.8 27B** (`qwen/qwen3.8-27b`)입니다.
+이미지에서 읽은 OCR 텍스트를 Groq로 보내 원두 등록 JSON 후보를 만들고, 서버 검증을 거쳐 폼에 표시합니다. 사용자가 확인하기 전에는 DB에 저장하지 않습니다.
+
+| 항목 | 설정 |
+| --- | --- |
+| API 제공 사이트 | [Groq Console](https://console.groq.com/) |
+| API 키 발급 | [Groq API Keys](https://console.groq.com/keys) |
+| 모델 | [Qwen 3.8 27B](https://console.groq.com/docs/model/qwen/qwen3.8-27b) / `qwen/qwen3.8-27b` |
+| 요청 주소 | `https://api.groq.com/openai/v1/chat/completions` |
+| 추론 | `reasoning_effort: none` |
+| 기본 최대 출력 | **768토큰** (`BREWLOG_GROQ_MAX_TOKENS`로 조정) |
+| temperature / timeout | `0.0` / `60초` |
+| 로컬 비밀 설정 | `coffee/src/main/resources/application-local.yml`의 `brewlog.llm.groq.api-key` |
+
+Groq에서 발급한 키를 사용합니다. OpenRouter 키나 Google Vision 인증 키와는 별개입니다.
+실제 API 키는 README·프론트 코드·Git에 넣지 않습니다. 로컬 비밀 설정 대신 환경변수로도 전달할 수 있습니다.
+
+```bash
+export GROQ_API_KEY='발급받은_Groq_API_키'
+export BREWLOG_LLM_PROVIDER=groq
+export BREWLOG_GROQ_MAX_TOKENS=768
+```
+
+로컬 YAML 설정 형태는 다음과 같습니다. 환경변수를 사용하려면 기존에 직접 적은 키 대신 아래 참조를 사용합니다.
+
+```yaml
+brewlog:
+  llm:
+    provider: groq
+    groq:
+      api-key: ${GROQ_API_KEY:}
+      model-id: qwen/qwen3.8-27b
+      max-tokens: 768
+```
+
+프롬프트와 필드 검증은 기존 로직을 재사용합니다. 빈 응답·출력 잘림·API 실패 시 오류를 안내하며 OCR 추측값만으로 폼을 채우지 않습니다.
+키·모델·출력 한도를 바꾸면 백엔드를 재시작해야 합니다.
+
+#### 최근 실제 요청의 토큰 사용량
+
+2026-10-19 한국 시간 기준, `logs/bean-extraction.jsonl`에 기록된 Groq 실제 요청 **2건**입니다. 테스트용 Mock 요청과 다른 공급자의 비교 호출은 제외했습니다.
+
+| 요청 시각 (KST) | 입력 토큰 | 출력 토큰 | 합계 | OCR | LLM·검증 | 전체 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 21:03 | 1,227 | 223 | 1,450 | 7.290초 | 1.964초 | 9.278초 |
+| 21:05 | 1,209 | 222 | 1,431 | 6.516초 | 0.978초 | 7.513초 |
+| 평균 | 1,218 | 222.5 | 1,440.5 | 6.903초 | 1.471초 | 8.396초 |
+
+두 요청 모두 HTTP 200 / `finish_reason=stop`으로 JSON을 정상 반환했습니다.
+관측된 최대 출력은 223토큰이므로 기본 출력 상한을 2,048에서 768로 낮췄습니다. 이는 관측 최대의 약 3.4배로, 더 긴 이름·상세 정보·향미를 위한 여유를 둔 값입니다.
+`max_tokens`는 출력의 상한이며 매번 768토큰을 소비한다는 뜻이 아닙니다. 입력 프롬프트와 OCR 텍스트의 토큰 수는 이 상한과 별도입니다.
+표본이 2건뿐이므로 긴 카드나 복수 원두의 사용량까지 대표하지 않습니다.
+
+#### Groq 무료 한도
+
+[공식 Rate Limits](https://console.groq.com/docs/rate-limits)의 `qwen/qwen3.8-27b` 무료 플랜 표를 2026-10-19에 확인했습니다.
+
+| 제한 | 공개 무료 한도 |
+| --- | ---: |
+| 분당 요청 수 (RPM) | 30회 |
+| 일일 요청 수 (RPD) | 1,000회 |
+| 분당 토큰 수 (TPM) | 8,000토큰 |
+| 일일 토큰 수 (TPD) | 200,000토큰 |
+
+요청 횟수와 토큰 제한이 동시에 적용되며 먼저 도달한 한도에 의해 제한됩니다. 한도는 조직 단위이며 실제 계정의 [Limits 화면](https://console.groq.com/settings/limits)이 우선합니다. 캐시 토큰은 공식 안내상 제한 계산에서 제외됩니다.
+이번 평균 1,440.5토큰/건을 단순 적용하면 토큰 예산상 **분당 약 5건, 하루 약 138건** 수준입니다. 이는 처리량 보장이나 현재 계정의 잔여량이 아니라 캐시·다른 API 사용·실제 입력 길이를 제외한 대략적인 계산입니다.
+따라서 하루 1,000회 요청 한도가 있어도 현재 프롬프트 길이에서는 토큰 한도가 먼저 걸릴 수 있습니다.
+
+`logs/bean-extraction.jsonl`의 같은 `requestId`로 `ocr.result`, `llm.request.settings`, `llm.http.response`, `llm.validated`, `form.result`를 연결할 수 있습니다.
+Groq 원본 응답의 `usage.prompt_tokens`, `usage.completion_tokens`, `usage.total_tokens`에서 실사용 토큰을 확인합니다.
+
 ### 서버용 외부 AI 설정
 
-서버에서는 `server` 프로필을 활성화하면 Google Vision OCR과 OpenRouter LLM을 사용합니다.
+`server` 프로필에서는 Google Vision OCR을 사용합니다. 서버에서도 현재 로컬과 같은 Groq 모델을 사용하려면 공급자를 명시합니다.
 
 ```bash
 export SPRING_PROFILES_ACTIVE=server
 export GOOGLE_APPLICATION_CREDENTIALS=/secure/path/google-service-account.json
-export OPENROUTER_API_KEY=발급받은_API_키
+export BREWLOG_LLM_PROVIDER=groq
+export GROQ_API_KEY='발급받은_Groq_API_키'
+export BREWLOG_GROQ_MAX_TOKENS=768
 ```
 
-LLM은 OpenRouter의 `minimax/minimax-m3:free`로 고정해 호출하며 별도 모델 fallback을 사용하지 않습니다. OCR은 Google Vision만 사용하며 다른 OCR로 fallback하지 않습니다. 자세한 배포 설정은 [서버 외부 AI 설정](docs/SERVER_AI_SETUP.md)을 확인합니다.
+공급자를 명시하지 않은 `server` 프로필의 기존 기본값은 OpenRouter입니다. OpenRouter를 선택하는 경우 `OPENROUTER_API_KEY`를 별도로 사용하며, 현재 공통 설정의 기본 모델은 `google/gemma-4-31b-it:free`입니다. 자동 모델 fallback은 사용하지 않습니다.
+OCR은 Google Vision만 사용하며 다른 OCR로 fallback하지 않습니다. 기존 서버 배포 절차는 [서버 외부 AI 설정](docs/SERVER_AI_SETUP.md)을 참고하되, 현재 사용할 LLM 공급자와 키는 위 설정을 적용합니다.
 
 ## 빌드 및 테스트
 

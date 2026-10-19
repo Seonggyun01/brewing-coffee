@@ -37,11 +37,12 @@ public class OpenRouterBeanMappingService implements BeanMappingService {
     @Override
     public LlmParsingResponse parseOcrText(String ocrText) {
         if (ocrText == null || ocrText.isBlank()) {
-            return LlmParsingResponse.empty();
+            throw new IllegalArgumentException("AI가 원두 정보를 정리하지 못했어요. 다시 시도하거나 직접 입력해주세요.");
         }
         if (!chatClient.isConfigured()) {
-            log.warn("OpenRouter 설정이 비어 있어 LLM 매핑을 건너뜁니다.");
-            return LlmParsingResponse.empty();
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.failure", "LLM provider is not configured");
+            log.warn("LLM 설정이 비어 있어 LLM 매핑을 건너뜁니다.");
+            throw new IllegalArgumentException("AI가 원두 정보를 정리하지 못했어요. 다시 시도하거나 직접 입력해주세요.");
         }
 
         try {
@@ -49,21 +50,25 @@ public class OpenRouterBeanMappingService implements BeanMappingService {
             OpenRouterChatClient.Completion completion = chatClient.complete(
                     promptFactory.createPrompt(preprocessResult)
             );
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.completion", java.util.Map.of("model", completion.modelId(), "content", completion.content()));
             String json = extractJson(completion.content());
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.json", json);
             if (json.isBlank()) {
+                com.hsg.coffee.global.logging.ExtractionTrace.record("llm.failure", "LLM response did not contain JSON");
                 log.warn(
-                        "OpenRouter 응답에서 JSON을 찾지 못했습니다. model={}, response={}",
+                        "LLM 응답에서 JSON을 찾지 못했습니다. model={}, response={}",
                         completion.modelId(),
                         abbreviate(completion.content())
                 );
-                return LlmParsingResponse.empty();
+                throw new IllegalArgumentException("AI가 원두 정보를 정리하지 못했어요. 다시 시도하거나 직접 입력해주세요.");
             }
 
             LlmParsingResponse parsed = objectMapper.readValue(json, LlmParsingResponse.class);
             return validator.sanitize(parsed, preprocessResult);
         } catch (Exception exception) {
-            log.warn("OpenRouter OCR 매핑 처리 실패: {}", exception.getMessage());
-            return LlmParsingResponse.empty();
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.failure", java.util.Map.of("provider", getClass().getSimpleName(), "type", exception.getClass().getSimpleName(), "message", String.valueOf(exception.getMessage())));
+            log.warn("LLM OCR 매핑 처리 실패: {}", exception.getMessage());
+            throw new IllegalArgumentException("AI 응답이 비어 있거나 처리에 실패했어요. 다시 시도하거나 직접 입력해주세요.", exception);
         }
     }
 
@@ -73,9 +78,10 @@ public class OpenRouterBeanMappingService implements BeanMappingService {
             return debugResponse("SKIPPED", "ocrText is blank", "", "", "", LlmParsingResponse.empty());
         }
         if (!chatClient.isConfigured()) {
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.failure", "LLM provider is not configured");
             return debugResponse(
                     "SKIPPED",
-                    "OpenRouter configuration is empty",
+                    "LLM provider configuration is empty",
                     "",
                     "",
                     "",
@@ -88,7 +94,9 @@ public class OpenRouterBeanMappingService implements BeanMappingService {
             OpenRouterChatClient.Completion completion = chatClient.complete(
                     promptFactory.createPrompt(preprocessResult)
             );
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.completion", java.util.Map.of("model", completion.modelId(), "content", completion.content()));
             String json = extractJson(completion.content());
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.json", json);
             LlmParsingResponse parsed = json.isBlank()
                     ? LlmParsingResponse.empty()
                     : validator.sanitize(
@@ -107,6 +115,7 @@ public class OpenRouterBeanMappingService implements BeanMappingService {
                     parsed
             );
         } catch (Exception exception) {
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.failure", java.util.Map.of("provider", getClass().getSimpleName(), "type", exception.getClass().getSimpleName(), "message", String.valueOf(exception.getMessage())));
             return debugResponse(
                     "ERROR",
                     exception.getMessage(),

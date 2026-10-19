@@ -23,6 +23,8 @@ import com.hsg.coffee.domain.llmparsing.service.BeanMappingService;
 import com.hsg.coffee.global.country.CountryInfo;
 
 import lombok.RequiredArgsConstructor;
+import com.hsg.coffee.global.logging.ExtractionTrace;
+import org.slf4j.MDC;
 
 @Service
 @RequiredArgsConstructor
@@ -57,28 +59,53 @@ public class CoffeeBeanCardExtractionService {
             MultipartFile image,
             Consumer<CoffeeBeanCardExtractionPhase> progressListener
     ) {
-        validateImage(image);
+        String previousId = MDC.get(ExtractionTrace.REQUEST_ID);
+        MDC.put(ExtractionTrace.REQUEST_ID, previousId != null ? previousId : java.util.UUID.randomUUID().toString());
+        long started = System.nanoTime();
+        try {
+            validateImage(image);
+            ExtractionTrace.record("request.start", java.util.Map.of("filename", String.valueOf(image.getOriginalFilename()), "contentType", String.valueOf(image.getContentType()), "size", image.getSize()));
+            progressListener.accept(CoffeeBeanCardExtractionPhase.OCR);
+            ExtractionTrace.record("ocr.start", "");
+            String rawText = ocrService.extractText(image);
+            ExtractionTrace.record("ocr.result", java.util.Map.of("rawText", rawText, "elapsedMs", (System.nanoTime() - started) / 1_000_000));
 
-        progressListener.accept(CoffeeBeanCardExtractionPhase.OCR);
-        String rawText = ocrService.extractText(image);
+            progressListener.accept(CoffeeBeanCardExtractionPhase.LLM);
+            long llmStarted = System.nanoTime();
+            ExtractionTrace.record("llm.start", beanMappingService.getClass().getSimpleName());
+            LlmParsingResponse llmResult = beanMappingService.parseOcrText(rawText);
+            ExtractionTrace.record("llm.result", java.util.Map.of("response", llmResult == null ? LlmParsingResponse.empty() : llmResult, "empty", llmResult == null || llmResult.equals(LlmParsingResponse.empty()), "elapsedMs", (System.nanoTime() - llmStarted) / 1_000_000));
 
-        progressListener.accept(CoffeeBeanCardExtractionPhase.LLM);
-        LlmParsingResponse llmResult = beanMappingService.parseOcrText(rawText);
+            if (llmResult == null || llmResult.equals(LlmParsingResponse.empty())
+                    || java.util.stream.Stream.of(llmResult.name(), llmResult.roastery(), llmResult.originCountry(), llmResult.region(), llmResult.farmOrStation(), llmResult.variety(), llmResult.process())
+                        .noneMatch(StringUtils::hasText) && (llmResult.flavorNotes() == null || llmResult.flavorNotes().isEmpty())) {
+                ExtractionTrace.record("llm.failure", "Empty result rejected; OCR fallback is disabled");
+                throw new IllegalArgumentException("AI가 확실한 원두 정보를 반환하지 못했어요. 다시 시도하거나 직접 입력해주세요.");
+            }
 
-        progressListener.accept(CoffeeBeanCardExtractionPhase.PARSING);
-        CoffeeBeanCardTextParseResult parseResult = textParser.parse(rawText);
-
-        return new CoffeeBeanCardExtractResult(
-                rawText,
-                toCreateForm(parseResult, llmResult),
-                parseResult.getWarnings()
-        );
+            progressListener.accept(CoffeeBeanCardExtractionPhase.PARSING);
+            CoffeeBeanCardTextParseResult parseResult = textParser.parse(rawText);
+            ExtractionTrace.record("ocr.fallback.result", parseResult);
+            var form = toCreateForm(parseResult, llmResult);
+            ExtractionTrace.record("form.result", form);
+            ExtractionTrace.record("request.complete", java.util.Map.of("elapsedMs", (System.nanoTime() - started) / 1_000_000));
+            return new CoffeeBeanCardExtractResult(rawText, form, parseResult.getWarnings());
+        } catch (RuntimeException exception) {
+            ExtractionTrace.record("request.failed", java.util.Map.of("type", exception.getClass().getSimpleName(), "message", String.valueOf(exception.getMessage()), "elapsedMs", (System.nanoTime() - started) / 1_000_000));
+            throw exception;
+        } finally {
+            if (previousId == null) MDC.remove(ExtractionTrace.REQUEST_ID);
+            else MDC.put(ExtractionTrace.REQUEST_ID, previousId);
+        }
     }
 
     private CoffeeBeanCreateForm toCreateForm(CoffeeBeanCardTextParseResult parseResult, LlmParsingResponse llmResult) {
         CoffeeBeanCreateForm form = new CoffeeBeanCreateForm();
-        form.setName(firstText(llmResult.name(), parseResult.getName()));
-        form.setRoastery(firstText(llmResult.roastery(), parseResult.getRoastery()));
+        boolean hasLlmEvidence = java.util.stream.Stream.of(llmResult.name(), llmResult.roastery(), llmResult.originCountry(), llmResult.region(), llmResult.farmOrStation(), llmResult.variety(), llmResult.process())
+                .anyMatch(StringUtils::hasText) || (llmResult.flavorNotes() != null && !llmResult.flavorNotes().isEmpty());
+        // Do not refill deliberately blank identity fields with a noisier OCR guess.
+        form.setName(hasLlmEvidence ? cleanText(llmResult.name()) : parseResult.getName());
+        form.setRoastery(hasLlmEvidence ? cleanText(llmResult.roastery()) : parseResult.getRoastery());
         applyCountry(form, parseResult, llmResult);
         form.setRegion(firstText(llmResult.region(), parseResult.getRegion()));
         form.setFarm(firstText(llmResult.farmOrStation(), parseResult.getFarm()));
@@ -130,7 +157,7 @@ public class CoffeeBeanCardExtractionService {
                 continue;
             }
 
-            List<FlavorNote> foundNotes = FlavorNoteTextMapper.findFlavorNotes(cleanNoteText);
+            List<FlavorNote> foundNotes = FlavorNoteTextMapper.findExactFlavorNotes(cleanNoteText);
             if (foundNotes.isEmpty()) {
                 customNotes.add(cleanNoteText);
             } else {

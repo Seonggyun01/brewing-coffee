@@ -33,7 +33,7 @@ class CoffeeBeanCardExtractionServiceTest {
     @BeforeEach
     void setUp() {
         HuggingFaceBeanMappingService huggingFaceBeanMappingService = mock(HuggingFaceBeanMappingService.class);
-        when(huggingFaceBeanMappingService.parseOcrText(anyString())).thenReturn(LlmParsingResponse.empty());
+        when(huggingFaceBeanMappingService.parseOcrText(anyString())).thenReturn(new LlmParsingResponse("Ethiopia Yirgacheffe Kochere", "Fritz Coffee", "", "", "", "", "", "", "", "", "", "", "", java.util.List.of()));
 
         extractionService = new CoffeeBeanCardExtractionService(
                 new MockCoffeeBeanCardOcrService(),
@@ -399,5 +399,27 @@ class CoffeeBeanCardExtractionServiceTest {
         );
 
         assertEquals("JPG, PNG, WEBP, HEIC 이미지만 업로드할 수 있습니다.", exception.getMessage());
+    }
+    @Test
+    void doesNotRefillUncertainIdentityFromOcrWhenLlmHasOtherEvidence() {
+        HuggingFaceBeanMappingService mapping = mock(HuggingFaceBeanMappingService.class);
+        when(mapping.parseOcrText(anyString())).thenReturn(new LlmParsingResponse("", "", "에티오피아", "구지", "", "", "", "", "", "", "", "", "", List.of()));
+        var service = new CoffeeBeanCardExtractionService(new MockCoffeeBeanCardOcrService(), new CoffeeBeanCardTextParser(), mapping);
+        var result = service.extract(new MockMultipartFile("image", "card.png", "image/png", new byte[]{1}));
+        assertEquals("", result.getForm().getName());
+        assertEquals("", result.getForm().getRoastery());
+    }
+
+
+    @Test
+    void rejectsEmptyLlmResultWithoutFillingFormFromOcrGuesses() {
+        var mapping = mock(HuggingFaceBeanMappingService.class);
+        when(mapping.parseOcrText(anyString())).thenReturn(LlmParsingResponse.empty());
+        var service = new CoffeeBeanCardExtractionService(new MockCoffeeBeanCardOcrService(),
+                new CoffeeBeanCardTextParser(), mapping);
+        var phases = new ArrayList<CoffeeBeanCardExtractionPhase>();
+        assertThrows(IllegalArgumentException.class, () -> service.extract(
+                new MockMultipartFile("image", "card.png", "image/png", new byte[]{1}), phases::add));
+        assertFalse(phases.contains(CoffeeBeanCardExtractionPhase.PARSING));
     }
 }

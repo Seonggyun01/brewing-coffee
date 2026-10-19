@@ -24,6 +24,11 @@ import tools.jackson.databind.ObjectMapper;
 @ConditionalOnProperty(name = "brewlog.llm.provider", havingValue = "openrouter")
 public class OpenRouterChatClient {
 
+    @Value("${brewlog.llm.openrouter.reasoning-enabled:false}")
+    private boolean reasoningEnabled = false;
+
+    @Value("${brewlog.llm.openrouter.reasoning-effort:minimal}")
+    private String reasoningEffort = "minimal";
     private final String apiKey;
     private final String modelUrl;
     private final String modelId;
@@ -39,9 +44,9 @@ public class OpenRouterChatClient {
     public OpenRouterChatClient(
             @Value("${brewlog.llm.openrouter.api-key:${OPENROUTER_API_KEY:}}") String apiKey,
             @Value("${brewlog.llm.openrouter.model-url:https://openrouter.ai/api/v1/chat/completions}") String modelUrl,
-            @Value("${brewlog.llm.openrouter.model-id:openrouter/free}") String modelId,
+            @Value("${brewlog.llm.openrouter.model-id:google/gemma-4-31b-it:free}") String modelId,
             @Value("${brewlog.llm.openrouter.timeout-seconds:60}") int timeoutSeconds,
-            @Value("${brewlog.llm.openrouter.max-tokens:700}") int defaultMaxTokens,
+            @Value("${brewlog.llm.openrouter.max-tokens:2048}") int defaultMaxTokens,
             @Value("${brewlog.llm.openrouter.temperature:0.0}") double temperature,
             @Value("${brewlog.llm.openrouter.site-url:}") String siteUrl,
             @Value("${brewlog.llm.openrouter.app-name:BLANK}") String appName,
@@ -94,7 +99,7 @@ public class OpenRouterChatClient {
 
     public Completion complete(String prompt, int maxTokens) {
         if (!isConfigured()) {
-            throw new IllegalStateException("OpenRouter API 키 또는 모델 설정이 비어 있습니다.");
+            throw new IllegalStateException(providerName() + " API 키 또는 모델 설정이 비어 있습니다.");
         }
 
         Map<String, Object> request = new LinkedHashMap<>();
@@ -104,6 +109,11 @@ public class OpenRouterChatClient {
         request.put("temperature", temperature);
         request.put("response_format", Map.of("type", "json_object"));
         request.put("stream", false);
+        configureReasoning(request);
+        com.hsg.coffee.global.logging.ExtractionTrace.record("llm.request.settings",
+                Map.of("provider", providerName(), "model", modelId, "maxTokens", maxTokens,
+                        "reasoning", request.getOrDefault("reasoning", request.getOrDefault("reasoning_effort", "disabled"))));
+
 
         try {
             String requestBody = objectMapper.writeValueAsString(request);
@@ -126,9 +136,10 @@ public class OpenRouterChatClient {
                     requestBuilder.build(),
                     HttpResponse.BodyHandlers.ofString()
             );
+            com.hsg.coffee.global.logging.ExtractionTrace.record("llm.http.response", java.util.Map.of("provider", getClass().getSimpleName(), "status", response.statusCode(), "body", response.body()));
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 throw new IllegalStateException(
-                        "OpenRouter API responded with status "
+                        providerName() + " API responded with status "
                                 + response.statusCode()
                                 + ": "
                                 + abbreviate(response.body())
@@ -138,7 +149,7 @@ public class OpenRouterChatClient {
             return parseCompletion(response.body());
         } catch (IOException exception) {
             throw new IllegalStateException(
-                    "OpenRouter API 요청에 실패했습니다: "
+                    providerName() + " API 요청에 실패했습니다: "
                             + exception.getClass().getSimpleName()
                             + " - "
                             + exception.getMessage(),
@@ -146,8 +157,18 @@ public class OpenRouterChatClient {
             );
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("OpenRouter API 요청이 중단되었습니다.", exception);
+            throw new IllegalStateException(providerName() + " API 요청이 중단되었습니다.", exception);
         }
+    }
+
+    protected void configureReasoning(Map<String, Object> request) {
+        request.put("reasoning", reasoningEnabled
+                ? Map.of("enabled", true, "effort", reasoningEffort, "exclude", true)
+                : Map.of("enabled", false, "exclude", true));
+    }
+
+    protected String providerName() {
+        return "OpenRouter";
     }
 
     public boolean isConfigured() {
@@ -169,13 +190,17 @@ public class OpenRouterChatClient {
             JsonNode root = objectMapper.readTree(responseBody);
             JsonNode choices = root.path("choices");
             if (!choices.isArray() || choices.isEmpty()) {
-                throw new IllegalStateException("OpenRouter 응답에 choices가 없습니다.");
+                throw new IllegalStateException(providerName() + " 응답에 choices가 없습니다.");
             }
 
+            String finish = choices.get(0).path("finish_reason").asText("");
+            if ("length".equals(finish) || "max_tokens".equals(choices.get(0).path("native_finish_reason").asText())) {
+                throw new IllegalStateException("AI 응답이 출력 한도에 도달해 중단되었습니다.");
+            }
             JsonNode contentNode = choices.get(0).path("message").path("content");
             String content = extractContent(contentNode);
             if (!StringUtils.hasText(content)) {
-                throw new IllegalStateException("OpenRouter 응답 내용이 비어 있습니다.");
+                throw new IllegalStateException(providerName() + " 응답 내용이 비어 있습니다.");
             }
 
             return new Completion(
@@ -186,7 +211,7 @@ public class OpenRouterChatClient {
         } catch (IllegalStateException exception) {
             throw exception;
         } catch (Exception exception) {
-            throw new IllegalStateException("OpenRouter 응답을 해석할 수 없습니다.", exception);
+            throw new IllegalStateException(providerName() + " 응답을 해석할 수 없습니다.", exception);
         }
     }
 

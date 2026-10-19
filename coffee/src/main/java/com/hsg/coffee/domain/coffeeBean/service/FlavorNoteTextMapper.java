@@ -20,6 +20,17 @@ public final class FlavorNoteTextMapper {
     private FlavorNoteTextMapper() {
     }
 
+    /** Exact mapping for AI output: never turn a partial or fuzzy word into extra flavors. */
+    public static List<FlavorNote> findExactFlavorNotes(String text) {
+        String normalized = normalize(text);
+        if (!StringUtils.hasText(normalized)) return List.of();
+        FlavorNote alias = ALIASES.get(normalized);
+        if (alias != null) return List.of(alias);
+        return java.util.Arrays.stream(FlavorNote.values())
+                .filter(note -> normalized.equals(normalize(note.getDisplayName())) || normalized.equals(normalize(note.name())))
+                .toList();
+    }
+
     public static List<FlavorNote> findFlavorNotes(String text) {
         String normalizedText = normalize(text);
         if (!StringUtils.hasText(normalizedText)) {

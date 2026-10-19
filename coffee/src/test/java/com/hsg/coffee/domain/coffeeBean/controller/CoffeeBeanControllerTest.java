@@ -55,6 +55,9 @@ class CoffeeBeanControllerTest {
     @Autowired
     private PurchasePlaceRepository purchasePlaceRepository;
 
+    @org.springframework.test.context.bean.override.mockito.MockitoBean
+    private com.hsg.coffee.domain.llmparsing.service.BeanMappingService beanMappingService;
+
     @BeforeEach
     void setUp() {
         coffeeBeanRepository.deleteAll();
@@ -163,6 +166,10 @@ class CoffeeBeanControllerTest {
 
     @Test
     void extractFromCardReturnsCreateFormWithoutSaving() throws Exception {
+        org.mockito.Mockito.when(beanMappingService.parseOcrText(org.mockito.ArgumentMatchers.anyString()))
+                .thenReturn(new com.hsg.coffee.domain.llmparsing.dto.LlmParsingResponse(
+                        "Ethiopia Yirgacheffe Kochere", "Fritz Coffee", "", "", "", "", "", "",
+                        "", "", "", "", "", java.util.List.of()));
         MockMultipartFile image = new MockMultipartFile(
                 "image",
                 "coffee-card.jpg",

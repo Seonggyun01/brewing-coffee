@@ -31,3 +31,6 @@ docs/screenshots/*.zip
 .gradle-user-home/
 build/
 out/
+
+# Generated extraction traces
+*.jsonl

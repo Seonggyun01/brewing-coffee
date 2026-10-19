@@ -261,6 +261,8 @@ public class CoffeeBeanCardTextParser {
         text.lines()
                 .map(String::trim)
                 .filter(StringUtils::hasText)
+                .filter(line -> !isMetadataLine(line))
+                .filter(line -> !line.matches("(?i)^(지역|산지|농장|워싱스테이션|품종|고도|region|origin|farm|variety|altitude)\\s*[:：].*"))
                 .flatMap(line -> Arrays.stream(line.split("[,，/·|]")))
                 .map(String::trim)
                 .filter(StringUtils::hasText)
