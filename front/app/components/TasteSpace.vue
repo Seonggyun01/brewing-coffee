@@ -37,9 +37,9 @@ async function render() {
       { OrbitControls } = await import(/* @vite-ignore */ controlsPath)
     const el = root.value,
       scene = new THREE.Scene()
-    scene.background = new THREE.Color('#060914')
-    scene.fog = new THREE.FogExp2('#060914', 0.025)
-    const camera = new THREE.PerspectiveCamera(45, el.clientWidth / el.clientHeight, 0.1, 100),
+    scene.background = new THREE.Color('#10182b')
+    scene.fog = new THREE.FogExp2('#10182b', 0.016)
+    const camera = new THREE.PerspectiveCamera(38, el.clientWidth / el.clientHeight, 0.1, 100),
       renderer = new THREE.WebGLRenderer({ antialias: true })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.setSize(el.clientWidth, el.clientHeight)
@@ -50,7 +50,7 @@ async function render() {
     controls.minDistance = 2.5
     controls.maxDistance = 12
     controls.enablePan = false
-    controls.autoRotateSpeed = 0.22
+    controls.autoRotateSpeed = 0.3
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
     let interacting = false,
       resumeAt = 0
@@ -85,7 +85,7 @@ async function render() {
         Math.sin(elevation) * distance,
         Math.sin(angle) * Math.cos(elevation) * distance,
       )
-      const brightness = 0.2 + random() * 0.55
+      const brightness = 0.3 + random() * 0.6
       starColors.push(brightness * 0.8, brightness * 0.86, brightness)
     }
     const starGeometry = new THREE.BufferGeometry()
@@ -94,10 +94,10 @@ async function render() {
     const stars = new THREE.Points(
       starGeometry,
       new THREE.PointsMaterial({
-        size: 0.028,
+        size: 0.034,
         vertexColors: true,
         transparent: true,
-        opacity: 0.65,
+        opacity: 0.8,
         depthWrite: false,
       }),
     )
@@ -110,7 +110,7 @@ async function render() {
       const angle = ((i % 3) * Math.PI * 2) / 3 + radius * 0.46 + (random() - 0.5) * 0.65
       dustPositions.push(Math.cos(angle) * radius, (random() - 0.5) * 0.7, Math.sin(angle) * radius)
       const tint = new THREE.Color(i % 3 === 0 ? '#8677a1' : i % 3 === 1 ? '#638b9a' : '#a18b79')
-      dustColors.push(tint.r * 0.6, tint.g * 0.6, tint.b * 0.6)
+      dustColors.push(tint.r * 0.8, tint.g * 0.8, tint.b * 0.8)
     }
     const dustGeometry = new THREE.BufferGeometry()
     dustGeometry.setAttribute('position', new THREE.Float32BufferAttribute(dustPositions, 3))
@@ -121,7 +121,7 @@ async function render() {
         size: 0.035,
         vertexColors: true,
         transparent: true,
-        opacity: 0.27,
+        opacity: 0.42,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
       }),
@@ -131,9 +131,9 @@ async function render() {
     scene.add(dust)
     // Soft, sparse dust clouds add depth without competing with the records.
     for (const [x, y, z, color] of [
-      [-4, 2, -7, '#423761'],
-      [3, -2, -8, '#244759'],
-      [0, 3, -9, '#755141'],
+      [-4, 2, -7, '#66538c'],
+      [3, -2, -8, '#386b82'],
+      [0, 3, -9, '#926b56'],
     ] as const) {
       const canvas = document.createElement('canvas')
       canvas.width = canvas.height = 128
@@ -147,7 +147,7 @@ async function render() {
         new THREE.SpriteMaterial({
           map: new THREE.CanvasTexture(canvas),
           transparent: true,
-          opacity: 0.32,
+          opacity: 0.48,
           depthWrite: false,
           blending: THREE.AdditiveBlending,
         }),
@@ -445,6 +445,6 @@ onBeforeUnmount(() => cleanup?.())
   color: #9195a8;
 }
 .taste-space-stage {
-  background: #060914;
+  background: #10182b;
 }
 </style>

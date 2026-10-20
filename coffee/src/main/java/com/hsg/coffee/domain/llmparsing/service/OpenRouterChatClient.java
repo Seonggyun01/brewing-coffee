@@ -24,6 +24,9 @@ import tools.jackson.databind.ObjectMapper;
 @ConditionalOnProperty(name = "brewlog.llm.provider", havingValue = "openrouter")
 public class OpenRouterChatClient {
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.hsg.coffee.domain.apiusage.service.ApiUsageService apiUsage;
+
     @Value("${brewlog.llm.openrouter.reasoning-enabled:false}")
     private boolean reasoningEnabled = false;
 
@@ -146,6 +149,7 @@ public class OpenRouterChatClient {
                 );
             }
 
+            if (apiUsage != null) apiUsage.recordChat(providerName(), modelId, response.body());
             return parseCompletion(response.body());
         } catch (IOException exception) {
             throw new IllegalStateException(

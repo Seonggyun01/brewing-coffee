@@ -23,6 +23,14 @@ class FrontendApiSecurityTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(header().string("Location", org.hamcrest.Matchers.containsString("redirect_uri=http://localhost:3000/login/oauth2/code/kakao")));
     }
+    @Test void apiUsageIsPublicAndContainsNoCredentials() throws Exception {
+        mvc.perform(get("/api/front/api-usage"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Cache-Control", "no-store"))
+                .andExpect(jsonPath("$.items[0].site").value("Groq"))
+                .andExpect(jsonPath("$.items[0].max").value(200000))
+                .andExpect(jsonPath("$.apiKey").doesNotExist());
+    }
     @Test void mutationsRequireCsrf() throws Exception {
         mvc.perform(post("/api/front/beans").contentType("application/json").content("{\"name\":\"test\"}"))
                 .andExpect(status().isForbidden());

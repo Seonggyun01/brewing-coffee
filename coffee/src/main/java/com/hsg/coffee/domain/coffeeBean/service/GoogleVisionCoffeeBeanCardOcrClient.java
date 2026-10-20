@@ -26,6 +26,9 @@ import com.google.protobuf.ByteString;
 @Component
 public class GoogleVisionCoffeeBeanCardOcrClient {
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.hsg.coffee.domain.apiusage.service.ApiUsageService apiUsage;
+
     private static final Logger log = LoggerFactory.getLogger(GoogleVisionCoffeeBeanCardOcrClient.class);
 
     private final CoffeeBeanCardImagePreprocessor imagePreprocessor;
@@ -69,6 +72,7 @@ public class GoogleVisionCoffeeBeanCardOcrClient {
                     throw new IllegalArgumentException("이미지 분석 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
                 }
 
+                if (apiUsage != null) apiUsage.record("Google Vision", "Text Detection", 1);
                 String rawText = response.getFullTextAnnotation().getText();
                 if (!StringUtils.hasText(rawText)) {
                     throw new IllegalArgumentException("이미지에서 텍스트를 찾지 못했습니다. 직접 입력해주세요.");

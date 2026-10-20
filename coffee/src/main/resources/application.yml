@@ -106,3 +106,9 @@ brewlog:
       timeout-seconds: ${BREWLOG_OLLAMA_TIMEOUT_SECONDS:120}
       num-predict: ${BREWLOG_OLLAMA_NUM_PREDICT:700}
       temperature: ${BREWLOG_OLLAMA_TEMPERATURE:0.0}
+
+# Shared application counters; thresholds can be overridden for a different plan.
+# brewlog.api-usage.file: ../logs/api-usage.jsonl
+# brewlog.api-usage.groq-daily-tokens: 200000
+# brewlog.api-usage.openrouter-daily-requests: 50
+# brewlog.api-usage.vision-monthly-units: 1000
