@@ -73,7 +73,7 @@ class CoffeeBeanCardExtractionServiceTest {
         assertEquals(ProcessType.WASHED, form.getProcessType());
         assertEquals(List.of(FlavorNote.JASMINE, FlavorNote.LEMON, FlavorNote.PEACH), form.getFlavorNotes());
         assertEquals(200, form.getWeight());
-        assertEquals(18000, form.getPrice());
+        assertNull(form.getPrice()); // Unlabeled amounts are not reliable bean prices.
         assertEquals(LocalDate.of(2026, 5, 1), form.getRoastedDate());
         assertTrue(result.getWarnings().isEmpty());
     }
@@ -132,12 +132,30 @@ class CoffeeBeanCardExtractionServiceTest {
     }
 
     @Test
+    void acceptsImageAtTwentyMbBoundary() {
+        var image = new MockMultipartFile("image", "card.png", "image/png", new byte[20 * 1024 * 1024]);
+        assertEquals("Ethiopia Yirgacheffe Kochere", extractionService.extract(image).getForm().getName());
+    }
+
+    @Test
+    void doesNotRefillRejectedPriceOrDateFromFallbackParser() {
+        CoffeeBeanCardOcrService ocr = image -> "Colombia Zarza\nWashed\n6,800 KRW\n2026.10.02";
+        var mapping = mock(HuggingFaceBeanMappingService.class);
+        when(mapping.parseOcrText(anyString())).thenReturn(new LlmParsingResponse(
+                "Colombia Zarza", "", "콜롬비아", "", "ZARZA", "", "", "WASHED", "", "", "", "", "", List.of()));
+        var service = new CoffeeBeanCardExtractionService(ocr, new CoffeeBeanCardTextParser(), mapping);
+        var form = service.extract(new MockMultipartFile("image", "card.jpg", "image/jpeg", new byte[]{1})).getForm();
+        assertNull(form.getPrice());
+        assertNull(form.getRoastedDate());
+    }
+
+    @Test
     void rejectTooLargeImage() {
         MockMultipartFile image = new MockMultipartFile(
                 "image",
                 "large-card.jpg",
                 "image/jpeg",
-                new byte[5 * 1024 * 1024 + 1]
+                new byte[20 * 1024 * 1024 + 1]
         );
 
         IllegalArgumentException exception = assertThrows(
@@ -145,7 +163,7 @@ class CoffeeBeanCardExtractionServiceTest {
                 () -> extractionService.extract(image)
         );
 
-        assertEquals("이미지 파일은 5MB 이하만 업로드할 수 있습니다.", exception.getMessage());
+        assertEquals("이미지 파일은 20MB 이하만 업로드할 수 있습니다.", exception.getMessage());
     }
 
     @Test

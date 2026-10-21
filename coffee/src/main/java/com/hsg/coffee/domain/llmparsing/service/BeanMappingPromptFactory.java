@@ -49,6 +49,14 @@ public class BeanMappingPromptFactory {
                 - beanStatus, roastedAt, purchasedAt: 해당 상태/로스팅일/구매일이 명시된 경우만. 날짜는 YYYY-MM-DD.
                 - price, remainingWeightGram: 명시된 가격/중량을 숫자 문자열로 반환한다. 없으면 "".
 
+                사진 배경 혼입 방지:
+                - 메뉴판·음료 가격·다른 원두 포장 등 배경에서 읽힌 정보는 현재 원두에 연결하지 않는다.
+                - price는 원두 가격/판매가/PRICE 라벨과 금액이 연결된 경우만. 배경의 6,800 같은 단독 숫자는 제외한다.
+                - roastedAt은 ROASTED/ROAST DATE/로스팅일 라벨과 연결된 날짜만. 일반 날짜나 다른 포장의 날짜는 제외한다.
+                - purchasedAt은 구매일 라벨이 있는 경우만. 날짜만 보고 로스팅일이나 구매일로 추측하지 않는다.
+                - remainingWeightGram은 해당 원두의 중량 단위(g/kg)가 확인될 때만. 배경 숫자나 음료 용량은 제외한다.
+                - 배경과 원두 카드의 소속을 구분할 수 없는 가격·날짜·중량은 ""로 둔다.
+
                 flavorNotes 엄격 추출 규칙:
                 - 컵노트/TASTING NOTES/향미 영역 또는 명백한 과일·꽃·견과·차·음료 등의 감각 표현만.
                 - 국가·지역(오로미아, 구지)·농장·생산자·품종·가공·고도·브랜드·포장 문구는 제외한다.

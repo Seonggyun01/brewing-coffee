@@ -12,6 +12,8 @@ export function useBackend() {
 }
 export function errorMessage(error: any) {
   const data = error?.data?.data || error?.data
+  if (error?.statusCode === 413 || error?.status === 413)
+    return '사진 용량이 너무 큽니다. 20MB 이하 사진을 선택해주세요.'
   if (error?.statusCode === 401 || error?.status === 401) return '로그인 후 이용해주세요.'
   if (error?.statusCode === 400 || error?.status === 400)
     return data?.message || '입력한 값과 숫자 형식을 확인해주세요.'

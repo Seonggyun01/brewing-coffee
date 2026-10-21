@@ -59,6 +59,7 @@ async function upload(event: Event) {
   if (!file) return
   if (file.size > 20 * 1024 * 1024) {
     error.value = '사진은 20MB 이하로 선택해주세요.'
+    input.value = ''
     return
   }
   if (preview.value.startsWith('blob:')) URL.revokeObjectURL(preview.value)

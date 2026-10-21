@@ -30,7 +30,7 @@ import org.slf4j.MDC;
 @RequiredArgsConstructor
 public class CoffeeBeanCardExtractionService {
 
-    private static final long MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+    private static final long MAX_IMAGE_SIZE = 20 * 1024 * 1024;
     private static final List<String> ALLOWED_CONTENT_TYPES = List.of(
             "image/jpeg",
             "image/png",
@@ -86,7 +86,7 @@ public class CoffeeBeanCardExtractionService {
             progressListener.accept(CoffeeBeanCardExtractionPhase.PARSING);
             CoffeeBeanCardTextParseResult parseResult = textParser.parse(rawText);
             ExtractionTrace.record("ocr.fallback.result", parseResult);
-            var form = toCreateForm(parseResult, llmResult);
+            var form = toCreateForm(parseResult, llmResult, rawText);
             ExtractionTrace.record("form.result", form);
             ExtractionTrace.record("request.complete", java.util.Map.of("elapsedMs", (System.nanoTime() - started) / 1_000_000));
             return new CoffeeBeanCardExtractResult(rawText, form, parseResult.getWarnings());
@@ -99,7 +99,7 @@ public class CoffeeBeanCardExtractionService {
         }
     }
 
-    private CoffeeBeanCreateForm toCreateForm(CoffeeBeanCardTextParseResult parseResult, LlmParsingResponse llmResult) {
+    private CoffeeBeanCreateForm toCreateForm(CoffeeBeanCardTextParseResult parseResult, LlmParsingResponse llmResult, String rawText) {
         CoffeeBeanCreateForm form = new CoffeeBeanCreateForm();
         boolean hasLlmEvidence = java.util.stream.Stream.of(llmResult.name(), llmResult.roastery(), llmResult.originCountry(), llmResult.region(), llmResult.farmOrStation(), llmResult.variety(), llmResult.process())
                 .anyMatch(StringUtils::hasText) || (llmResult.flavorNotes() != null && !llmResult.flavorNotes().isEmpty());
@@ -114,8 +114,8 @@ public class CoffeeBeanCardExtractionService {
         form.setProcessType(parseProcessType(llmResult.process(), parseResult.getProcessType()));
         applyFlavorNotes(form, parseResult, llmResult);
         form.setWeight(parseInteger(llmResult.remainingWeightGram(), parseResult.getWeight()));
-        form.setPrice(parseInteger(llmResult.price(), parseResult.getPrice()));
-        form.setRoastedDate(parseDate(llmResult.roastedAt(), parseResult.getRoastedDate()));
+        form.setPrice(OcrMetadataEvidence.price(rawText, parseInteger(llmResult.price(), parseResult.getPrice())));
+        form.setRoastedDate(OcrMetadataEvidence.roastedDate(rawText, parseDate(llmResult.roastedAt(), parseResult.getRoastedDate())));
         return form;
     }
 
@@ -246,7 +246,7 @@ public class CoffeeBeanCardExtractionService {
         }
 
         if (image.getSize() > MAX_IMAGE_SIZE) {
-            throw new IllegalArgumentException("이미지 파일은 5MB 이하만 업로드할 수 있습니다.");
+            throw new IllegalArgumentException("이미지 파일은 20MB 이하만 업로드할 수 있습니다.");
         }
     }
 
