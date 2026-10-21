@@ -26,7 +26,7 @@ import com.google.protobuf.ByteString;
 @Component
 public class GoogleVisionCoffeeBeanCardOcrClient {
 
-    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    @org.springframework.beans.factory.annotation.Autowired
     private com.hsg.coffee.domain.apiusage.service.ApiUsageService apiUsage;
 
     private static final Logger log = LoggerFactory.getLogger(GoogleVisionCoffeeBeanCardOcrClient.class);
@@ -63,7 +63,8 @@ public class GoogleVisionCoffeeBeanCardOcrClient {
                     preparedImage.contentType()
             );
 
-            try (ImageAnnotatorClient client = createClient()) {
+            try (var permit = apiUsage == null ? null : apiUsage.reserve("Google Vision", "Text Detection", 1);
+                    ImageAnnotatorClient client = createClient()) {
                 AnnotateImageResponse response = client.batchAnnotateImages(List.of(request))
                         .getResponses(0);
 
@@ -72,7 +73,6 @@ public class GoogleVisionCoffeeBeanCardOcrClient {
                     throw new IllegalArgumentException("이미지 분석 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
                 }
 
-                if (apiUsage != null) apiUsage.record("Google Vision", "Text Detection", 1);
                 String rawText = response.getFullTextAnnotation().getText();
                 if (!StringUtils.hasText(rawText)) {
                     throw new IllegalArgumentException("이미지에서 텍스트를 찾지 못했습니다. 직접 입력해주세요.");
@@ -85,6 +85,8 @@ public class GoogleVisionCoffeeBeanCardOcrClient {
                 );
                 return rawText;
             }
+        } catch (com.hsg.coffee.domain.apiusage.service.ApiLimitException exception) {
+            throw exception;
         } catch (IllegalArgumentException exception) {
             throw exception;
         } catch (IOException exception) {

@@ -18,7 +18,7 @@ import tools.jackson.databind.ObjectMapper;
 @Component
 public class OpenRouterEmbeddingClient {
 
-    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    @org.springframework.beans.factory.annotation.Autowired
     private com.hsg.coffee.domain.apiusage.service.ApiUsageService apiUsage;
 
     private final ObjectMapper objectMapper;
@@ -51,7 +51,7 @@ public class OpenRouterEmbeddingClient {
         if (!StringUtils.hasText(apiKey)) {
             throw new IllegalStateException("OpenRouter API 키가 설정되지 않았습니다.");
         }
-        try {
+        try (var permit = apiUsage == null ? null : apiUsage.reserve("OpenRouter", modelId, 1)) {
             String requestBody = objectMapper.writeValueAsString(Map.of("model", modelId, "input", input));
             HttpRequest request = HttpRequest.newBuilder(URI.create(modelUrl))
                     .timeout(timeout)
@@ -63,7 +63,6 @@ public class OpenRouterEmbeddingClient {
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 throw new IllegalStateException("OpenRouter 임베딩 요청에 실패했습니다. (HTTP " + response.statusCode() + ")");
             }
-            if (apiUsage != null) apiUsage.record("OpenRouter", modelId, 1);
             JsonNode data = objectMapper.readTree(response.body()).path("data");
             if (!data.isArray() || data.size() != input.size()) {
                 throw new IllegalStateException("OpenRouter 임베딩 응답 개수가 일치하지 않습니다.");
@@ -74,6 +73,8 @@ public class OpenRouterEmbeddingClient {
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("OpenRouter 임베딩 요청이 중단되었습니다.", exception);
+        } catch (com.hsg.coffee.domain.apiusage.service.ApiLimitException exception) {
+            throw exception;
         } catch (Exception exception) {
             if (exception instanceof IllegalStateException stateException) {
                 throw stateException;

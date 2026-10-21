@@ -46,6 +46,8 @@ public class CoffeeBeanCardExtractionService {
             "heic",
             "heif"
     );
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.hsg.coffee.domain.apiusage.service.ApiUsageService apiUsage;
     private final CoffeeBeanCardOcrService ocrService;
     private final CoffeeBeanCardTextParser textParser;
     private final BeanMappingService beanMappingService;
@@ -62,7 +64,7 @@ public class CoffeeBeanCardExtractionService {
         String previousId = MDC.get(ExtractionTrace.REQUEST_ID);
         MDC.put(ExtractionTrace.REQUEST_ID, previousId != null ? previousId : java.util.UUID.randomUUID().toString());
         long started = System.nanoTime();
-        try {
+        try (var slot = apiUsage == null ? null : apiUsage.enterExtraction()) {
             validateImage(image);
             ExtractionTrace.record("request.start", java.util.Map.of("filename", String.valueOf(image.getOriginalFilename()), "contentType", String.valueOf(image.getContentType()), "size", image.getSize()));
             progressListener.accept(CoffeeBeanCardExtractionPhase.OCR);

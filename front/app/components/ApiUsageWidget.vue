@@ -9,9 +9,56 @@ interface Usage {
   color: string
 }
 interface Snapshot {
+  updatedAt?: string
   items: Usage[]
   scope: string
   delayed: boolean
+}
+const warningDialog = ref<HTMLDialogElement>()
+const warningItems = ref<Usage[]>([])
+const warned = new Set<string>()
+const percentage = (item: Usage) =>
+  item.max > 0 ? Math.max(0, (item.current / item.max) * 100) : 0
+const usageColor = (item: Usage) =>
+  item.max <= 0 || percentage(item) >= 80
+    ? '#b42318'
+    : percentage(item) <= 50
+      ? '#15803d'
+      : '#b45309'
+const percentageText = (item: Usage) =>
+  item.max > 0
+    ? `${new Intl.NumberFormat('ko-KR', { maximumFractionDigits: 2 }).format(Math.floor(percentage(item) * 100) / 100)}%`
+    : '사용 중지'
+async function checkWarnings(snapshot: Snapshot) {
+  if (snapshot.delayed) return
+  const date = new Date(snapshot.updatedAt || Date.now())
+  if (Number.isNaN(date.getTime())) return
+  const day = date.toISOString().slice(0, 10)
+  const newlyHigh = snapshot.items.filter((item) => {
+    if (item.max <= 0 || percentage(item) < 80) return false
+    const period = item.period === '월간' ? day.slice(0, 7) : day
+    const warningKey = `blank-api-warning:${item.site}:${item.period}:${period}`
+    if (warned.has(warningKey)) return false
+    try {
+      if (sessionStorage.getItem(warningKey)) return false
+    } catch {}
+    warned.add(warningKey)
+    try {
+      sessionStorage.setItem(warningKey, '1')
+    } catch {}
+    return true
+  })
+  if (!newlyHigh.length) return
+  if (warningDialog.value?.open) {
+    warningItems.value = [
+      ...warningItems.value.filter((old) => !newlyHigh.some((item) => item.site === old.site)),
+      ...newlyHigh,
+    ]
+  } else {
+    warningItems.value = newlyHigh
+    await nextTick()
+    warningDialog.value?.showModal()
+  }
 }
 const expanded = ref(false)
 const data = ref<Snapshot | null>(null)
@@ -89,6 +136,7 @@ async function refresh() {
   try {
     data.value = await $fetch<Snapshot>('/api/backend/front/api-usage')
     failed.value = false
+    await checkWarnings(data.value)
   } catch {
     failed.value = true
   } finally {
@@ -149,7 +197,7 @@ onBeforeUnmount(() => {
     <div
       v-if="expanded"
       id="api-usage-content"
-      :title="`${data?.scope || '서비스 전체 · 앱 내 집계'} · 적용 이후 성공 응답 기준. 외부 사용량 제외. 최대치는 설정된 무료 기준입니다.`"
+      :title="`${data?.scope || '서비스 전체 · 앱 내 집계'} · 처리 중 예약량 포함. 외부 사용량 제외. 최대치는 백엔드에 설정된 한도입니다.`"
     >
       <p v-if="failed || data?.delayed" class="api-usage__status" role="status">
         갱신 지연{{ data ? ' · 마지막 집계 표시' : '' }}
@@ -158,17 +206,24 @@ onBeforeUnmount(() => {
       <div v-for="item in data?.items" :key="item.site" class="api-usage__row">
         <div class="api-usage__numbers">
           <strong>{{ item.site }}</strong
-          ><span>{{ fmt(item.current) }} / {{ fmt(item.max) }} {{ item.unit }}</span>
+          ><span :style="{ color: usageColor(item) }"
+            >{{ fmt(item.current) }} / {{ fmt(item.max) }} {{ item.unit }}</span
+          >
         </div>
-        <div class="api-usage__model">{{ modelName(item.model) }} · {{ item.period }}</div>
+        <div class="api-usage__details">
+          <div class="api-usage__model">{{ modelName(item.model) }} · {{ item.period }}</div>
+          <strong class="api-usage__percentage" :style="{ color: usageColor(item) }">{{
+            percentageText(item)
+          }}</strong>
+        </div>
         <div
           class="api-usage__track"
           role="meter"
           :aria-label="`${item.site} ${item.period} ${item.unit}`"
           :aria-valuemin="0"
-          :aria-valuemax="item.max"
-          :aria-valuenow="Math.min(item.current, item.max)"
-          :aria-valuetext="`${fmt(item.current)} / ${fmt(item.max)} ${item.unit}`"
+          :aria-valuemax="Math.max(1, item.max)"
+          :aria-valuenow="Math.max(0, Math.min(item.current, item.max))"
+          :aria-valuetext="`${fmt(item.current)} / ${fmt(item.max)} ${item.unit} · ${percentageText(item)}`"
         >
           <span
             :style="{
@@ -180,6 +235,26 @@ onBeforeUnmount(() => {
       </div>
     </div>
   </aside>
+  <dialog
+    ref="warningDialog"
+    class="api-warning"
+    role="alertdialog"
+    aria-labelledby="api-warning-title"
+    aria-describedby="api-warning-description"
+  >
+    <h2 id="api-warning-title">AI API 사용량 경고</h2>
+    <p id="api-warning-description">서비스 전체 API 사용량이 한도의 80% 이상에 도달했습니다.</p>
+    <ul>
+      <li v-for="item in warningItems" :key="item.site">
+        <strong>{{ item.site }} · {{ percentageText(item) }}</strong>
+        <span
+          >{{ fmt(item.current) }} / {{ fmt(item.max) }} {{ item.unit }} · {{ item.period }}</span
+        >
+      </li>
+    </ul>
+    <p>처리 중인 요청의 예약량이 포함됩니다. 한도에 도달하면 새로운 AI 요청이 제한됩니다.</p>
+    <form method="dialog"><button autofocus>확인</button></form>
+  </dialog>
 </template>
 <style scoped>
 .api-usage {
@@ -266,8 +341,18 @@ onBeforeUnmount(() => {
   color: #6f3f28;
   white-space: nowrap;
 }
-.api-usage__model {
+.api-usage__details {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
   margin-top: 7px;
+}
+.api-usage__percentage {
+  flex-shrink: 0;
+  font-size: 12px;
+}
+.api-usage__model {
   font-size: 11px;
   color: #8b7b71;
   overflow-wrap: anywhere;
@@ -290,6 +375,52 @@ onBeforeUnmount(() => {
   padding: 14px 16px;
   color: #8b7b71;
   font-size: 12px;
+}
+.api-warning {
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  box-sizing: border-box;
+  border: 1px solid #e7dcd4;
+  border-radius: 16px;
+  padding: 24px;
+  color: #2a211d;
+  background: #fff;
+  box-shadow: 0 16px 48px #0003;
+}
+.api-warning::backdrop {
+  background: #0006;
+}
+.api-warning h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+}
+.api-warning p {
+  font-size: 14px;
+  line-height: 1.6;
+}
+.api-warning ul {
+  padding: 0;
+  list-style: none;
+}
+.api-warning li {
+  display: grid;
+  gap: 4px;
+  margin: 12px 0;
+}
+.api-warning li strong {
+  color: #b42318;
+}
+.api-warning li span {
+  font-size: 13px;
+}
+.api-warning form {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+.api-warning button {
+  padding: 10px 24px;
 }
 @media (max-width: 640px) {
   .api-usage {

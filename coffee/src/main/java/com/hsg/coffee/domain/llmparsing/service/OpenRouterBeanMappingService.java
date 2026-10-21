@@ -65,6 +65,8 @@ public class OpenRouterBeanMappingService implements BeanMappingService {
 
             LlmParsingResponse parsed = objectMapper.readValue(json, LlmParsingResponse.class);
             return validator.sanitize(parsed, preprocessResult);
+        } catch (com.hsg.coffee.domain.apiusage.service.ApiLimitException exception) {
+            throw exception;
         } catch (Exception exception) {
             com.hsg.coffee.global.logging.ExtractionTrace.record("llm.failure", java.util.Map.of("provider", getClass().getSimpleName(), "type", exception.getClass().getSimpleName(), "message", String.valueOf(exception.getMessage())));
             log.warn("LLM OCR 매핑 처리 실패: {}", exception.getMessage());
@@ -114,6 +116,8 @@ public class OpenRouterBeanMappingService implements BeanMappingService {
                     json,
                     parsed
             );
+        } catch (com.hsg.coffee.domain.apiusage.service.ApiLimitException exception) {
+            throw exception;
         } catch (Exception exception) {
             com.hsg.coffee.global.logging.ExtractionTrace.record("llm.failure", java.util.Map.of("provider", getClass().getSimpleName(), "type", exception.getClass().getSimpleName(), "message", String.valueOf(exception.getMessage())));
             return debugResponse(

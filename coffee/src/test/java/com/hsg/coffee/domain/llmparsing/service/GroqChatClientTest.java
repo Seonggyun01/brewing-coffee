@@ -57,6 +57,21 @@ class GroqChatClientTest {
     }
 
     @Test
+    void quotaDenialPreventsHttpRequestAndSuccessfulUsageIsSettled(@org.junit.jupiter.api.io.TempDir java.nio.file.Path dir) {
+        var usage = new com.hsg.coffee.domain.apiusage.service.ApiUsageService(
+                dir.resolve("usage.jsonl").toString(), "qwen/test", "embedding/test", 2000, 50, 1000);
+        var client = client();
+        org.springframework.test.util.ReflectionTestUtils.setField(client, "apiUsage", usage);
+        responseOverride.set("{\"usage\":{\"total_tokens\":1500},\"choices\":[{\"message\":{\"content\":\"{}\"}}]}");
+        client.complete("test");
+        assertThat(usage.snapshot().items().getFirst().current()).isEqualTo(1500);
+        requestBody.set(null);
+        assertThatThrownBy(() -> client.complete("test"))
+                .isInstanceOf(com.hsg.coffee.domain.apiusage.service.ApiLimitException.class);
+        assertThat(requestBody.get()).isNull();
+    }
+
+    @Test
     void sendsGroqModelAndDisablesReasoningUsingGroqParameter() throws Exception {
         GroqChatClient client = client();
 
